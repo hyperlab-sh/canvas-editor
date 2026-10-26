@@ -15,6 +15,7 @@ Keys are shown with `⌘`; on Windows and Linux read the same rows as `Ctrl`. Th
 | --- | --- |
 | Select | `V` |
 | Hand | `H` |
+| Comment | `C` |
 | Rectangle | `R` |
 | Ellipse | `O` |
 | Shapes | `S` |

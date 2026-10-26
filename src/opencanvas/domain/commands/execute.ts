@@ -132,15 +132,24 @@ function applyRemoveLayer(
   return { document: next, inverse: { ...command, kind: 'insert-layer' } };
 }
 
+// Comments are not diagram content (see domain/comments): page preconditions ignore them, since threads
+// change outside history and a stored page copy holds the threads of its time.
+function samePageContent(a: ScenePage | undefined, b: ScenePage): boolean {
+  if (!a) return false;
+  const { comments: _a, ...left } = a;
+  const { comments: _b, ...right } = b;
+  return areStructurallyEqual(left, right);
+}
+
 function applySetPage(document: SceneDocumentV1, command: SetPageCommand): AppliedDocumentCommand {
   if (command.before.id !== command.after.id || command.pageId !== command.before.id) {
     throw new DocumentCommandError('set-page cannot change a page ID.');
   }
-  if (areStructurallyEqual(command.before, command.after)) {
+  if (samePageContent(command.before, command.after)) {
     throw new DocumentCommandError('set-page command must change the page.');
   }
   const index = document.pages.findIndex((page) => page.id === command.pageId);
-  if (index < 0 || !areStructurallyEqual(document.pages[index], command.before)) {
+  if (index < 0 || !samePageContent(document.pages[index], command.before)) {
     throw new DocumentCommandError(`Page "${command.pageId}" precondition failed.`);
   }
   const pages = [...document.pages];
@@ -172,14 +181,16 @@ function applyRemovePage(
   command: RemovePageCommand
 ): AppliedDocumentCommand {
   requireIndex(command.index, document.pages.length, false);
-  if (!areStructurallyEqual(document.pages[command.index], command.page)) {
+  const removed = document.pages[command.index];
+  if (!samePageContent(removed, command.page)) {
     throw new DocumentCommandError(`Page "${command.page.id}" removal precondition failed.`);
   }
   const pages = [...document.pages];
   pages.splice(command.index, 1);
+  // The inverse brings the page back with the threads it had when it went.
   return {
     document: { ...document, pages },
-    inverse: { ...command, kind: 'insert-page' },
+    inverse: { ...command, kind: 'insert-page', page: removed! },
   };
 }
 

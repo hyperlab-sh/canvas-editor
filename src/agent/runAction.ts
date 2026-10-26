@@ -36,7 +36,11 @@ export async function runAgentOp(
   rawInput: unknown,
   context: OpContext
 ): Promise<RunOpResult> {
-  const { command, output } = await resolveAgentOpCommand(op, rawInput, context);
+  const { command, comments, output } = await resolveAgentOpCommand(op, rawInput, context);
+  if (comments) {
+    const next = comments(context.document);
+    return { document: next, changed: next !== context.document, output };
+  }
   if (!command) return { document: context.document, changed: false, output };
   return { document: applyDocumentCommand(context.document, command).document, changed: true, output };
 }

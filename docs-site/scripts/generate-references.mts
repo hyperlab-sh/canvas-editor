@@ -7,7 +7,7 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CAPABILITY_MANIFEST, type CapabilityRow } from '../../src/agent/manifest';
-import { AGENT_OPS } from '../../src/agent/ops';
+import { AGENT_OPS, COMMENT_WRITE_OPS } from '../../src/agent/ops';
 import { shortcutGroups } from '../../src/opencanvas/presentation/v2/v2Shortcuts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -129,7 +129,8 @@ function opSections(): string {
     const argumentTable = argumentRows(op.schema as unknown as ZodLike)
       + (MCP_PAGE_ID.has(op.name) ? '| `pageId` | string (MCP tool; the CLI says `--page`) |\n' : '');
     // `documentId` is added to every op tool by the MCP server; document it once.
-    const where = row.mutates ? 'changes the document (one undo step in live mode)' : 'read-only';
+    // Comment writes change the document but are never an undo step.
+    const where = !row.mutates ? 'read-only' : COMMENT_WRITE_OPS.has(row.action) ? 'writes a comment thread (no undo step)' : 'changes the document (one undo step in live mode)';
     const mirrors = row.surface === 'agent'
       ? 'an agent-only lookup'
       : `mirrors **${row.operation}** in ${surfaces[row.surface] ?? row.surface}`;

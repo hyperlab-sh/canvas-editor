@@ -35,6 +35,9 @@ export const INSTRUCTIONS = [
     + ' Or use file mode: openflow_create (or openflow_open with a .openflow.json path), draw, then openflow_save;'
     + ' a file-mode drawing also returns an openUrl the user can open to see it.',
   'Several agent sessions can share one canvas: whoami shows bridge.shared when this server draws through another one.',
+  'Comments: list_comments reads the threads people pinned on the canvas; reply_comment, resolve_comment and add_comment answer in them.',
+  'If live comments are on, a new comment from the editor may arrive as <channel source="openflowkit" thread_id=… node_label=…>:'
+    + ' reply with reply_comment using that thread_id. Without that, nothing is pushed; read the threads with list_comments when asked.',
   'Call whoami when unsure which mode you are in.',
 ].join('\n');
 
@@ -50,7 +53,22 @@ export function createServerWithDeps(options: ServerOptions = {}): CreatedServer
     ...(process.env.OPENFLOWKIT_BRIDGE_TOKEN ? { token: process.env.OPENFLOWKIT_BRIDGE_TOKEN } : {}),
     log,
   });
-  const server = new McpServer({ name: MCP_SERVER_NAME, version: MCP_SERVER_VERSION }, { instructions: INSTRUCTIONS });
+  // `claude/channel` registers the push listener in Claude Code; a client without channels ignores it, so tools are unaffected.
+  const server = new McpServer({ name: MCP_SERVER_NAME, version: MCP_SERVER_VERSION }, {
+    instructions: INSTRUCTIONS,
+    capabilities: { experimental: { 'claude/channel': {} } },
+  });
+  // `?.`: tests hand in bridge doubles that only implement what they use.
+  (bridge as Partial<LiveBridge>).onEvent?.((event) => {
+    // Absent values are left out: meta is string-to-string, and an empty attribute tells the model nothing.
+    const meta = {
+      document_id: event.documentId, page_id: event.pageId, thread_id: event.threadId, message_id: event.messageId,
+      ...(event.nodeId ? { node_id: event.nodeId } : {}), ...(event.nodeLabel ? { node_label: event.nodeLabel } : {}),
+      kind: event.kind, author: event.author,
+    };
+    // Dropped silently by a session that was not started with the channel flag; nothing to do about that here.
+    void server.server.notification({ method: 'notifications/claude/channel', params: { content: event.body, meta } } as never).catch(() => undefined);
+  });
   const deps: OpToolDeps = { store, bridge };
 
   registerValidateDsl(server);

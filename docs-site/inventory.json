@@ -981,7 +981,11 @@
         "screenshot",
         "fit_view",
         "get_document",
-        "list_pages"
+        "list_pages",
+        "list_comments",
+        "reply_comment",
+        "resolve_comment",
+        "add_comment"
       ]
     },
     {
@@ -1147,6 +1151,17 @@
         "Frame",
         "Sticky note",
         "Insert: media, charts, frames, wireframe"
+      ]
+    },
+    {
+      "id": "comments",
+      "name": "Comments for your agent",
+      "status": "shipped",
+      "evidence": "src/opencanvas/domain/comments/comments.ts",
+      "notes": "C pins a thread to a node or a point; the agent reads and answers with list_comments, reply_comment, resolve_comment and add_comment. Not in undo, the DSL or exports; share links drop them. Live comments push new messages to a Claude Code session started with the channel flag.",
+      "page": "connect-your-agent",
+      "shortcuts": [
+        "Comment"
       ]
     },
     {

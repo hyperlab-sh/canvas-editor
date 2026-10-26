@@ -1449,3 +1449,85 @@
   /* A phone: the field gets the whole row so its placeholder reads in full, the button goes under it. */
   .ofk-v2-welcome-stack > .ofk-v2-map-repo-form { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Comments: Figma-style pins over the canvas and a dark thread card. The card stays dark in both themes, as Figma's does. */
+.ofk-comment-anchor { position: absolute; top: 0; left: 0; z-index: calc(var(--ofk-layer-toolbar, 10) - 1); width: 0; height: 0; pointer-events: none; will-change: transform; }
+.ofk-comment-anchor:has([data-comment-open]) { z-index: var(--ofk-layer-toolbar, 10); }
+.ofk-comment-pin {
+  position: absolute; left: 0; bottom: 0; box-sizing: border-box; width: 30px; height: 30px; padding: 0; border: 2px solid #fff;
+  border-radius: 50% 50% 50% 0; background: #fff; overflow: hidden; cursor: pointer; pointer-events: auto;
+  box-shadow: 0 1px 3px rgb(0 0 0 / .35), 0 3px 10px rgb(0 0 0 / .18);
+  transition: transform .12s ease;
+}
+.ofk-comment-pin[data-ghost] { pointer-events: none; opacity: .9; }
+.ofk-comment-pin:hover { transform: scale(1.06); transform-origin: 0 100%; }
+.ofk-comment-pin:focus-visible, .ofk-comment-pin[data-selected] { outline: 2px solid var(--c-accent, #0d99ff); outline-offset: 2px; }
+.ofk-comment-pin .ofk-comment-avatar { width: 100% !important; height: 100% !important; border-radius: inherit; }
+.ofk-comment-avatar {
+  display: inline-grid; place-items: center; flex: none; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 600; line-height: 1;
+  user-select: none;
+}
+.ofk-comment-avatar[data-kind='agent'] { background: var(--ofk-primary); color: var(--ofk-onPrimary, #fff); }
+.ofk-comment-avatar svg { width: 60%; height: 60%; }
+
+.ofk-comment-card {
+  --c-accent: #0d99ff; --c-surface: #2c2c2c; --c-text: #fff; --c-muted: rgb(255 255 255 / .6); --c-line: rgb(255 255 255 / .12);
+  position: absolute; left: 38px; top: -34px; box-sizing: border-box; width: 320px; max-width: min(320px, 86vw);
+  display: grid; gap: 8px; padding: 10px; border-radius: 12px; background: var(--c-surface); color: var(--c-text);
+  font-size: 13px; line-height: 1.4; pointer-events: auto; cursor: default;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / .4), 0 8px 28px rgb(0 0 0 / .35);
+}
+.ofk-comment-anchor[data-side='left'] .ofk-comment-card { left: auto; right: 8px; }
+.ofk-comment-composer { width: 300px; }
+.ofk-comment-card p, .ofk-comment-card h3, .ofk-comment-card ul { margin: 0; }
+.ofk-comment-card .ofk-icon-button { color: var(--c-muted); }
+.ofk-comment-card .ofk-icon-button:hover:not(:disabled) { color: var(--c-text); background: rgb(255 255 255 / .1); }
+.ofk-comment-thread > header { display: flex; align-items: center; gap: 2px; padding: 0 2px 0 4px; }
+.ofk-comment-thread > header h3 { flex: 1; font-size: 13px; font-weight: 600; }
+.ofk-comment-messages { display: grid; gap: 12px; max-height: 280px; padding: 2px 4px; overflow-y: auto; list-style: none; }
+.ofk-comment-message { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+.ofk-comment-meta { display: flex; gap: 6px; align-items: baseline; }
+.ofk-comment-meta strong { font-weight: 600; }
+.ofk-comment-meta time, .ofk-comment-meta span { color: var(--c-muted); font-size: 12px; }
+.ofk-comment-body { white-space: pre-wrap; overflow-wrap: anywhere; }
+.ofk-comment-thread > footer { display: grid; gap: 4px; }
+
+.ofk-comment-input {
+  display: flex; align-items: flex-end; gap: 6px; padding: 5px 5px 5px 12px; border-radius: 10px; background: rgb(255 255 255 / .08);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+}
+.ofk-comment-input textarea:focus-visible, .ofk-comment-name input:focus-visible { outline: none; }
+.ofk-comment-input:focus-within { box-shadow: inset 0 0 0 2px var(--c-accent, #0d99ff); }
+.ofk-comment-input textarea {
+  flex: 1; min-width: 0; margin: 0; padding: 4px 0; border: 0; outline: 0; background: transparent; color: var(--c-text); font: inherit;
+  resize: none; field-sizing: content; min-height: 22px; max-height: 140px;
+}
+.ofk-comment-input textarea::placeholder { color: var(--c-muted); }
+.ofk-comment-send {
+  display: grid; place-items: center; flex: none; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%;
+  background: var(--c-accent, #0d99ff); color: #fff; cursor: pointer;
+}
+.ofk-comment-send:disabled { background: rgb(255 255 255 / .16); color: var(--c-muted); cursor: default; }
+.ofk-comment-send:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+.ofk-comment-send svg { width: 16px; height: 16px; }
+.ofk-comment-edit { margin-top: 4px; }
+
+.ofk-comment-name { display: grid; gap: 8px; }
+.ofk-comment-name label { display: grid; gap: 4px; }
+.ofk-comment-name span { color: var(--c-muted); font-size: 12px; }
+.ofk-comment-name input {
+  box-sizing: border-box; width: 100%; padding: 7px 10px; border: 0; border-radius: 8px; outline: 0; background: rgb(255 255 255 / .08);
+  box-shadow: inset 0 0 0 1px var(--c-line); color: var(--c-text); font: inherit;
+}
+.ofk-comment-name input:focus { box-shadow: inset 0 0 0 2px var(--c-accent, #0d99ff); }
+.ofk-comment-confirm { padding: 8px 10px; border-radius: 8px; background: rgb(240 70 70 / .16); box-shadow: inset 0 0 0 1px rgb(240 70 70 / .5); }
+.ofk-comment-confirm p { margin-bottom: 8px; }
+.ofk-comment-confirm > div { display: flex; gap: 6px; }
+.ofk-comment-confirm .ofk-button[data-variant='quiet'] { color: var(--c-text); }
+
+.ofk-comment-live { color: var(--c-muted); font-size: 12px; }
+.ofk-comment-live p { margin: 2px 0 0; }
+.ofk-comment-card .ofk-comment-live { padding: 0 4px; color: var(--c-muted); }
+.ofk-v2[data-tool='comment'] .ofk-v2-canvas { cursor: crosshair; }
+@media (prefers-reduced-motion: reduce) { .ofk-comment-pin { transition: none; } }
+.ofk-connection-panel .ofk-comment-live { margin-top: 14px; }

@@ -19,7 +19,8 @@ import { createServer, request as httpRequest, type IncomingMessage, type Server
 import { randomUUID } from 'node:crypto';
 import {
   BRIDGE_IDLE_MS, BRIDGE_POLL_SECONDS, BRIDGE_PROTOCOL_VERSION, bridgeTokenHeader,
-  isAllowedBridgeOrigin, isBridgeClientInfo, type BridgeClientInfo, type BridgeHealth, type BridgeRequest,
+  isAllowedBridgeOrigin, isBridgeClientInfo, isBridgeCommentEvent,
+  type BridgeClientInfo, type BridgeCommentEvent, type BridgeHealth, type BridgeRequest,
 } from './agent.js';
 import { MCP_SERVER_NAME, MCP_SERVER_VERSION } from './version.js';
 import { DEFAULT_APP_ORIGIN } from './openLink.js';
@@ -103,9 +104,15 @@ export class LiveBridge {
   private readonly queue: BridgeRequest[] = [];
   private readonly pending = new Map<string, PendingCall>();
   private readonly options: LiveBridgeOptions;
+  private eventSink: ((event: BridgeCommentEvent) => void) | null = null;
 
   constructor(options: LiveBridgeOptions) {
     this.options = options;
+  }
+
+  /** Where `POST /event` goes (the MCP server's channel notification). Only the process that owns the port ever hears one. */
+  onEvent(sink: (event: BridgeCommentEvent) => void): void {
+    this.eventSink = sink;
   }
 
   get connected(): boolean {
@@ -410,6 +417,13 @@ export class LiveBridge {
         this.lastSeenAt = Date.now();
         this.options.log?.(`Editor connected: "${document.name}" (${document.pages.length} page(s))${wasConnected ? ' [replaced]' : ''}`);
         this.respond(response, 200, { ok: true, protocol: BRIDGE_PROTOCOL_VERSION });
+        return;
+      }
+      if (request.method === 'POST' && url.pathname === '/event') {
+        const event = await this.body(request);
+        if (!isBridgeCommentEvent(event)) { this.respond(response, 400, { error: 'event needs a comment event.' }); return; }
+        try { this.eventSink?.(event); } catch { /* best effort: a session that cannot take it must not fail the editor */ }
+        this.respond(response, 200, { ok: true });
         return;
       }
       if (request.method === 'GET' && url.pathname === '/next') { this.next(response, url); return; }

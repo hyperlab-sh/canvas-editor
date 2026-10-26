@@ -5,6 +5,7 @@ import { commandTouchedRoots } from '../opencanvas/application/ai/proposalSessio
 import type { DocumentCommand } from '../opencanvas/domain/commands/types';
 import type { SceneDocumentV1 } from '../opencanvas/domain/document/types';
 import { drawingSourceOf } from '../opencanvas/application/map/pinPage';
+import { COMMENT_WRITE_OPS } from './ops/surface';
 import type { OpCapabilities } from './ops/types';
 import { pageHolding, resolveAgentOpCommand } from './runAction';
 
@@ -16,6 +17,11 @@ export interface LiveAgentSession {
   readonly capabilities: OpCapabilities;
   /** Commits as one undo step; false when the session refused it (a locked page), so nothing landed. */
   readonly commit: (command: DocumentCommand) => boolean | void;
+  /**
+   * Applies a comment change outside undo history (the session's updateComments); throws on bad input. Absent in a
+   * host that cannot take comments, which then refuses the comment ops.
+   */
+  readonly commentChange?: (change: (document: SceneDocumentV1) => SceneDocumentV1) => void;
   /** A document the reader cannot edit (a shared link, a repo map): an agent's change is refused, and told so. */
   readonly readOnly?: boolean;
   /** A page that stays as it is (a repo document's map page): a change addressed to it lands on its drawing (`openDrawing`), never on it. */
@@ -69,7 +75,7 @@ function stopIfAborted(signal: AbortSignal | undefined): void {
  * Throws with a message meant for the agent; commits at most one command. `current` is read at the start (document,
  * page, selection) and again once the op has resolved (lock, commit): an op that compiles can outlive a change to either.
  */
-export async function runLiveAgentOp(current: () => LiveAgentSession, name: string, input: unknown, requestedPageId?: string, signal?: AbortSignal): Promise<LiveOpResult> {
+export async function runLiveAgentOp(current: () => LiveAgentSession, name: string, input: unknown, requestedPageId?: string, signal?: AbortSignal, client?: string): Promise<LiveOpResult> {
   stopIfAborted(signal);
   // The registry loads with the first call, so an editor no agent talks to never downloads it.
   const { findAgentOp } = await import('./ops');
@@ -80,7 +86,10 @@ export async function runLiveAgentOp(current: () => LiveAgentSession, name: stri
   if (!session.document) throw new Error('The editor has no document open.');
   // The page the op will run on (a named frame's own page), so the read-only check and the camera agree with it.
   let pageId = pageHolding({ document: session.document, pageId: requestedPageId ?? session.pageId ?? session.document.pages[0]?.id ?? '', capabilities: session.capabilities }, input);
-  const mutates = CAPABILITY_MANIFEST.some(({ action, mutates }) => action === name && mutates);
+  // Comment writes are conversation, not drawing: no repo-map redirect, no page switch, no camera, no commit.
+  const commenting = COMMENT_WRITE_OPS.has(name);
+  if (commenting && (session.readOnly || !session.commentChange)) throw new Error(READ_ONLY_REFUSAL);
+  const mutates = !commenting && CAPABILITY_MANIFEST.some(({ action, mutates }) => action === name && mutates);
   const locked = session.lockedPageId ?? null;
   let opened = false;
   // A change for the repo map lands on its drawing, which the person sees first (as Canvas opens it); reads stay on the map.
@@ -95,7 +104,14 @@ export async function runLiveAgentOp(current: () => LiveAgentSession, name: stri
   const { document, capabilities } = session;
   if (!document) throw new Error('The editor has no document open.');
   const selection = { pageId: session.pageId, ids: session.selectedIds?.() ?? [] };
-  const outcome = await resolveAgentOpCommand(op, input, { document, pageId, capabilities, selection });
+  const outcome = await resolveAgentOpCommand(op, input, { document, pageId, capabilities, selection, client });
+  if (outcome.comments) {
+    stopIfAborted(signal);
+    const now = current();
+    if (now.readOnly || !now.commentChange) throw new Error(READ_ONLY_REFUSAL);
+    now.commentChange(outcome.comments);
+    return { output: outcome.output, command: null };
+  }
   if (!outcome.command) return { output: outcome.output, command: null };
   stopIfAborted(signal);
   let now = current();

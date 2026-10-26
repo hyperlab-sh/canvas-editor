@@ -259,6 +259,43 @@ List pages — mirrors **Page list** in the document bar; read-only.
 
 Takes no arguments.
 
+### `list_comments`
+
+List comments — mirrors **Read comment threads** in a canvas gesture; read-only.
+
+| Argument | Type |
+| --- | --- |
+| `pageId` | string *(optional)* |
+| `includeResolved` | boolean *(default `false`)* |
+
+### `reply_comment`
+
+Reply to a comment — mirrors **Reply in a comment thread** in a canvas gesture; writes a comment thread (no undo step).
+
+| Argument | Type |
+| --- | --- |
+| `threadId` | string |
+| `body` | string |
+
+### `resolve_comment`
+
+Resolve a comment — mirrors **Resolve / reopen a comment thread** in a canvas gesture; writes a comment thread (no undo step).
+
+| Argument | Type |
+| --- | --- |
+| `threadId` | string |
+| `resolved` | boolean *(default `true`)* |
+
+### `add_comment`
+
+Start a comment — mirrors **Comment tool: start a thread** in a canvas gesture; writes a comment thread (no undo step).
+
+| Argument | Type |
+| --- | --- |
+| `nodeId` | string *(optional)* |
+| `point` | object: x (number), y (number) *(optional)* |
+| `body` | string |
+
 ## What it does not do
 
 - **Local by default.** This server runs on your machine over stdio and calls no outside service. The hosted endpoint for chat apps (`https://mcp.openflowkit.com/mcp`) is separate, draws cards in the chat only and stores nothing.

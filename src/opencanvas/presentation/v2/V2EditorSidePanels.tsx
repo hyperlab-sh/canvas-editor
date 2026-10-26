@@ -84,6 +84,7 @@ export function V2EditorSidePanels(p: SidePanelsProps): React.JSX.Element {
         port={preferences.bridgePort} token={preferences.bridgeToken}
         onPortChange={(bridgePort) => updatePreferences({ bridgePort })}
         onTokenChange={(bridgeToken) => updatePreferences({ bridgeToken })}
+        liveComments={preferences.liveComments} onLiveComments={(liveComments) => updatePreferences({ liveComments })}
         onToggle={(connect) => updatePreferences({ agentBridgeEnabled: connect })} onClaim={agentBridge.claim}
         onClose={panels.closeWorkspace} /> : null}
       {panels.workspace === 'inspect' ? (

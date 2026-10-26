@@ -5,6 +5,7 @@ import {
 } from '@tabler/icons-react';
 import { Button, Dropdown, Icon, Panel, Segmented, type DropdownOption } from '../design-system';
 import { BRIDGE_DEFAULT_PORT } from '../../../agent/bridge/protocol';
+import { V2LiveCommentsToggle } from './V2LiveCommentsToggle';
 import { type V2AgentActivity, type V2BridgeStatus } from './useV2AgentBridge';
 
 interface V2AgentConnectModel {
@@ -22,6 +23,9 @@ interface V2AgentConnectModel {
   readonly onToggle: (connect: boolean) => void;
   /** "Use this tab": take the bridge back from another tab. */
   readonly onClaim?: () => void;
+  /** Live comments (a preference): shown with the connection, off and explained until an agent is connected. */
+  readonly liveComments?: boolean;
+  readonly onLiveComments?: (on: boolean) => void;
   /** WebMCP tools this browser's agents can call; 0 or absent when the browser has no WebMCP (nothing is shown). */
   readonly webMcpTools?: number;
   /** The last change an agent in this browser applied (its undo label). */
@@ -229,6 +233,7 @@ export function V2AgentConnect(props: V2AgentConnectProps) {
         </div></li>
       </ol>}</>}
     </>}
+    {props.onLiveComments ? <V2LiveCommentsToggle on={Boolean(props.liveComments)} available={connected} onChange={props.onLiveComments} /> : null}
     {props.webMcpTools ? <>
       <p className="ofk-connection-activity" data-testid="webmcp-status"><span>WebMCP (experimental): agents in this browser can use {props.webMcpTools} tools.</span></p>
       {props.webMcpActivity ? <p className="ofk-connection-activity" role="status"><span>Browser agent: {props.webMcpActivity}</span>

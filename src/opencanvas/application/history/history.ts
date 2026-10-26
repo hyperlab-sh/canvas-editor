@@ -1,9 +1,16 @@
-import { applyDocumentCommand } from '../../domain/commands/execute';
+import { carryComments } from '../../domain/comments/comments';
+import { applyDocumentCommand as applyCommand } from '../../domain/commands/execute';
 import type { DocumentCommand } from '../../domain/commands/types';
 import type { SceneDocumentV1 } from '../../domain/document/types';
 import type { DocumentHistoryEntry, DocumentHistoryState } from './types';
 
 const DEFAULT_HISTORY_LIMIT = 100;
+
+/** A history step changes shapes only: the comments of the document it starts from stay (see carryComments). */
+function applyDocumentCommand(present: SceneDocumentV1, command: DocumentCommand) {
+  const applied = applyCommand(present, command);
+  return { ...applied, document: carryComments(applied.document, present) };
+}
 
 function requireHistoryLimit(limit: number): number {
   if (!Number.isInteger(limit) || limit < 1) {

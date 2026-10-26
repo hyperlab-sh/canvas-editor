@@ -11,6 +11,13 @@ separately; its changes are listed under *For developers* in each release.
 
 ### Added
 
+- **Agent comment tools and live comments.** Agents can read the comment threads on the canvas (`list_comments`), reply
+  (`reply_comment`), resolve (`resolve_comment`) and start threads (`add_comment`), live or on a file, signed with the
+  agent's name; none of it is an undo step or part of the diagram text. `get_document` and `list_pages` report
+  `openThreads`. With **Live comments** on in the editor, each message you write is pushed into the running Claude Code
+  session as a channel event (`POST /event` on the bridge; start Claude Code with
+  `--dangerously-load-development-channels plugin:openflowkit@openflowkit`). The MCP server now declares the
+  `claude/channel` capability; nothing changes for clients that ignore it.
 - **Private repos in the browser.** On the "not found, or it is private" screen, **Private repo? Use a GitHub token**
   takes a fine-grained token with Contents read-only access; the files are then read through the GitHub API. The
   token stays in this tab.

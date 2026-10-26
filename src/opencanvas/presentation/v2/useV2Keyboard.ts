@@ -206,6 +206,8 @@ export function useV2Keyboard(options: V2KeyboardOptions) {
       opts.onToolChange('select');
     } else if (!command && !event.shiftKey && !event.altKey && key === 'h') {
       opts.onToolChange('hand');
+    } else if (!command && !event.shiftKey && !event.altKey && key === 'c') {
+      opts.onToolChange('comment');
     } else if (!command && !event.shiftKey && !event.altKey && key === 'r') {
       opts.onToolChange('rectangle');
     } else if (!command && !event.shiftKey && !event.altKey && key === 'o') {

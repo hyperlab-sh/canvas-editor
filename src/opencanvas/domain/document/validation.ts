@@ -6,12 +6,15 @@ import { isJsonObject } from './json';
 import { validateNodeContentLayout } from '../node-layout/model';
 import { validateNodeSizingPolicy } from '../node-sizing/model';
 import {
+  COMMENT_BODY_MAX,
   SCENE_DOCUMENT_FORMAT,
   SCENE_DOCUMENT_VERSION,
   type ConnectorEndpoint,
   type ConnectorLabel,
   type ConnectorRouteIntent,
   type SceneAnchor,
+  type SceneCommentMessage,
+  type SceneCommentThread,
   type SceneConnector,
   type SceneDocumentV1,
   type SceneLayer,
@@ -157,6 +160,38 @@ function isConnector(value: unknown): value is SceneConnector {
   );
 }
 
+function isCommentMessage(value: unknown): value is SceneCommentMessage {
+  return (
+    isRecord(value) &&
+    isNonEmptyString(value.id) &&
+    isRecord(value.author) &&
+    (value.author.kind === 'human' || value.author.kind === 'agent') &&
+    isNonEmptyString(value.author.name) &&
+    isNonEmptyString(value.body) &&
+    value.body.length <= COMMENT_BODY_MAX &&
+    isNonEmptyString(value.createdAt) &&
+    (value.editedAt === undefined || isNonEmptyString(value.editedAt))
+  );
+}
+
+// A missing anchor node is not an issue: the node may have been deleted, and the pin stays at `point`.
+function isCommentThread(value: unknown): value is SceneCommentThread {
+  return (
+    isRecord(value) &&
+    isNonEmptyString(value.id) &&
+    isRecord(value.anchor) &&
+    isNullableString(value.anchor.nodeId) &&
+    (value.anchor.offset === null || isPoint2d(value.anchor.offset)) &&
+    (value.anchor.nodeId === null) === (value.anchor.offset === null) &&
+    isPoint2d(value.anchor.point) &&
+    typeof value.resolved === 'boolean' &&
+    Array.isArray(value.messages) &&
+    value.messages.length > 0 &&
+    value.messages.every(isCommentMessage) &&
+    hasUniqueIds(value.messages)
+  );
+}
+
 function hasUniqueIds(values: readonly { readonly id: string }[]): boolean {
   return new Set(values.map((value) => value.id)).size === values.length;
 }
@@ -178,7 +213,9 @@ function isPage(value: unknown): value is ScenePage {
     value.connectors.every(isConnector) &&
     hasUniqueIds(value.connectors) &&
     isJsonObject(value.metadata) &&
-    isJsonObject(value.extensions)
+    isJsonObject(value.extensions) &&
+    (value.comments === undefined ||
+      (Array.isArray(value.comments) && value.comments.every(isCommentThread) && hasUniqueIds(value.comments)))
   );
 }
 

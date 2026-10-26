@@ -203,7 +203,33 @@ it goes away, so Undo never acts on the wrong change. A client that sends no nam
 ### Undo
 
 Every change an agent makes is one undo step, like an edit of your own: ⌘Z or Ctrl+Z, or **Undo** in the panel.
-When two agents draw, each change is its own step.
+When two agents draw, each change is its own step. Comments are the exception: an agent's reply or a new comment is
+not an undo step, and undoing a drawing change never removes a comment.
+
+## Live comments
+
+By default an agent sees your comments only when it asks: tell it "check the comments" and it calls `list_comments`.
+Nothing is pushed, so nothing costs tokens until you ask. It can answer in the thread (`reply_comment`), resolve it
+(`resolve_comment`) or start one (`add_comment`). Its messages carry its name, such as "Claude Code". Comments are
+not drawing, so they never become an undo step.
+
+Live comments is opt-in. Turn it on in the editor (the **Live comments** toggle, available while an agent is
+connected) and each message you write, new thread or reply, is pushed into your running Claude Code session as it
+arrives. Claude Code shows it as a channel message, and the agent answers with `reply_comment` in the same thread.
+Start Claude Code with the channel flag:
+
+```bash
+claude --dangerously-load-development-channels plugin:openflowkit@openflowkit
+```
+
+This needs the plugin installed (see [Claude Code](#claude-code)), Claude Code 2.1.80 or newer, an interactive session
+(not `-p`), and, on Team and Enterprise plans, an organization that allows channels. Channels are a research preview;
+OpenFlowKit is not on the approved list yet, which is why the flag is needed.
+
+Only the session that owns the connection to the editor receives live comments: when several agent sessions share one
+canvas, that is the first one that started. A session started without the flag, or one that does not own the
+connection, drops the message silently and the editor shows no error. Nothing else changes: all the tools work as
+before, and agent messages are never pushed back.
 
 ## Troubleshooting
 

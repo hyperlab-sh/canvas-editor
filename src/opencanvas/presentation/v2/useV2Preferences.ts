@@ -22,7 +22,12 @@ export interface V2Preferences {
   perspectiveTags: string[];
   /** Last emoji picks, newest first (slice 6.5). */
   recentEmoji: string[];
+  /** Shown on comments you write; empty until asked once. Per browser. */
+  displayName: string;
+  /** Push each new comment of yours into the connected agent's session (needs the bridge). */
+  liveComments: boolean;
 }
+export const DISPLAY_NAME_MAX = 40;
 const KEY = 'openflowkit-v2-preferences';
 /** Pairing secret: the copied MCP config carries it, so the bridge is token-gated without typing. */
 function freshBridgeToken(): string {
@@ -33,6 +38,7 @@ const DEFAULTS: V2Preferences = {
   diagramPalette: 'pastel', autoIcons: true, bridgePort: BRIDGE_DEFAULT_PORT, bridgeToken: '', agentBridgeEnabled: false,
   perspectiveTags: [],
   recentEmoji: [],
+  displayName: '', liveComments: false,
 };
 
 export function readPreferences(): V2Preferences {
@@ -58,7 +64,9 @@ export function readPreferences(): V2Preferences {
         : [],
       recentEmoji: Array.isArray(value?.recentEmoji)
         ? value.recentEmoji.filter((glyph: unknown): glyph is string => typeof glyph === 'string').slice(0, 24)
-        : [] };
+        : [],
+      displayName: typeof value?.displayName === 'string' ? value.displayName.trim().slice(0, DISPLAY_NAME_MAX) : '',
+      liveComments: value?.liveComments === true };
     // Saved now so every tab and reload pairs with the config copied from this one; a full store keeps it for the session.
     if (!storedToken) try { localStorage.setItem(KEY, JSON.stringify({ ...value, ...preferences })); } catch { /* session only */ }
     return preferences;

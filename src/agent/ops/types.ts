@@ -94,11 +94,17 @@ export interface OpContext {
   readonly capabilities: OpCapabilities;
   /** Node and connector ids the user has selected in a live editor, on the page it shows; absent in file mode. */
   readonly selection?: { readonly pageId: string | null; readonly ids: readonly string[] };
+  /** The agent's MCP clientInfo.name, so a comment is signed by who wrote it (see agentName). */
+  readonly client?: string;
 }
 
-/** What an op hands back: at most one reversible command plus a JSON-safe output. */
+/**
+ * What an op hands back: at most one reversible command plus a JSON-safe output. A comment op returns
+ * `comments` instead: a document transform that never enters undo history (domain/comments).
+ */
 export interface OpOutcome<Output> {
   readonly command: DocumentCommand | null;
+  readonly comments?: (document: SceneDocumentV1) => SceneDocumentV1;
   readonly output: Output;
 }
 
