@@ -21,6 +21,10 @@ separately; its changes are listed under *For developers* in each release.
 - **Connect agent: paste a prompt.** Step 1 can be a prompt you paste into your agent, which then adds OpenFlowKit
   itself, or the command, config or one-click link as before.
 
+- **`get_diagram` with `diffOnly`.** An agent that already holds the text it wrote can ask for just what changed on
+  the canvas: `dslDiff`, a unified diff from the authored text to the text regenerated from the canvas, in place of the
+  whole `dsl`. Empty while the canvas matches the text.
+
 ### Changed
 
 - **A map's drawing follows the map until you edit it.** Opening boxes on the map, then **Canvas**, redraws an
