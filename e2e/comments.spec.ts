@@ -197,7 +197,8 @@ test('live comments are off without an agent, and say why', async ({ page }) => 
   await shot(page, 'comment-composer');
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Connect agent' }).click();
-  await expect(page.getByRole('switch', { name: 'Live comments' })).toBeDisabled();
+  // Only the Threads panel carries the switch; the agent panel stays compact.
+  await expect(page.getByRole('complementary', { name: 'Connect agent' }).getByRole('switch')).toHaveCount(0);
   await shot(page, 'comment-agent-panel');
   await page.getByRole('button', { name: 'Close agent connection' }).click();
   await page.getByRole('button', { name: /^Threads/ }).click();
