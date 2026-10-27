@@ -11,6 +11,17 @@ separately; its changes are listed under *For developers* in each release.
 
 ### Added
 
+- **Threads panel.** Press **C**, or choose **Threads** in the workspace rail (second in the toolbar, with the open count), to list every
+  thread of the diagram, across pages, latest activity first. It shares its place with the AI assistant. Search reads
+  every comment; **Show resolved** and **Unanswered only** filter; a card shows who started it, `#n · page`, the first
+  lines and the reply count. Clicking a card goes to its page, brings the pin into view and opens the thread. Unread is
+  kept per browser: a dot on the card and on the pin. **Copy link** puts `#3 · Page 1 · on "label" — <link>` on the
+  clipboard, and the link (`#/d/<id>?thread=<id>`) opens that thread. Read-only views can list, search and copy links.
+  Every thread now has a number (`number` in the document and in `list_threads`; `thread_number` on live-comment channel
+  events), unique across pages. `BridgeThreadEvent` now requires `threadNumber`. The **Live comments** switch moved
+  from each thread's box into the Threads panel header, with a hint beside it. Pins can be dragged, with the comment or
+  the select tool, onto a shape (the thread follows it) or empty canvas (a page pin); it is not an undo step. A click
+  away from a comment or reply box that holds text now shakes it once instead of closing it, and a second click closes.
 - **Agent thread tools and live comments.** Agents can read the threads pinned on the canvas (`list_threads`, with
   optional `threadId` and `unanswered` filters), add a comment to one (`reply_to_thread`), resolve it (`resolve_thread`)
   and start new ones (`start_thread`), live or on a file, signed with the agent's name; none of it is an undo step or

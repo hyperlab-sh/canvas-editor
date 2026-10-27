@@ -1,7 +1,7 @@
 // Threads as agent ops. They return a document transform (`threads`), never a command: threads are
 // conversation, not drawing, so they take no undo step, no camera move and no page switch (see liveOp).
 import { z } from 'zod';
-import { addComment, addThread, ThreadError, findThread, pageThreads, setThreadResolved } from '../../opencanvas/domain/threads/threads';
+import { addComment, addThread, nextThreadNumber, ThreadError, findThread, pageThreads, setThreadResolved } from '../../opencanvas/domain/threads/threads';
 import { buildNodeWorldMatrices } from '../../opencanvas/domain/scene/worldGeometry';
 import { COMMENT_BODY_MAX, type SceneCommentAuthor } from '../../opencanvas/domain/document/types';
 import { agentName } from '../agentName';
@@ -34,7 +34,7 @@ export const listThreads = defineOp({
         .map((thread) => {
           const node = thread.anchor.nodeId === null ? undefined : nodes.get(thread.anchor.nodeId);
           return {
-            id: thread.id, pageId: page.id, nodeId: thread.anchor.nodeId,
+            id: thread.id, number: thread.number, pageId: page.id, nodeId: thread.anchor.nodeId,
             ...(node ? { nodeLabel: typeof node.content.label === 'string' ? node.content.label : '' } : {}),
             point: thread.anchor.point, resolved: thread.resolved,
             comments: thread.comments.map(({ id, author: by, body: text, createdAt, editedAt }) => ({
@@ -106,7 +106,7 @@ export const startThread = defineOp({
     return {
       command: null,
       threads: (document) => addThread(document, { pageId, threadId, nodeId: nodeId ?? null, point: at, comment }),
-      output: { threadId, commentId: comment.id, pageId, nodeId: nodeId ?? null, point: at },
+      output: { threadId, number: nextThreadNumber(context.document), commentId: comment.id, pageId, nodeId: nodeId ?? null, point: at },
     };
   },
 });

@@ -3,7 +3,6 @@ import { IconArrowUp, IconCheck, IconDots, IconPencil, IconSparkles, IconTrash, 
 import type { SceneComment, SceneThread } from '../../domain/document/types';
 import { COMMENT_BODY_MAX } from '../../domain/document/types';
 import { Button, Icon, IconButton, Menu, MenuItem } from '../design-system';
-import { V2LiveCommentsToggle } from './V2LiveCommentsToggle';
 import { avatarColor, relativeTime } from './v2CommentsView';
 
 // Keys typed into a comment belong to the comment: they never reach the editor's shortcuts.
@@ -59,11 +58,10 @@ export function CommentInput(props: {
   );
 }
 
-interface Live { readonly on: boolean; readonly available: boolean; readonly onChange: (on: boolean) => void }
-
 /** A new thread's opening box, next to the ghost pin. */
 export function CommentComposer(props: {
-  readonly live: Live;
+  /** The text typed so far, for the guard that keeps a stray click from closing the box. */
+  readonly onDraft: (text: string) => void;
   readonly onSend: (body: string) => void;
   readonly onCancel: () => void;
 }): React.JSX.Element {
@@ -71,9 +69,8 @@ export function CommentComposer(props: {
   return (
     <div className="ofk-comment-card ofk-comment-composer" role="dialog" aria-label="New comment" data-comment-ui data-comment-open
       onKeyDown={keep}>
-      <CommentInput value={body} onChange={setBody} onSend={() => props.onSend(body)} onEscape={props.onCancel}
+      <CommentInput value={body} onChange={(text) => { setBody(text); props.onDraft(text); }} onSend={() => props.onSend(body)} onEscape={props.onCancel}
         placeholder="Add a comment" label="Comment" autoFocus />
-      <V2LiveCommentsToggle compact on={props.live.on} available={props.live.available} onChange={props.live.onChange} />
     </div>
   );
 }
@@ -131,7 +128,7 @@ function Message(props: {
 export function ThreadPopover(props: {
   readonly thread: SceneThread;
   readonly readOnly: boolean;
-  readonly live: Live;
+  readonly onDraft: (text: string) => void;
   readonly onClose: () => void;
   readonly onResolve: () => void;
   readonly onDeleteThread: () => void;
@@ -179,7 +176,7 @@ export function ThreadPopover(props: {
             <Menu open={menuOpen} anchorRef={menuAnchor} onClose={() => setMenuOpen(false)} label="Thread actions" placement="bottom-end">
               <MenuItem icon={<Icon icon={IconTrash} />} danger onSelect={() => setConfirming(true)}>Delete thread…</MenuItem>
             </Menu>
-            <IconButton variant="quiet" label="Resolve thread" icon={<Icon icon={IconCheck} />} onClick={props.onResolve} />
+            <IconButton variant="quiet" label={thread.resolved ? 'Reopen thread' : 'Resolve thread'} icon={<Icon icon={IconCheck} />} onClick={props.onResolve} />
           </>
         )}
         <IconButton variant="quiet" label="Close thread" icon={<Icon icon={IconX} />} onClick={props.onClose} />
@@ -195,9 +192,8 @@ export function ThreadPopover(props: {
       </ul>
       {readOnly ? null : (
         <footer>
-          <CommentInput value={reply} onChange={setReply} placeholder="Reply" label="Reply" sendLabel="Send reply"
-            onSend={() => { props.onReply(reply); setReply(''); }} onEscape={props.onClose} />
-          <V2LiveCommentsToggle compact on={props.live.on} available={props.live.available} onChange={props.live.onChange} />
+          <CommentInput value={reply} onChange={(text) => { setReply(text); props.onDraft(text); }} placeholder="Reply" label="Reply" sendLabel="Send reply"
+            onSend={() => { props.onReply(reply); setReply(''); props.onDraft(''); }} onEscape={props.onClose} />
         </footer>
       )}
     </div>

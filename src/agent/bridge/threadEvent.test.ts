@@ -3,7 +3,7 @@ import { postThreadEvent, setThreadEventSender } from './threadEvent';
 import { bridgeUrls, isBridgeThreadEvent, type BridgeThreadEvent } from './protocol';
 
 const EVENT: BridgeThreadEvent = {
-  type: 'thread', documentId: 'd', pageId: 'p', threadId: 't', commentId: 'm', nodeId: null, nodeLabel: null,
+  type: 'thread', documentId: 'd', pageId: 'p', threadId: 't', threadNumber: 1, commentId: 'm', nodeId: null, nodeLabel: null,
   kind: 'reply', author: 'Ana', body: 'hi',
 };
 
@@ -30,6 +30,8 @@ describe('isBridgeThreadEvent', () => {
     expect(isBridgeThreadEvent({ ...EVENT, nodeId: 'n', nodeLabel: 'API', kind: 'new_thread' })).toBe(true);
     expect(isBridgeThreadEvent({ ...EVENT, kind: 'edit' })).toBe(false);
     expect(isBridgeThreadEvent({ ...EVENT, body: undefined })).toBe(false);
+    expect(isBridgeThreadEvent({ ...EVENT, threadNumber: undefined })).toBe(false);
+    expect(isBridgeThreadEvent({ ...EVENT, threadNumber: 0 })).toBe(false);
     expect(isBridgeThreadEvent({ ...EVENT, nodeId: undefined })).toBe(false);
     expect(isBridgeThreadEvent(null)).toBe(false);
   });

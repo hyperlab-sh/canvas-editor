@@ -61,6 +61,8 @@ export interface BridgeThreadEvent {
   readonly documentId: string;
   readonly pageId: string;
   readonly threadId: string;
+  /** The thread's number in the document ("#3"). */
+  readonly threadNumber: number;
   readonly commentId: string;
   /** The node the thread is pinned to; null for a pin on the page. */
   readonly nodeId: string | null;
@@ -128,6 +130,7 @@ export function isBridgeThreadEvent(value: unknown): value is BridgeThreadEvent 
   const event = value as Record<string, unknown> | null;
   return !!event && event.type === 'thread'
     && ['documentId', 'pageId', 'threadId', 'commentId', 'author', 'body'].every((key) => typeof event[key] === 'string')
+    && Number.isSafeInteger(event.threadNumber) && (event.threadNumber as number) > 0
     && nullableString(event.nodeId) && nullableString(event.nodeLabel)
     && (event.kind === 'new_thread' || event.kind === 'reply');
 }

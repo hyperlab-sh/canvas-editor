@@ -60,6 +60,7 @@ import { useV2Pages } from './useV2Pages';
 import { useV2Panels } from './useV2Panels';
 import type { V2GestureApi } from './v2PointerGestures';
 import { useV2Preferences } from './useV2Preferences';
+import { useV2Threads } from './useV2Threads';
 import { useV2Proposal } from './useV2Proposal';
 import { useV2ProposalPreview } from './useV2ProposalPreview';
 import { useV2Selection } from './useV2Selection';
@@ -318,12 +319,8 @@ export function V2EditorPage({ shared }: { readonly shared?: V2SharedView } = {}
   const { workspaceFolder, playback, endFlow } = useV2ModelWorkspace({
     session, page, architecture, architectureActions, perspectiveTags: preferences.perspectiveTags, hostRef, rendererReady, camera, code, docReadOnly, mapActive: map.active, pendingPageId, setPendingPageId, setActivePageId, pushToast, focusCanvas,
   });
-  const selectedNode = selection.primaryNodeId && viewPage
-    ? viewPage.nodes.find((node) => node.id === selection.primaryNodeId)
-    : undefined;
-  const chartPanelNode = page && panels.chartId
-    ? page.nodes.find((node) => node.id === panels.chartId && node.kind === 'chart') ?? null
-    : null;
+  const selectedNode = selection.primaryNodeId && viewPage ? viewPage.nodes.find((node) => node.id === selection.primaryNodeId) : undefined;
+  const chartPanelNode = page && panels.chartId ? page.nodes.find((node) => node.id === panels.chartId && node.kind === 'chart') ?? null : null;
   const { openChart } = panels;
   const openChartData = useCallback((nodeId: string): boolean => {
     if (pageRef.current?.nodes.find((candidate) => candidate.id === nodeId)?.kind !== 'chart') return false;
@@ -365,8 +362,7 @@ export function V2EditorPage({ shared }: { readonly shared?: V2SharedView } = {}
   });
   pasteRef.current = input.handlePaste;
   const find = useV2Find({
-    page: viewPage, selectionRef, selectedConnectorIdsRef, cameraRef: camera.cameraRef,
-    applySelection, applyConnectorSelection,
+    page: viewPage, selectionRef, selectedConnectorIdsRef, cameraRef: camera.cameraRef, applySelection, applyConnectorSelection,
     glideToNodes: camera.glideToNodes, animateTo: camera.animateTo, focusCanvas,
     ...(map.findSource && repoPanel.drawn ? { source: map.findSource } : {}),
   });
@@ -382,6 +378,9 @@ export function V2EditorPage({ shared }: { readonly shared?: V2SharedView } = {}
     typing: labelEditing.editing !== null || connectorLabel.editing !== null,
     agentConnected: agents.agentBridge.status === 'connected', onDrawing: backTo !== null, setAnnouncement,
   });
+
+  const threads = useV2Threads({ session, page, setActivePageId, panels, tool, camera, rendererReady, map, lockedMapPageId: repo.lockedPageId,
+    preferences, updatePreferences, pushToast, readOnly: docReadOnly });
 
   return (
     <SystemRoot appearance={appearance} density={preferences.density}>
@@ -437,7 +436,8 @@ export function V2EditorPage({ shared }: { readonly shared?: V2SharedView } = {}
               gestureApiRef={gestureApiRef} input={input} fitAll={fitAll} />
             <V2EditorCanvas
               comments={<V2CommentsHost session={session} page={page} sectionRef={sectionRef} hostRef={hostRef} cameraRef={camera.cameraRef} tool={tool}
-                readOnly={docReadOnly} hidden={map.active} preferences={preferences} updatePreferences={updatePreferences}
+                readOnly={docReadOnly} hidden={map.active} preferences={preferences}
+                request={threads.request} onOpenThreadChange={threads.onOpenThreadChange} unread={threads.unread}
                 bridgeConnected={agents.agentBridge.status === 'connected'} />}
               agentCursor={<AgentCursor ref={agents.presence.cursorRef} name={agents.agentShown} working={agents.agentBridge.activity?.doing === 'drawing'} data-testid="v2-agent-cursor" />}
               page={page} viewPage={viewPage ?? page} hostRef={hostRef} sectionRef={sectionRef} pageRef={pageRef} selectionRef={selectionRef}
@@ -467,8 +467,8 @@ export function V2EditorPage({ shared }: { readonly shared?: V2SharedView } = {}
             <V2EditorExport exportPanel={exportPanel} session={session} page={page} map={map} selectedNodeIds={selection.nodeIds}
               selectedConnectorIds={selectedConnectorIds} shared={Boolean(shared)} onExported={() => setExported(true)} onOpenAnimation={panels.openMotion}
               pushToast={pushToast} focusCanvas={focusCanvas} />
-            <V2WorkspaceRail mode={panels.workspace} onChange={(mode) => { if (mode === 'code') toggleCode(); else panels.toggleWorkspace(mode); }}
-              onShortcuts={panels.toggleShortcuts} agentConnected={agents.agentBridge.status === 'connected'} />
+            <V2WorkspaceRail mode={panels.workspace} onChange={(mode) => { if (mode === 'code') toggleCode(); else if (mode === 'threads') threads.toggleFromRail(); else panels.toggleWorkspace(mode); }}
+              onShortcuts={panels.toggleShortcuts} agentConnected={agents.agentBridge.status === 'connected'} openThreads={threads.openCount} />
             {/* A drawing tool armed means the next click draws: the welcome steps aside instead of catching it. */}
             {page.nodes.length === 0 && page.connectors.length === 0 && !ghostPage && !docReadOnly && rendererReady && !map.active && tool === 'select'
               ? <V2CanvasWelcome onOpen={openWorkspace}
@@ -479,7 +479,7 @@ export function V2EditorPage({ shared }: { readonly shared?: V2SharedView } = {}
               camera={camera} architecture={architecture} architectureActions={architectureActions} playback={playback} endFlow={endFlow} map={map}
               repoPanel={repoPanel} repoSource={repoSource} repoLoading={repo.state.status === 'loading'} mapArrow={mapArrow} renameRequest={renameRequest}
               selectedElementId={selectedElementId} placedElementIds={placedElementIds} canvasElementIds={canvasElementIds} showOnCanvas={showOnCanvas}
-              workspaceFolder={workspaceFolder} docReadOnly={docReadOnly} pushToast={pushToast} setAnnouncement={setAnnouncement} focusCanvas={focusCanvas} />
+              workspaceFolder={workspaceFolder} docReadOnly={docReadOnly} pushToast={pushToast} setAnnouncement={setAnnouncement} focusCanvas={focusCanvas} threads={threads} />
             <V2EditorOverlays
               panels={panels} find={find} tips={tips} runTip={runTip} feedback={feedback} transient={transient} mapActive={map.active} code={code}
               session={session} page={page} viewPage={viewPage ?? page} chartPanelNode={chartPanelNode} selection={selection}

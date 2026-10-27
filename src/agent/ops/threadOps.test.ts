@@ -39,7 +39,8 @@ describe('thread ops, file mode', () => {
     expect(thread!.anchor.point.x).toBeGreaterThan(node.transform.translation.x);
     expect(thread!.comments).toHaveLength(1);
     expect(thread!.comments[0]).toMatchObject({ author: { kind: 'agent', name: 'Claude Code' }, body: 'Check this' });
-    expect(output).toMatchObject({ threadId: thread!.id, commentId: thread!.comments[0]!.id });
+    expect(thread!.number).toBe(1);
+    expect(output).toMatchObject({ threadId: thread!.id, number: 1, commentId: thread!.comments[0]!.id });
   });
 
   it('start_thread on a point pins to the page; point wins over the node corner', async () => {
@@ -81,11 +82,12 @@ describe('thread ops, file mode', () => {
     document = (await file(document, 'start_thread', { point: { x: 1, y: 1 }, body: 'two' })).document;
     const [first] = pageThreads(document.pages[0]!);
     document = (await file(document, 'resolve_thread', { threadId: first!.id })).document;
-    const open = (await file(document, 'list_threads', {})).output as { threads: { id: string; nodeLabel?: string; pageId: string }[] };
+    const open = (await file(document, 'list_threads', {})).output as { threads: { id: string; number: number; nodeLabel?: string; pageId: string }[] };
     expect(open.threads.map(({ id }) => id)).not.toContain(first!.id);
     const all = (await file(document, 'list_threads', { includeResolved: true })).output as typeof open;
     expect(all.threads).toHaveLength(2);
-    expect(all.threads.find(({ id }) => id === first!.id)).toMatchObject({ nodeLabel: node.content.label, pageId: document.pages[0]!.id });
+    expect(all.threads.find(({ id }) => id === first!.id)).toMatchObject({ number: 1, nodeLabel: node.content.label, pageId: document.pages[0]!.id });
+    expect(all.threads.map(({ number }) => number).sort()).toEqual([1, 2]);
     const gone = { ...document, pages: [{ ...document.pages[0]!, nodes: document.pages[0]!.nodes.filter(({ id }) => id !== node.id) }] };
     const afterDelete = (await file(gone, 'list_threads', { includeResolved: true })).output as typeof open;
     const orphan = afterDelete.threads.find(({ id }) => id === first!.id)!;

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BRIDGE_DEFAULT_PORT } from '../../../agent/bridge/protocol';
+import { parseReads, type ThreadReads } from './v2ThreadsView';
 
 export type V2ThemePreference = 'system' | 'light' | 'dark';
 export type V2Density = 'comfortable' | 'compact';
@@ -24,6 +25,11 @@ export interface V2Preferences {
   recentEmoji: string[];
   /** Push each new comment of yours into the connected agent's session (needs the bridge). */
   liveComments: boolean;
+  /** Threads panel filters: resolved threads are hidden, and unanswered-only is off, until turned on. */
+  threadsShowResolved: boolean;
+  threadsUnansweredOnly: boolean;
+  /** Per browser, never in the document: when each thread (`documentId:threadId`) was last read. */
+  threadReads: ThreadReads;
 }
 const KEY = 'openflowkit-v2-preferences';
 /** Pairing secret: the copied MCP config carries it, so the bridge is token-gated without typing. */
@@ -36,6 +42,7 @@ const DEFAULTS: V2Preferences = {
   perspectiveTags: [],
   recentEmoji: [],
   liveComments: false,
+  threadsShowResolved: false, threadsUnansweredOnly: false, threadReads: {},
 };
 
 export function readPreferences(): V2Preferences {
@@ -62,7 +69,10 @@ export function readPreferences(): V2Preferences {
       recentEmoji: Array.isArray(value?.recentEmoji)
         ? value.recentEmoji.filter((glyph: unknown): glyph is string => typeof glyph === 'string').slice(0, 24)
         : [],
-      liveComments: value?.liveComments === true };
+      liveComments: value?.liveComments === true,
+      threadsShowResolved: value?.threadsShowResolved === true,
+      threadsUnansweredOnly: value?.threadsUnansweredOnly === true,
+      threadReads: parseReads(value?.threadReads) };
     // Saved now so every tab and reload pairs with the config copied from this one; a full store keeps it for the session.
     if (!storedToken) try { localStorage.setItem(KEY, JSON.stringify({ ...value, ...preferences })); } catch { /* session only */ }
     return preferences;

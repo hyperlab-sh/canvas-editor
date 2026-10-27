@@ -9,7 +9,7 @@ import { createServerWithDeps, INSTRUCTIONS } from '../src/server.js';
 // the agent's session as a Claude Code channel notification.
 
 const EVENT: BridgeThreadEvent = {
-  type: 'thread', documentId: 'doc-1', pageId: 'p1', threadId: 't1', commentId: 'm1',
+  type: 'thread', documentId: 'doc-1', pageId: 'p1', threadId: 't1', threadNumber: 3, commentId: 'm1',
   nodeId: 'n1', nodeLabel: 'API', kind: 'new_thread', author: 'Ana', body: 'Why is this synchronous?',
 };
 
@@ -54,7 +54,7 @@ describe('live comment events', () => {
       method: 'notifications/claude/channel',
       params: {
         content: 'Why is this synchronous?',
-        meta: { document_id: 'doc-1', page_id: 'p1', thread_id: 't1', node_id: 'n1', node_label: 'API', kind: 'new_thread', author: 'Ana' },
+        meta: { document_id: 'doc-1', page_id: 'p1', thread_id: 't1', thread_number: '3', node_id: 'n1', node_label: 'API', kind: 'new_thread', author: 'Ana' },
       },
     });
     for (const key of Object.keys(notices[0]!.params.meta)) expect(key).toMatch(/^[A-Za-z0-9_]+$/);

@@ -62,7 +62,7 @@ export function createServerWithDeps(options: ServerOptions = {}): CreatedServer
   (bridge as Partial<LiveBridge>).onEvent?.((event) => {
     // Absent values are left out: meta is string-to-string, and an empty attribute tells the model nothing.
     const meta = {
-      document_id: event.documentId, page_id: event.pageId, thread_id: event.threadId, comment_id: event.commentId,
+      document_id: event.documentId, page_id: event.pageId, thread_id: event.threadId, thread_number: String(event.threadNumber), comment_id: event.commentId,
       ...(event.nodeId ? { node_id: event.nodeId } : {}), ...(event.nodeLabel ? { node_label: event.nodeLabel } : {}),
       kind: event.kind, author: event.author,
     };

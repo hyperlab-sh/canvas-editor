@@ -139,6 +139,13 @@ function replaceThread(
   );
 }
 
+/** The number the next thread gets: one past the highest on any page (a deleted thread's number is only reused when it was the highest). */
+export function nextThreadNumber(document: SceneDocumentV1): number {
+  let highest = 0;
+  for (const page of document.pages) for (const thread of pageThreads(page)) highest = Math.max(highest, thread.number);
+  return highest + 1;
+}
+
 export interface NewComment {
   readonly id: string;
   readonly author: SceneCommentAuthor;
@@ -161,10 +168,12 @@ export function addThread(
   }
 ): SceneDocumentV1 {
   if (findThread(document, input.threadId)) throw new ThreadError(`Thread "${input.threadId}" already exists.`);
+  const number = nextThreadNumber(document);
   return updatePageThreads(document, input.pageId, (threads, page) => [
     ...threads,
     {
       id: input.threadId,
+      number,
       anchor: createAnchor(page, input.nodeId, input.point),
       resolved: false,
       comments: [comment(input.comment)],
@@ -215,4 +224,14 @@ export function setThreadResolved(document: SceneDocumentV1, threadId: string, r
 
 export function removeThread(document: SceneDocumentV1, threadId: string): SceneDocumentV1 {
   return replaceThread(document, threadId, () => null);
+}
+
+/**
+ * Moves a thread's pin to `point` on its page: onto `nodeId` (it then follows that node) or, with null or a node
+ * the page does not have, onto the page itself. Comments, number and state stay as they are.
+ */
+export function moveThread(document: SceneDocumentV1, threadId: string, nodeId: string | null, point: Point2d): SceneDocumentV1 {
+  const { page } = requireThread(document, threadId);
+  const anchor = createAnchor(page, nodeId, point);
+  return replaceThread(document, threadId, (thread) => ({ ...thread, anchor }));
 }

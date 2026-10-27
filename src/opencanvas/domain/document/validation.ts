@@ -179,6 +179,8 @@ function isThread(value: unknown): value is SceneThread {
   return (
     isRecord(value) &&
     isNonEmptyString(value.id) &&
+    Number.isSafeInteger(value.number) &&
+    (value.number as number) > 0 &&
     isRecord(value.anchor) &&
     isNullableString(value.anchor.nodeId) &&
     (value.anchor.offset === null || isPoint2d(value.anchor.offset)) &&
@@ -321,6 +323,10 @@ export function validateSceneDocumentV1(value: unknown): DocumentValidationResul
   } else {
     if (!hasUniqueIds(value.pages))
       issues.push({ path: '$.pages', message: 'Page IDs must be unique.' });
+    const numbers = value.pages.flatMap((page) => (page.threads ?? []).map((thread) => thread.number));
+    if (new Set(numbers).size !== numbers.length) {
+      issues.push({ path: '$.pages', message: 'Thread numbers must be unique within the document.' });
+    }
     value.pages.forEach((page, index) =>
       issues.push(...collectPageReferenceIssues(page, `$.pages[${index}]`))
     );

@@ -74,6 +74,8 @@ export interface BridgeThreadEvent {
   readonly documentId: string;
   readonly pageId: string;
   readonly threadId: string;
+  /** The thread's number in the document ("#3"). */
+  readonly threadNumber: number;
   readonly commentId: string;
   readonly nodeId: string | null;
   readonly nodeLabel: string | null;

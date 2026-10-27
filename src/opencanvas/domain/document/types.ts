@@ -110,6 +110,8 @@ export interface SceneThreadAnchor {
 /** A discussion pinned on a page. Never part of undo history, the DSL or exports. */
 export interface SceneThread {
   readonly id: string;
+  /** Positive, unique within the document: the "#3" people say aloud. */
+  readonly number: number;
   readonly anchor: SceneThreadAnchor;
   readonly resolved: boolean;
   /** At least one; the first opens the thread. */

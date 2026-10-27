@@ -189,8 +189,10 @@ test('live comments are off without an agent, and say why', async ({ page }) => 
   const { centre } = await start(page);
   await page.keyboard.press('c');
   await page.mouse.click(centre.x, centre.y);
-  const toggle = page.getByTestId('v2-comment-composer').getByRole('switch', { name: 'Live comments' });
+  // The switch lives in the Threads panel, which the comment tool opened; the composer has none.
+  const toggle = page.getByTestId('v2-threads-panel').getByRole('switch', { name: 'Live comments' });
   await expect(toggle).toBeDisabled();
+  await expect(page.getByTestId('v2-comment-composer').getByRole('switch')).toHaveCount(0);
   await page.getByTestId('v2-comment-composer').getByRole('textbox', { name: 'Comment' }).fill('Needs a second look');
   await shot(page, 'comment-composer');
   await page.keyboard.press('Escape');
@@ -198,9 +200,8 @@ test('live comments are off without an agent, and say why', async ({ page }) => 
   await expect(page.getByRole('switch', { name: 'Live comments' })).toBeDisabled();
   await shot(page, 'comment-agent-panel');
   await page.getByRole('button', { name: 'Close agent connection' }).click();
-  await page.keyboard.press('c');
-  await page.mouse.click(centre.x, centre.y);
-  await expect(page.getByTestId('v2-comment-composer').locator('.ofk-comment-live')).toHaveAttribute('title', /Connect an agent/);
+  await page.getByRole('button', { name: /^Threads/ }).click();
+  await expect(page.getByTestId('v2-threads-panel').locator('.ofk-comment-live')).toHaveAttribute('title', /Connect an agent/);
 });
 
 // A fake MCP server's bridge: long-poll /next, results on /result, and the comment events of live mode on /event.
@@ -254,7 +255,9 @@ test('live comments: each new human message is posted to the agent, and the agen
 
     await page.getByTestId('v2-comment-pin').getByRole('button').click();
     const thread = page.getByTestId('v2-comment-thread');
-    await expect(thread.getByRole('switch', { name: 'Live comments' })).toBeChecked();
+    await expect(thread.getByRole('switch')).toHaveCount(0);
+    // Pressing C opened the Threads panel already; the rail button would close it.
+    await expect(page.getByTestId('v2-threads-panel').getByRole('switch', { name: 'Live comments' })).toBeChecked();
     await thread.getByRole('textbox', { name: 'Reply' }).fill('And this?');
     await thread.getByRole('textbox', { name: 'Reply' }).press('Enter');
     await expect.poll(() => fake.events.length).toBe(2);

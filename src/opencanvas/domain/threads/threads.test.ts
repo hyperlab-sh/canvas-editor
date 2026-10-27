@@ -11,6 +11,8 @@ import {
   carryThreads,
   editComment,
   findThread,
+  moveThread,
+  nextThreadNumber,
   openThreadCount,
   removeComment,
   removeThread,
@@ -104,6 +106,11 @@ describe('comment validation', () => {
     ['an offset without a node', { anchor: { nodeId: null, offset: { x: 0, y: 0 }, point: { x: 0, y: 0 } } }],
     ['a node without an offset', { anchor: { nodeId: 'a', offset: null, point: { x: 0, y: 0 } } }],
     ['a non-boolean resolved', { resolved: 'no' }],
+    ['no number', { number: undefined }],
+    ['a zero number', { number: 0 }],
+    ['a negative number', { number: -2 }],
+    ['a fractional number', { number: 1.5 }],
+    ['a string number', { number: '1' }],
   ])('rejects %s', (_name, patch) => {
     expect(validateSceneDocumentV1(threadAt(patch)).success).toBe(false);
   });
@@ -111,6 +118,37 @@ describe('comment validation', () => {
   it('rejects duplicate thread ids', () => {
     const thread = page(valid).threads![0]!;
     expect(validateSceneDocumentV1({ ...valid, pages: [{ ...page(valid), threads: [thread, thread] }] }).success).toBe(false);
+  });
+});
+
+describe('thread numbers', () => {
+  const twoPages = () => {
+    const base = createTestDocument({ nodes: [node('a')] });
+    return { ...base, pages: [page(base), { ...page(base), id: 'page-2', name: 'Page 2', nodes: [] }] } as SceneDocumentV1;
+  };
+  const start = (document: SceneDocumentV1, threadId: string, pageId = 'page-1') =>
+    addThread(document, { pageId, threadId, nodeId: null, point: { x: 0, y: 0 }, comment: { id: `${threadId}-m`, author: human, body: 'x', createdAt: at } });
+  const numbers = (document: SceneDocumentV1) => document.pages.flatMap((candidate) => (candidate.threads ?? []).map((thread) => [thread.id, thread.number]));
+
+  it('starts at 1 and counts up across pages', () => {
+    expect(nextThreadNumber(twoPages())).toBe(1);
+    const document = start(start(start(twoPages(), 'a'), 'b', 'page-2'), 'c');
+    expect(numbers(document)).toEqual([['a', 1], ['c', 3], ['b', 2]]);
+    expect(validateSceneDocumentV1(document).success).toBe(true);
+  });
+
+  it('gives max + 1 after a deletion: the highest number is reused, a gap is not', () => {
+    const three = start(start(start(twoPages(), 'a'), 'b', 'page-2'), 'c');
+    expect(numbers(start(removeThread(three, 'b'), 'd'))).toContainEqual(['d', 4]);
+    expect(numbers(start(removeThread(three, 'c'), 'd'))).toContainEqual(['d', 3]);
+    expect(nextThreadNumber(removeThread(removeThread(removeThread(three, 'a'), 'b'), 'c'))).toBe(1);
+  });
+
+  it('rejects two threads with one number, even on different pages', () => {
+    const document = start(start(twoPages(), 'a'), 'b', 'page-2');
+    const [one, two] = document.pages;
+    const clash = { ...document, pages: [one!, { ...two!, threads: [{ ...two!.threads![0]!, number: 1 }] }] };
+    expect(validateSceneDocumentV1(clash).success).toBe(false);
   });
 });
 
@@ -175,5 +213,48 @@ describe('comments and history', () => {
   it('carryThreads returns the same document when nothing changes', () => {
     const document = withThread(createTestDocument({ nodes: [a] }));
     expect(carryThreads(document, document)).toBe(document);
+  });
+});
+
+describe('moving a thread', () => {
+  const anchorOf = (document: SceneDocumentV1, id = 't1') => findThread(document, id)!.thread.anchor;
+  const base = () => createTestDocument({ nodes: [node('a', 100, 100), node('b', 500, 0), node('p', 1000, 1000), node('c', 10, 20, { parentId: 'p' })] });
+
+  it('pins a page pin onto a node, as an offset from it', () => {
+    const document = moveThread(withThread(base(), 't1', null, { x: 5, y: 5 }), 't1', 'a', { x: 130, y: 150 });
+    expect(anchorOf(document)).toEqual({ nodeId: 'a', offset: { x: 30, y: 50 }, point: { x: 130, y: 150 } });
+  });
+
+  it('turns a node pin into a page pin', () => {
+    const document = moveThread(withThread(base(), 't1', 'a', { x: 110, y: 120 }), 't1', null, { x: 900, y: 40 });
+    expect(anchorOf(document)).toEqual({ nodeId: null, offset: null, point: { x: 900, y: 40 } });
+  });
+
+  it('moves a pin from one node to another, which then carries it', () => {
+    let document = moveThread(withThread(base(), 't1', 'a', { x: 110, y: 120 }), 't1', 'b', { x: 520, y: 30 });
+    expect(anchorOf(document)).toEqual({ nodeId: 'b', offset: { x: 20, y: 30 }, point: { x: 520, y: 30 } });
+    const [pageOne] = document.pages;
+    const moved = carryThreads({ ...document, pages: [{ ...pageOne!, threads: undefined, nodes: pageOne!.nodes.map((n) => (n.id === 'b' ? node('b', 600, 0) : n)) }] }, document);
+    expect(findThread(moved, 't1')!.thread.anchor.point).toEqual({ x: 620, y: 30 });
+    document = moved;
+    expect(anchorOf(document).nodeId).toBe('b');
+  });
+
+  it('measures a nested node from its world origin', () => {
+    const document = moveThread(withThread(base(), 't1', null, { x: 0, y: 0 }), 't1', 'c', { x: 1015, y: 1030 });
+    expect(anchorOf(document)).toEqual({ nodeId: 'c', offset: { x: 5, y: 10 }, point: { x: 1015, y: 1030 } });
+  });
+
+  it('falls back to a page pin for a node that is not on the page, and keeps everything else', () => {
+    const before = addComment(withThread(base()), 't1', { id: 'm2', author: agent, body: 'Because.', createdAt: at });
+    const after = moveThread(setThreadResolved(before, 't1', true), 't1', 'missing', { x: 1, y: 2 });
+    expect(anchorOf(after)).toEqual({ nodeId: null, offset: null, point: { x: 1, y: 2 } });
+    expect(findThread(after, 't1')!.thread).toMatchObject({ number: 1, resolved: true });
+    expect(findThread(after, 't1')!.thread.comments).toHaveLength(2);
+    expect(validateSceneDocumentV1(after).success).toBe(true);
+  });
+
+  it('refuses an unknown thread', () => {
+    expect(() => moveThread(base(), 'nope', null, { x: 0, y: 0 })).toThrow(ThreadError);
   });
 });

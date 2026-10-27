@@ -1,5 +1,8 @@
 // Pure helpers for the comment overlays: how a message's age reads, and the avatar a name gets.
 
+/** Every human comment is written by this name until named commenters exist; the data model, the bridge event and the MCP meta already carry it. */
+export const HUMAN_AUTHOR_NAME = 'User';
+
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
