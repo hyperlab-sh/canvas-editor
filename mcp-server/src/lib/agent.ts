@@ -69,12 +69,12 @@ export interface BridgeRequest {
   readonly client?: string;
 }
 
-export interface BridgeCommentEvent {
-  readonly type: 'comment';
+export interface BridgeThreadEvent {
+  readonly type: 'thread';
   readonly documentId: string;
   readonly pageId: string;
   readonly threadId: string;
-  readonly messageId: string;
+  readonly commentId: string;
   readonly nodeId: string | null;
   readonly nodeLabel: string | null;
   readonly kind: 'new_thread' | 'reply';
@@ -362,7 +362,7 @@ interface AgentBundle {
   isAllowedBridgeOrigin(origin: string | undefined | null): boolean;
   isBridgeClientInfo(value: unknown): value is BridgeClientInfo;
   isBridgeRequest(value: unknown): value is BridgeRequest;
-  isBridgeCommentEvent(value: unknown): value is BridgeCommentEvent;
+  isBridgeThreadEvent(value: unknown): value is BridgeThreadEvent;
   readonly WIDGET_KINDS: readonly string[];
   readonly FRAME_PRESETS: readonly string[];
   readonly DSL_FAMILIES: readonly [string, ...string[]];
@@ -405,7 +405,7 @@ export const {
   compileWorkspace, architectureWorkspaceText, archModelFromJson, exportCanonicalSvg,
   collectIconArt, tablerSvg, ICON_PACK_IDS, headlessElkLayout, deterministicLayout, CAPABILITY_MANIFEST,
   BRIDGE_PROTOCOL_VERSION, BRIDGE_DEFAULT_PORT, BRIDGE_POLL_SECONDS, BRIDGE_IDLE_MS,
-  bridgeTokenHeader, bridgeUrls, isAllowedBridgeOrigin, isBridgeClientInfo, isBridgeRequest, isBridgeCommentEvent, WIDGET_KINDS, FRAME_PRESETS, DSL_FAMILIES,
+  bridgeTokenHeader, bridgeUrls, isAllowedBridgeOrigin, isBridgeClientInfo, isBridgeRequest, isBridgeThreadEvent, WIDGET_KINDS, FRAME_PRESETS, DSL_FAMILIES,
   STARTER_TEMPLATES, findStarterTemplate,
   discoverArchitecture, capUnits, discoveryToDsl, driftReport, modelFromNode, modelFromDocument, readArchModel,
   discoverySummary, acceptsArchitectureFile, slugDiscoveryId,

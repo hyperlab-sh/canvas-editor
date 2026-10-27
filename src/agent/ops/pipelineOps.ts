@@ -1,7 +1,7 @@
 // Pipeline ops: files and the camera. These never touch the document, so they
 // carry no command — they hand back artefacts or move the viewport.
 import { z } from 'zod';
-import { openThreadCount } from '../../opencanvas/domain/comments/comments';
+import { openThreadCount } from '../../opencanvas/domain/threads/threads';
 import { descendantIds } from '../../opencanvas/domain/scene/queries';
 import { defineOp, requireFrame, requirePage, type ExportedFile } from './types';
 
@@ -98,7 +98,7 @@ export const fitView = defineOp({
 export const getDocument = defineOp({
   name: 'get_document',
   title: 'Read the page',
-  description: 'Nodes and connectors of one page, with ids, labels and geometry, plus `openThreads` (unresolved comment threads; list_comments reads them) and `selection`: the ids the user has '
+  description: 'Nodes and connectors of one page, with ids, labels and geometry, plus `openThreads` (unresolved threads; list_threads reads them) and `selection`: the ids the user has '
     + 'selected on that page in the live editor ("the box I selected"; empty in file mode or when nothing is selected). '
     + 'Use get_diagram for a diagram\'s DSL.',
   schema: z.object({ pageId: z.string().min(1).optional().describe('Page to read (see list_pages); defaults to the page the editor shows, or the first page in file mode.') }),
@@ -133,7 +133,7 @@ export const getDocument = defineOp({
 export const listPages = defineOp({
   name: 'list_pages',
   title: 'List pages',
-  description: 'Every page in the document with its shape counts, diagram kind and open comment threads.',
+  description: 'Every page in the document with its shape counts, diagram kind and open threads.',
   schema: z.object({}),
   async run(_input, context) {
     return {

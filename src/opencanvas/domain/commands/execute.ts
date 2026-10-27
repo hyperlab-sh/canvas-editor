@@ -132,12 +132,12 @@ function applyRemoveLayer(
   return { document: next, inverse: { ...command, kind: 'insert-layer' } };
 }
 
-// Comments are not diagram content (see domain/comments): page preconditions ignore them, since threads
+// Threads are not diagram content (see domain/threads): page preconditions ignore them, since threads
 // change outside history and a stored page copy holds the threads of its time.
 function samePageContent(a: ScenePage | undefined, b: ScenePage): boolean {
   if (!a) return false;
-  const { comments: _a, ...left } = a;
-  const { comments: _b, ...right } = b;
+  const { threads: _a, ...left } = a;
+  const { threads: _b, ...right } = b;
   return areStructurallyEqual(left, right);
 }
 

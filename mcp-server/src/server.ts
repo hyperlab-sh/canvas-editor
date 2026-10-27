@@ -35,9 +35,9 @@ export const INSTRUCTIONS = [
     + ' Or use file mode: openflow_create (or openflow_open with a .openflow.json path), draw, then openflow_save;'
     + ' a file-mode drawing also returns an openUrl the user can open to see it.',
   'Several agent sessions can share one canvas: whoami shows bridge.shared when this server draws through another one.',
-  'Comments: list_comments reads the threads people pinned on the canvas; reply_comment, resolve_comment and add_comment answer in them.',
+  'Threads: list_threads reads the conversations people pinned on the canvas (filter by threadId, or unanswered: true for the ones waiting on you); reply_to_thread adds a comment, resolve_thread closes one and start_thread opens one.',
   'If live comments are on, a new comment from the editor may arrive as <channel source="openflowkit" thread_id=… node_label=…>:'
-    + ' reply with reply_comment using that thread_id. Without that, nothing is pushed; read the threads with list_comments when asked.',
+    + ' reply with reply_to_thread using that thread_id. Without that, nothing is pushed; read the threads with list_threads when asked.',
   'Call whoami when unsure which mode you are in.',
 ].join('\n');
 
@@ -62,7 +62,7 @@ export function createServerWithDeps(options: ServerOptions = {}): CreatedServer
   (bridge as Partial<LiveBridge>).onEvent?.((event) => {
     // Absent values are left out: meta is string-to-string, and an empty attribute tells the model nothing.
     const meta = {
-      document_id: event.documentId, page_id: event.pageId, thread_id: event.threadId, message_id: event.messageId,
+      document_id: event.documentId, page_id: event.pageId, thread_id: event.threadId, comment_id: event.commentId,
       ...(event.nodeId ? { node_id: event.nodeId } : {}), ...(event.nodeLabel ? { node_label: event.nodeLabel } : {}),
       kind: event.kind, author: event.author,
     };

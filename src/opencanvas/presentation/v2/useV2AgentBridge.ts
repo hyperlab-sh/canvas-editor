@@ -15,7 +15,7 @@ import {
   BRIDGE_POLL_SECONDS, bridgeUrls, isBridgeRequest,
   type BridgeClientInfo, type BridgePageSummary, type BridgeRequest,
 } from '../../../agent/bridge/protocol';
-import { setCommentEventSender } from '../../../agent/bridge/commentEvent';
+import { setThreadEventSender } from '../../../agent/bridge/threadEvent';
 import { agentName } from '../../../agent/agentName';
 import { runLiveAgentOp, type LiveAgentSession } from '../../../agent/liveOp';
 
@@ -69,10 +69,10 @@ const LOCK = 'ofk-agent-bridge';
 const TAB_KEY = 'ofk-agent-tab';
 
 /** Comment writes: "is commenting…", and no drawing cursor. */
-const COMMENTS = new Set(['add_comment', 'reply_comment', 'resolve_comment']);
+const THREAD_OPS = new Set(['start_thread', 'reply_to_thread', 'resolve_thread']);
 
 /** Ops that only look: "is reading the canvas…" rather than "is drawing…". */
-const READS = new Set(['get_document', 'list_comments', 'get_diagram', 'list_diagrams', 'list_pages', 'screenshot', 'export', 'get_syntax',
+const READS = new Set(['get_document', 'list_threads', 'get_diagram', 'list_diagrams', 'list_pages', 'screenshot', 'export', 'get_syntax',
   'search_icons', 'find_icons_for', 'fit_view']);
 
 export { agentName };
@@ -197,7 +197,7 @@ export function useV2AgentBridge(options: V2AgentBridgeOptions): V2AgentBridge {
       const runRequest = async (request: BridgeRequest): Promise<void> => {
         const agent = agentName(request.client);
         setAgents((seen) => (seen[0] === agent ? seen : [agent, ...seen.filter((name) => name !== agent)].slice(0, 4)));
-        setActivity((last) => ({ agent, doing: READS.has(request.op) ? 'reading the canvas' : COMMENTS.has(request.op) ? 'commenting' : 'drawing', change: last?.change ?? null }));
+        setActivity((last) => ({ agent, doing: READS.has(request.op) ? 'reading the canvas' : THREAD_OPS.has(request.op) ? 'commenting' : 'drawing', change: last?.change ?? null }));
         let result: { id: string; ok: boolean; output?: unknown; error?: string };
         try {
           const { command, output } = await runLiveAgentOp(() => optionsRef.current, request.op, request.input, request.pageId, undefined, request.client);
@@ -238,11 +238,11 @@ export function useV2AgentBridge(options: V2AgentBridgeOptions): V2AgentBridge {
       try {
         await hello();
         show('connected', '');
-        // A 4xx (an older bridge has no /event) is no news to the editor; postCommentEvent reports it as not delivered.
-        setCommentEventSender(async (event) => { if (!(await post(urls.event, event)).ok) throw new Error('not delivered'); });
+        // A 4xx (an older bridge has no /event) is no news to the editor; postThreadEvent reports it as not delivered.
+        setThreadEventSender(async (event) => { if (!(await post(urls.event, event)).ok) throw new Error('not delivered'); });
         while (!hold.aborted) await poll();
       } finally {
-        setCommentEventSender(null);
+        setThreadEventSender(null);
         announceRef.current = null;
       }
     };

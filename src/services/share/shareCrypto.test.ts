@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createTestDocument, createTestNode } from '../../opencanvas/testing/builders/documentBuilder';
-import { addThread } from '../../opencanvas/domain/comments/comments';
-import { decryptDocument, encryptDocument, withoutComments, SHARE_ENVELOPE_VERSION, ShareCryptoError } from './shareCrypto';
+import { addThread } from '../../opencanvas/domain/threads/threads';
+import { decryptDocument, encryptDocument, withoutThreads, SHARE_ENVELOPE_VERSION, ShareCryptoError } from './shareCrypto';
 
 const LABEL = 'Quarterly payroll secret';
 const document = () => createTestDocument({ nodes: [createTestNode('a', { content: { label: LABEL } })] });
@@ -75,25 +75,25 @@ describe('comments in a share', () => {
     const doc = document();
     return addThread(doc, {
       pageId: doc.pages[0]!.id, threadId: 't1', nodeId: null, point: { x: 1, y: 2 },
-      message: { id: 'm1', author: { kind: 'human', name: 'Ada' }, body: 'private note', createdAt: '2026-01-01T00:00:00.000Z' },
+      comment: { id: 'm1', author: { kind: 'human', name: 'Ada' }, body: 'private note', createdAt: '2026-01-01T00:00:00.000Z' },
     });
   };
 
   it('are stripped from every page before encryption', async () => {
     const withThread = commented();
-    expect(withThread.pages[0]!.comments).toHaveLength(1);
+    expect(withThread.pages[0]!.threads).toHaveLength(1);
     const { body, key } = await encryptDocument(withThread);
     const opened = await decryptDocument(body, key);
-    expect(opened.pages.every((page) => page.comments === undefined)).toBe(true);
+    expect(opened.pages.every((page) => page.threads === undefined)).toBe(true);
     expect(JSON.stringify(opened)).not.toContain('private note');
     expect(opened.pages[0]!.nodes).toEqual(withThread.pages[0]!.nodes);
   });
 
   it('leave the source document and a comment-free one untouched', () => {
     const withThread = commented();
-    withoutComments(withThread);
-    expect(withThread.pages[0]!.comments).toHaveLength(1);
+    withoutThreads(withThread);
+    expect(withThread.pages[0]!.threads).toHaveLength(1);
     const plain = document();
-    expect(withoutComments(plain)).toBe(plain);
+    expect(withoutThreads(plain)).toBe(plain);
   });
 });

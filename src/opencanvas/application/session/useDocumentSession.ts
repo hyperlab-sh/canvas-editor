@@ -10,7 +10,7 @@ import {
   redoSessionCommand,
   StaleSessionRevisionError,
   undoSessionCommand,
-  updateSessionComments,
+  updateSessionThreads,
 } from './session';
 import type { DocumentSession } from './types';
 
@@ -71,10 +71,10 @@ export function useDocumentSession(callbacks: DocumentSessionCallbacks) {
       advance((current) => amendSessionNewNode(current, nodeId, command, current.revision)),
     [advance]
   );
-  // Comment threads change outside undo history (domain/comments). `change` throws CommentError on bad input.
-  const updateComments = useCallback(
+  // Threads change outside undo history (domain/threads). `change` throws ThreadError on bad input.
+  const updateThreads = useCallback(
     (change: (document: SceneDocumentV1) => SceneDocumentV1) =>
-      advance((current) => updateSessionComments(current, change, current.revision)),
+      advance((current) => updateSessionThreads(current, change, current.revision)),
     [advance]
   );
   const forgetHistory = useCallback(() => advance(forgetSessionHistory), [advance]);
@@ -104,7 +104,7 @@ export function useDocumentSession(callbacks: DocumentSessionCallbacks) {
     openDocument,
     commit,
     amendNewNode,
-    updateComments,
+    updateThreads,
     forgetHistory,
     undo,
     redo,

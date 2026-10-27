@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import type { CanvasCamera } from '../../domain/camera/types';
 import {
-  addReply, addThread, editMessage, pageComments, removeMessage, removeThread, setThreadResolved,
-} from '../../domain/comments/comments';
+  addComment, addThread, editComment, pageThreads, removeComment, removeThread, setThreadResolved,
+} from '../../domain/threads/threads';
 import type { Point2d } from '../../domain/geometry/types';
-import type { SceneCommentThread, SceneDocumentV1, ScenePage } from '../../domain/document/types';
-import { postCommentEvent } from '../../../agent/bridge/commentEvent';
-import type { BridgeCommentEvent } from '../../../agent/bridge/protocol';
+import type { SceneThread, SceneDocumentV1, ScenePage } from '../../domain/document/types';
+import { postThreadEvent } from '../../../agent/bridge/threadEvent';
+import type { BridgeThreadEvent } from '../../../agent/bridge/protocol';
 import type { PixiRendererHost } from '../../infrastructure/pixi/PixiRendererHost';
 import { Avatar, CommentComposer, ThreadPopover } from './V2CommentsParts';
 import { mintV2Id } from './v2Document';
@@ -97,11 +97,11 @@ interface Props {
   readonly readOnly: boolean;
   /** The canvas shows another page than the one holding the threads (Map): their coordinates mean nothing there. */
   readonly hidden: boolean;
-  readonly updateComments: (change: (document: SceneDocumentV1) => SceneDocumentV1) => void;
+  readonly updateThreads: (change: (document: SceneDocumentV1) => SceneDocumentV1) => void;
   readonly liveComments: boolean;
   readonly bridgeConnected: boolean;
   readonly onLiveComments: (on: boolean) => void;
-  readonly onLiveMessage: (event: BridgeCommentEvent) => void;
+  readonly onLiveMessage: (event: BridgeThreadEvent) => void;
 }
 
 /** Every human comment is written by this name until named commenters exist; the data model, the bridge event and the MCP meta already carry it. */
@@ -116,7 +116,7 @@ const nodeLabelOf = (page: ScenePage, nodeId: string | null): string | null => {
 
 /** Comment pins over the canvas, the composer a click with the comment tool opens, and a pin's thread. DOM, so no export ever draws them. */
 export function V2Comments(props: Props): React.JSX.Element | null {
-  const { page, hidden, readOnly, tool, sectionRef, hostRef, cameraRef, updateComments } = props;
+  const { page, hidden, readOnly, tool, sectionRef, hostRef, cameraRef, updateThreads } = props;
   const [open, setOpen] = useState<Open | null>(null);
   const [now, setNow] = useState(() => Date.now());
   // The loop reads the refs when a frame runs, never during render.
@@ -124,8 +124,8 @@ export function V2Comments(props: Props): React.JSX.Element | null {
   const [placement] = useState(() => new Placement(() => cameraRef.current, () => sectionRef.current?.clientWidth ?? Infinity));
   useEffect(() => () => placement.stop(), [placement]);
 
-  const threads = useMemo(() => pageComments(page).filter((thread) => !thread.resolved), [page]);
-  const openThread = open?.kind === 'thread' ? pageComments(page).find((thread) => thread.id === open.id) : undefined;
+  const threads = useMemo(() => pageThreads(page).filter((thread) => !thread.resolved), [page]);
+  const openThread = open?.kind === 'thread' ? pageThreads(page).find((thread) => thread.id === open.id) : undefined;
   // A thread that went away (deleted, an agent resolved it, another page) closes with it.
   useEffect(() => {
     if (open?.kind === 'thread' && (!openThread || openThread.resolved)) setOpen(null);
@@ -166,9 +166,9 @@ export function V2Comments(props: Props): React.JSX.Element | null {
 
   const documentId = props.document?.id ?? '';
   const message = useCallback((body: string) => ({ id: mintV2Id('msg'), author: HUMAN_AUTHOR, body, createdAt: new Date().toISOString() }), []);
-  const announce = (event: Omit<BridgeCommentEvent, 'type' | 'documentId' | 'pageId' | 'author'>) => {
+  const announce = (event: Omit<BridgeThreadEvent, 'type' | 'documentId' | 'pageId' | 'author'>) => {
     if (props.liveComments && props.bridgeConnected) {
-      props.onLiveMessage({ type: 'comment', documentId, pageId: page.id, author: HUMAN_AUTHOR_NAME, ...event });
+      props.onLiveMessage({ type: 'thread', documentId, pageId: page.id, author: HUMAN_AUTHOR_NAME, ...event });
     }
   };
 
@@ -179,26 +179,26 @@ export function V2Comments(props: Props): React.JSX.Element | null {
     if (open?.kind !== 'composer') return;
     const threadId = mintV2Id('thread');
     const next = message(body);
-    updateComments((doc) => addThread(doc, { pageId: page.id, threadId, nodeId: open.nodeId, point: open.world, message: next }));
-    announce({ threadId, messageId: next.id, nodeId: open.nodeId, nodeLabel: nodeLabelOf(page, open.nodeId), kind: 'new_thread', body: next.body });
+    updateThreads((doc) => addThread(doc, { pageId: page.id, threadId, nodeId: open.nodeId, point: open.world, comment: next }));
+    announce({ threadId, commentId: next.id, nodeId: open.nodeId, nodeLabel: nodeLabelOf(page, open.nodeId), kind: 'new_thread', body: next.body });
     // The comment tool stays active: the next click starts the next thread. Esc or another tool leaves it.
     setOpen(null);
   };
-  const reply = (thread: SceneCommentThread, body: string) => {
+  const reply = (thread: SceneThread, body: string) => {
     const next = message(body);
-    updateComments((doc) => addReply(doc, thread.id, next));
-    announce({ threadId: thread.id, messageId: next.id, nodeId: thread.anchor.nodeId, nodeLabel: nodeLabelOf(page, thread.anchor.nodeId), kind: 'reply', body: next.body });
+    updateThreads((doc) => addComment(doc, thread.id, next));
+    announce({ threadId: thread.id, commentId: next.id, nodeId: thread.anchor.nodeId, nodeLabel: nodeLabelOf(page, thread.anchor.nodeId), kind: 'reply', body: next.body });
   };
 
   return (
     <PlacementContext.Provider value={placement}>
       {threads.map((thread) => {
-        const lead = thread.messages[0]!;
+        const lead = thread.comments[0]!;
         const selected = open?.kind === 'thread' && open.id === thread.id;
         return (
           <Anchored key={thread.id} world={thread.anchor.point} className="ofk-comment-pinned" testId="v2-comment-pin">
             <button type="button" className="ofk-comment-pin" data-comment-ui data-selected={selected || undefined} data-kind={lead.author.kind}
-              aria-label={`Comment by ${lead.author.name}${thread.messages.length > 1 ? `, ${thread.messages.length} messages` : ''}`}
+              aria-label={`Comment by ${lead.author.name}${thread.comments.length > 1 ? `, ${thread.comments.length} messages` : ''}`}
               aria-expanded={selected}
               onClick={() => setOpen(selected ? null : { kind: 'thread', id: thread.id })}>
               <Avatar kind={lead.author.kind} name={lead.author.name} size={22} />
@@ -206,11 +206,11 @@ export function V2Comments(props: Props): React.JSX.Element | null {
             {selected && openThread ? (
               <ThreadPopover thread={openThread} readOnly={readOnly} live={live} now={now}
                 onClose={() => { setOpen(null); sectionRef.current?.focus({ preventScroll: true }); }}
-                onResolve={() => { updateComments((doc) => setThreadResolved(doc, thread.id, true)); setOpen(null); }}
-                onDeleteThread={() => { updateComments((doc) => removeThread(doc, thread.id)); setOpen(null); }}
+                onResolve={() => { updateThreads((doc) => setThreadResolved(doc, thread.id, true)); setOpen(null); }}
+                onDeleteThread={() => { updateThreads((doc) => removeThread(doc, thread.id)); setOpen(null); }}
                 onReply={(body) => reply(thread, body)}
-                onEditMessage={(messageId, body) => updateComments((doc) => editMessage(doc, thread.id, messageId, body, new Date().toISOString()))}
-                onDeleteMessage={(messageId) => updateComments((doc) => removeMessage(doc, thread.id, messageId))} />
+                onEditMessage={(commentId, body) => updateThreads((doc) => editComment(doc, thread.id, commentId, body, new Date().toISOString()))}
+                onDeleteMessage={(commentId) => updateThreads((doc) => removeComment(doc, thread.id, commentId))} />
             ) : null}
           </Anchored>
         );
@@ -225,8 +225,8 @@ export function V2Comments(props: Props): React.JSX.Element | null {
   );
 }
 
-type HostInput = Omit<Props, 'document' | 'liveComments' | 'onLiveComments' | 'onLiveMessage' | 'updateComments' | 'cameraRef'> & {
-  readonly session: { readonly document: SceneDocumentV1 | null; readonly updateComments: Props['updateComments'] };
+type HostInput = Omit<Props, 'document' | 'liveComments' | 'onLiveComments' | 'onLiveMessage' | 'updateThreads' | 'cameraRef'> & {
+  readonly session: { readonly document: SceneDocumentV1 | null; readonly updateThreads: Props['updateThreads'] };
   readonly cameraRef: RefObject<CanvasCamera>;
   readonly preferences: { readonly liveComments: boolean };
   readonly updatePreferences: (patch: { liveComments?: boolean }) => void;
@@ -235,8 +235,8 @@ type HostInput = Omit<Props, 'document' | 'liveComments' | 'onLiveComments' | 'o
 /** V2Comments wired to the editor's session, preferences and the agent bridge's comment poster. */
 export function V2CommentsHost({ session, preferences, updatePreferences, ...rest }: HostInput): React.JSX.Element | null {
   return (
-    <V2Comments {...rest} document={session.document} updateComments={session.updateComments}
+    <V2Comments {...rest} document={session.document} updateThreads={session.updateThreads}
       liveComments={preferences.liveComments} onLiveComments={(liveComments) => updatePreferences({ liveComments })}
-      onLiveMessage={(event) => { void postCommentEvent(event); }} />
+      onLiveMessage={(event) => { void postThreadEvent(event); }} />
   );
 }

@@ -99,12 +99,12 @@ export interface OpContext {
 }
 
 /**
- * What an op hands back: at most one reversible command plus a JSON-safe output. A comment op returns
- * `comments` instead: a document transform that never enters undo history (domain/comments).
+ * What an op hands back: at most one reversible command plus a JSON-safe output. A thread op returns
+ * `threads` instead: a document transform that never enters undo history (domain/threads).
  */
 export interface OpOutcome<Output> {
   readonly command: DocumentCommand | null;
-  readonly comments?: (document: SceneDocumentV1) => SceneDocumentV1;
+  readonly threads?: (document: SceneDocumentV1) => SceneDocumentV1;
   readonly output: Output;
 }
 

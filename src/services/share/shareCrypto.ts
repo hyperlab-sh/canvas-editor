@@ -43,15 +43,15 @@ async function importKey(raw: Uint8Array<ArrayBuffer>, usage: 'encrypt' | 'decry
 }
 
 /** Threads are private conversations with the agent and carry the author's name: a link never includes them. */
-export function withoutComments(document: SceneDocumentV1): SceneDocumentV1 {
-  if (!document.pages.some((page) => page.comments !== undefined)) return document;
-  return { ...document, pages: document.pages.map(({ comments: _comments, ...page }) => page) };
+export function withoutThreads(document: SceneDocumentV1): SceneDocumentV1 {
+  if (!document.pages.some((page) => page.threads !== undefined)) return document;
+  return { ...document, pages: document.pages.map(({ threads: _threads, ...page }) => page) };
 }
 
 export async function encryptDocument(document: SceneDocumentV1): Promise<{ body: Uint8Array; key: string }> {
   const raw = crypto.getRandomValues(new Uint8Array(KEY_BYTES));
   const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
-  const plaintext = new TextEncoder().encode(serializeCanonicalJson(withoutComments(document)));
+  const plaintext = new TextEncoder().encode(serializeCanonicalJson(withoutThreads(document)));
   const cipher = new Uint8Array(await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv, additionalData: new Uint8Array([SHARE_ENVELOPE_VERSION]) },
     await importKey(raw, 'encrypt'), plaintext,

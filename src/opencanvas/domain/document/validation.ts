@@ -13,8 +13,8 @@ import {
   type ConnectorLabel,
   type ConnectorRouteIntent,
   type SceneAnchor,
-  type SceneCommentMessage,
-  type SceneCommentThread,
+  type SceneComment,
+  type SceneThread,
   type SceneConnector,
   type SceneDocumentV1,
   type SceneLayer,
@@ -160,7 +160,7 @@ function isConnector(value: unknown): value is SceneConnector {
   );
 }
 
-function isCommentMessage(value: unknown): value is SceneCommentMessage {
+function isComment(value: unknown): value is SceneComment {
   return (
     isRecord(value) &&
     isNonEmptyString(value.id) &&
@@ -175,7 +175,7 @@ function isCommentMessage(value: unknown): value is SceneCommentMessage {
 }
 
 // A missing anchor node is not an issue: the node may have been deleted, and the pin stays at `point`.
-function isCommentThread(value: unknown): value is SceneCommentThread {
+function isThread(value: unknown): value is SceneThread {
   return (
     isRecord(value) &&
     isNonEmptyString(value.id) &&
@@ -185,10 +185,10 @@ function isCommentThread(value: unknown): value is SceneCommentThread {
     (value.anchor.nodeId === null) === (value.anchor.offset === null) &&
     isPoint2d(value.anchor.point) &&
     typeof value.resolved === 'boolean' &&
-    Array.isArray(value.messages) &&
-    value.messages.length > 0 &&
-    value.messages.every(isCommentMessage) &&
-    hasUniqueIds(value.messages)
+    Array.isArray(value.comments) &&
+    value.comments.length > 0 &&
+    value.comments.every(isComment) &&
+    hasUniqueIds(value.comments)
   );
 }
 
@@ -214,8 +214,8 @@ function isPage(value: unknown): value is ScenePage {
     hasUniqueIds(value.connectors) &&
     isJsonObject(value.metadata) &&
     isJsonObject(value.extensions) &&
-    (value.comments === undefined ||
-      (Array.isArray(value.comments) && value.comments.every(isCommentThread) && hasUniqueIds(value.comments)))
+    (value.threads === undefined ||
+      (Array.isArray(value.threads) && value.threads.every(isThread) && hasUniqueIds(value.threads)))
   );
 }
 

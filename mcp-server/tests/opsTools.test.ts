@@ -41,17 +41,17 @@ describe('op tools', () => {
     const target = await client();
     const made = await call(target, 'openflow_create', { name: 'Commented' });
     const documentId = made.id as string;
-    const added = await run(target, 'add_comment', { documentId, point: { x: 10, y: 20 }, body: 'Look here' });
+    const added = await run(target, 'start_thread', { documentId, point: { x: 10, y: 20 }, body: 'Look here' });
     const threadId = added.threadId as string;
-    await run(target, 'reply_comment', { documentId, threadId, body: 'And here' });
-    const listed = await run(target, 'list_comments', { documentId }) as { threads: { id: string; messages: { author: { kind: string; name: string }; body: string }[] }[] };
+    await run(target, 'reply_to_thread', { documentId, threadId, body: 'And here' });
+    const listed = await run(target, 'list_threads', { documentId }) as { threads: { id: string; comments: { author: { kind: string; name: string }; body: string }[] }[] };
     expect(listed.threads).toHaveLength(1);
-    expect(listed.threads[0]!.messages.map(({ body }) => body)).toEqual(['Look here', 'And here']);
-    expect(listed.threads[0]!.messages[0]!.author).toEqual({ kind: 'agent', name: 'test' });
+    expect(listed.threads[0]!.comments.map(({ body }) => body)).toEqual(['Look here', 'And here']);
+    expect(listed.threads[0]!.comments[0]!.author).toEqual({ kind: 'agent', name: 'test' });
     expect(await run(target, 'get_document', { documentId })).toMatchObject({ openThreads: 1 });
-    await run(target, 'resolve_comment', { documentId, threadId });
-    expect(((await run(target, 'list_comments', { documentId })) as { threads: unknown[] }).threads).toHaveLength(0);
-    await expect(call(target, 'add_comment', { documentId, body: 'nowhere' })).rejects.toThrow(/nodeId.*point/);
+    await run(target, 'resolve_thread', { documentId, threadId });
+    expect(((await run(target, 'list_threads', { documentId })) as { threads: unknown[] }).threads).toHaveLength(0);
+    await expect(call(target, 'start_thread', { documentId, body: 'nowhere' })).rejects.toThrow(/nodeId.*point/);
   });
 
   it('exposes every op in the manifest with a title and description', async () => {

@@ -53,15 +53,15 @@ export interface BridgeHealth {
 }
 
 /**
- * A message a person typed in the editor, pushed to the agent's session (`POST /event`, live comments only).
+ * A comment a person typed in the editor, pushed to the agent's session (`POST /event`, live comments only).
  * Delivered to the session that owns the bridge port; best effort, never acknowledged.
  */
-export interface BridgeCommentEvent {
-  readonly type: 'comment';
+export interface BridgeThreadEvent {
+  readonly type: 'thread';
   readonly documentId: string;
   readonly pageId: string;
   readonly threadId: string;
-  readonly messageId: string;
+  readonly commentId: string;
   /** The node the thread is pinned to; null for a pin on the page. */
   readonly nodeId: string | null;
   /** That node's label; null when unpinned, unlabelled or deleted. */
@@ -124,10 +124,10 @@ export function isBridgeRequest(value: unknown): value is BridgeRequest {
 
 const nullableString = (value: unknown): boolean => value === null || typeof value === 'string';
 
-export function isBridgeCommentEvent(value: unknown): value is BridgeCommentEvent {
+export function isBridgeThreadEvent(value: unknown): value is BridgeThreadEvent {
   const event = value as Record<string, unknown> | null;
-  return !!event && event.type === 'comment'
-    && ['documentId', 'pageId', 'threadId', 'messageId', 'author', 'body'].every((key) => typeof event[key] === 'string')
+  return !!event && event.type === 'thread'
+    && ['documentId', 'pageId', 'threadId', 'commentId', 'author', 'body'].every((key) => typeof event[key] === 'string')
     && nullableString(event.nodeId) && nullableString(event.nodeLabel)
     && (event.kind === 'new_thread' || event.kind === 'reply');
 }

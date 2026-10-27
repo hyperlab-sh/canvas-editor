@@ -1,15 +1,15 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { bridgeUrls, type BridgeCommentEvent } from '../src/lib/agent.js';
+import { bridgeUrls, type BridgeThreadEvent } from '../src/lib/agent.js';
 import { LiveBridge } from '../src/lib/bridge.js';
 import { createServerWithDeps, INSTRUCTIONS } from '../src/server.js';
 
-// Live comments: the editor posts a human message to POST /event; the process that owns the port pushes it into
+// Live comments: the editor posts a human comment to POST /event; the process that owns the port pushes it into
 // the agent's session as a Claude Code channel notification.
 
-const EVENT: BridgeCommentEvent = {
-  type: 'comment', documentId: 'doc-1', pageId: 'p1', threadId: 't1', messageId: 'm1',
+const EVENT: BridgeThreadEvent = {
+  type: 'thread', documentId: 'doc-1', pageId: 'p1', threadId: 't1', commentId: 'm1',
   nodeId: 'n1', nodeLabel: 'API', kind: 'new_thread', author: 'Ana', body: 'Why is this synchronous?',
 };
 
@@ -86,7 +86,7 @@ describe('live comment events', () => {
   it('rejects a malformed event with 400 and emits nothing', async () => {
     const { notices, url } = await start();
     expect((await post(url, { ...EVENT, kind: 'edit' })).status).toBe(400);
-    expect((await post(url, { type: 'comment' })).status).toBe(400);
+    expect((await post(url, { type: 'thread' })).status).toBe(400);
     expect((await post(url, { ...EVENT, body: 7 })).status).toBe(400);
     await settle();
     expect(notices).toHaveLength(0);

@@ -1,47 +1,47 @@
-// Comment threads pinned on a page. They are document data but not diagram content: commands, undo and the
-// DSL never touch them, so every change goes through these functions and carryComments keeps them across
+// Threads pinned on a page. They are document data but not diagram content: commands, undo and the
+// DSL never touch them, so every change goes through these functions and carryThreads keeps them across
 // a history step.
 import type { Point2d } from '../geometry/types';
 import { buildNodeWorldMatrices } from '../scene/worldGeometry';
 import {
   COMMENT_BODY_MAX,
-  type SceneCommentAnchor,
+  type SceneThreadAnchor,
   type SceneCommentAuthor,
-  type SceneCommentMessage,
-  type SceneCommentThread,
+  type SceneComment,
+  type SceneThread,
   type SceneDocumentV1,
   type ScenePage,
 } from '../document/types';
 
-export class CommentError extends Error {
+export class ThreadError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'CommentError';
+    this.name = 'ThreadError';
   }
 }
 
-const NO_THREADS: readonly SceneCommentThread[] = [];
+const NO_THREADS: readonly SceneThread[] = [];
 
-export function pageComments(page: ScenePage): readonly SceneCommentThread[] {
-  return page.comments ?? NO_THREADS;
+export function pageThreads(page: ScenePage): readonly SceneThread[] {
+  return page.threads ?? NO_THREADS;
 }
 
 export function openThreadCount(page: ScenePage): number {
-  return pageComments(page).filter((thread) => !thread.resolved).length;
+  return pageThreads(page).filter((thread) => !thread.resolved).length;
 }
 
 /** A body as stored: trimmed, non-empty and at most COMMENT_BODY_MAX characters. */
 export function commentBody(body: string): string {
   const trimmed = body.trim();
-  if (!trimmed) throw new CommentError('A comment cannot be empty.');
+  if (!trimmed) throw new ThreadError('A comment cannot be empty.');
   if (trimmed.length > COMMENT_BODY_MAX) {
-    throw new CommentError(`A comment is at most ${COMMENT_BODY_MAX} characters.`);
+    throw new ThreadError(`A comment is at most ${COMMENT_BODY_MAX} characters.`);
   }
   return trimmed;
 }
 
 /** Pins `point` to `nodeId` (when it is on the page) so the pin follows the node, or to the page. */
-export function createAnchor(page: ScenePage, nodeId: string | null, point: Point2d): SceneCommentAnchor {
+export function createAnchor(page: ScenePage, nodeId: string | null, point: Point2d): SceneThreadAnchor {
   const origin = nodeId === null ? undefined : buildNodeWorldMatrices(page).get(nodeId);
   if (!origin) return { nodeId: null, offset: null, point };
   return { nodeId, offset: { x: point.x - origin.tx, y: point.y - origin.ty }, point };
@@ -49,7 +49,7 @@ export function createAnchor(page: ScenePage, nodeId: string | null, point: Poin
 
 /** Moves each node-anchored pin to where its node is now; a pin whose node is gone keeps its last point. */
 export function refreshAnchors(page: ScenePage): ScenePage {
-  const threads = pageComments(page);
+  const threads = pageThreads(page);
   if (!threads.some((thread) => thread.anchor.nodeId !== null)) return page;
   const origins = buildNodeWorldMatrices(page);
   let changed = false;
@@ -63,23 +63,23 @@ export function refreshAnchors(page: ScenePage): ScenePage {
     changed = true;
     return { ...thread, anchor: { ...thread.anchor, point: { x, y } } };
   });
-  return changed ? { ...page, comments: next } : page;
+  return changed ? { ...page, threads: next } : page;
 }
 
 /**
- * `next` with the comments of `current`: a history step (commit, undo, redo) changes shapes, never comments,
+ * `next` with the threads of `current`: a history step (commit, undo, redo) changes shapes, never threads,
  * even when it restores a whole page snapshot. Pages only in `next` keep their own. Anchors then follow
  * their nodes. Returns `next` itself when nothing changes.
  */
-export function carryComments(next: SceneDocumentV1, current: SceneDocumentV1): SceneDocumentV1 {
+export function carryThreads(next: SceneDocumentV1, current: SceneDocumentV1): SceneDocumentV1 {
   const currentById = new Map(current.pages.map((page) => [page.id, page]));
   let changed = false;
   const pages = next.pages.map((page) => {
     const before = currentById.get(page.id);
     let result = page;
-    if (before && before.comments !== page.comments) {
-      const { comments: _dropped, ...rest } = page;
-      result = before.comments ? { ...rest, comments: before.comments } : rest;
+    if (before && before.threads !== page.threads) {
+      const { threads: _dropped, ...rest } = page;
+      result = before.threads ? { ...rest, threads: before.threads } : rest;
     }
     result = refreshAnchors(result);
     if (result !== page) changed = true;
@@ -89,18 +89,18 @@ export function carryComments(next: SceneDocumentV1, current: SceneDocumentV1): 
 }
 
 /** `document` with `update` applied to one page's threads. An empty result drops the key. */
-export function updatePageComments(
+export function updatePageThreads(
   document: SceneDocumentV1,
   pageId: string,
-  update: (threads: readonly SceneCommentThread[], page: ScenePage) => readonly SceneCommentThread[]
+  update: (threads: readonly SceneThread[], page: ScenePage) => readonly SceneThread[]
 ): SceneDocumentV1 {
   const index = document.pages.findIndex((page) => page.id === pageId);
   const page = document.pages[index];
-  if (!page) throw new CommentError(`Unknown page "${pageId}".`);
-  const threads = update(pageComments(page), page);
-  if (threads === page.comments) return document;
-  const { comments: _dropped, ...rest } = page;
-  const nextPage: ScenePage = threads.length ? { ...rest, comments: threads } : rest;
+  if (!page) throw new ThreadError(`Unknown page "${pageId}".`);
+  const threads = update(pageThreads(page), page);
+  if (threads === page.threads) return document;
+  const { threads: _dropped, ...rest } = page;
+  const nextPage: ScenePage = threads.length ? { ...rest, threads: threads } : rest;
   const pages = document.pages.slice();
   pages[index] = nextPage;
   return { ...document, pages };
@@ -110,9 +110,9 @@ export function updatePageComments(
 export function findThread(
   document: SceneDocumentV1,
   threadId: string
-): { readonly page: ScenePage; readonly thread: SceneCommentThread } | undefined {
+): { readonly page: ScenePage; readonly thread: SceneThread } | undefined {
   for (const page of document.pages) {
-    const thread = pageComments(page).find((candidate) => candidate.id === threadId);
+    const thread = pageThreads(page).find((candidate) => candidate.id === threadId);
     if (thread) return { page, thread };
   }
   return undefined;
@@ -120,17 +120,17 @@ export function findThread(
 
 function requireThread(document: SceneDocumentV1, threadId: string) {
   const found = findThread(document, threadId);
-  if (!found) throw new CommentError(`Unknown comment thread "${threadId}".`);
+  if (!found) throw new ThreadError(`Unknown comment thread "${threadId}".`);
   return found;
 }
 
 function replaceThread(
   document: SceneDocumentV1,
   threadId: string,
-  change: (thread: SceneCommentThread) => SceneCommentThread | null
+  change: (thread: SceneThread) => SceneThread | null
 ): SceneDocumentV1 {
   const { page } = requireThread(document, threadId);
-  return updatePageComments(document, page.id, (threads) =>
+  return updatePageThreads(document, page.id, (threads) =>
     threads.flatMap((thread) => {
       if (thread.id !== threadId) return [thread];
       const next = change(thread);
@@ -139,14 +139,14 @@ function replaceThread(
   );
 }
 
-export interface NewMessage {
+export interface NewComment {
   readonly id: string;
   readonly author: SceneCommentAuthor;
   readonly body: string;
   readonly createdAt: string;
 }
 
-function message(input: NewMessage): SceneCommentMessage {
+function comment(input: NewComment): SceneComment {
   return { id: input.id, author: input.author, body: commentBody(input.body), createdAt: input.createdAt };
 }
 
@@ -157,55 +157,55 @@ export function addThread(
     readonly threadId: string;
     readonly nodeId: string | null;
     readonly point: Point2d;
-    readonly message: NewMessage;
+    readonly comment: NewComment;
   }
 ): SceneDocumentV1 {
-  if (findThread(document, input.threadId)) throw new CommentError(`Thread "${input.threadId}" already exists.`);
-  return updatePageComments(document, input.pageId, (threads, page) => [
+  if (findThread(document, input.threadId)) throw new ThreadError(`Thread "${input.threadId}" already exists.`);
+  return updatePageThreads(document, input.pageId, (threads, page) => [
     ...threads,
     {
       id: input.threadId,
       anchor: createAnchor(page, input.nodeId, input.point),
       resolved: false,
-      messages: [message(input.message)],
+      comments: [comment(input.comment)],
     },
   ]);
 }
 
 /** A reply also reopens a resolved thread, as it does in Figma. */
-export function addReply(document: SceneDocumentV1, threadId: string, reply: NewMessage): SceneDocumentV1 {
+export function addComment(document: SceneDocumentV1, threadId: string, reply: NewComment): SceneDocumentV1 {
   return replaceThread(document, threadId, (thread) => ({
     ...thread,
     resolved: false,
-    messages: [...thread.messages, message(reply)],
+    comments: [...thread.comments, comment(reply)],
   }));
 }
 
-export function editMessage(
+export function editComment(
   document: SceneDocumentV1,
   threadId: string,
-  messageId: string,
+  commentId: string,
   body: string,
   editedAt: string
 ): SceneDocumentV1 {
   return replaceThread(document, threadId, (thread) => {
-    if (!thread.messages.some((candidate) => candidate.id === messageId)) {
-      throw new CommentError(`Unknown message "${messageId}".`);
+    if (!thread.comments.some((candidate) => candidate.id === commentId)) {
+      throw new ThreadError(`Unknown comment "${commentId}".`);
     }
     return {
       ...thread,
-      messages: thread.messages.map((candidate) =>
-        candidate.id === messageId ? { ...candidate, body: commentBody(body), editedAt } : candidate
+      comments: thread.comments.map((candidate) =>
+        candidate.id === commentId ? { ...candidate, body: commentBody(body), editedAt } : candidate
       ),
     };
   });
 }
 
-/** Deleting the opening message deletes the thread. */
-export function removeMessage(document: SceneDocumentV1, threadId: string, messageId: string): SceneDocumentV1 {
+/** Deleting the opening comment deletes the thread. */
+export function removeComment(document: SceneDocumentV1, threadId: string, commentId: string): SceneDocumentV1 {
   return replaceThread(document, threadId, (thread) => {
-    if (thread.messages[0]?.id === messageId) return null;
-    return { ...thread, messages: thread.messages.filter((candidate) => candidate.id !== messageId) };
+    if (thread.comments[0]?.id === commentId) return null;
+    return { ...thread, comments: thread.comments.filter((candidate) => candidate.id !== commentId) };
   });
 }
 

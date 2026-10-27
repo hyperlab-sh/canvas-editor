@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { IconArrowUp, IconCheck, IconDots, IconPencil, IconSparkles, IconTrash, IconUser, IconX } from '@tabler/icons-react';
-import type { SceneCommentMessage, SceneCommentThread } from '../../domain/document/types';
+import type { SceneComment, SceneThread } from '../../domain/document/types';
 import { COMMENT_BODY_MAX } from '../../domain/document/types';
 import { Button, Icon, IconButton, Menu, MenuItem } from '../design-system';
 import { V2LiveCommentsToggle } from './V2LiveCommentsToggle';
@@ -94,7 +94,7 @@ function MessageMenu(props: { readonly label: string; readonly onEdit: () => voi
 }
 
 function Message(props: {
-  readonly message: SceneCommentMessage;
+  readonly message: SceneComment;
   readonly canEdit: boolean;
   readonly now: number;
   readonly onEdit: (body: string) => void;
@@ -129,15 +129,15 @@ function Message(props: {
 
 /** A thread: its messages, a reply box, and resolve / delete. Read-only shows the conversation and nothing to change. */
 export function ThreadPopover(props: {
-  readonly thread: SceneCommentThread;
+  readonly thread: SceneThread;
   readonly readOnly: boolean;
   readonly live: Live;
   readonly onClose: () => void;
   readonly onResolve: () => void;
   readonly onDeleteThread: () => void;
   readonly onReply: (body: string) => void;
-  readonly onEditMessage: (messageId: string, body: string) => void;
-  readonly onDeleteMessage: (messageId: string) => void;
+  readonly onEditMessage: (commentId: string, body: string) => void;
+  readonly onDeleteMessage: (commentId: string) => void;
   readonly now: number;
 }): React.JSX.Element {
   const { thread, readOnly } = props;
@@ -147,9 +147,9 @@ export function ThreadPopover(props: {
   const [confirming, setConfirming] = useState(false);
   const menuAnchor = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
-  const count = thread.messages.length;
+  const count = thread.comments.length;
   useLayoutEffect(() => { listRef.current?.scrollTo({ top: listRef.current.scrollHeight }); }, [count]);
-  const first = thread.messages[0]?.id;
+  const first = thread.comments[0]?.id;
   let body: ReactNode = null;
   if (confirming) {
     body = (
@@ -186,7 +186,7 @@ export function ThreadPopover(props: {
       </header>
       {body}
       <ul ref={listRef} className="ofk-comment-messages">
-        {thread.messages.map((message) => (
+        {thread.comments.map((message) => (
           <Message key={message.id} message={message} now={props.now}
             canEdit={!readOnly && message.author.kind === 'human'}
             onEdit={(text) => props.onEditMessage(message.id, text)}

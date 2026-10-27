@@ -259,36 +259,38 @@ List pages — mirrors **Page list** in the document bar; read-only.
 
 Takes no arguments.
 
-### `list_comments`
+### `list_threads`
 
-List comments — mirrors **Read comment threads** in a canvas gesture; read-only.
+List threads — mirrors **Read threads** in a canvas gesture; read-only.
 
 | Argument | Type |
 | --- | --- |
 | `pageId` | string *(optional)* |
+| `threadId` | string *(optional)* |
+| `unanswered` | boolean *(default `false`)* |
 | `includeResolved` | boolean *(default `false`)* |
 
-### `reply_comment`
+### `reply_to_thread`
 
-Reply to a comment — mirrors **Reply in a comment thread** in a canvas gesture; writes a comment thread (no undo step).
+Reply to a thread — mirrors **Add a comment to a thread** in a canvas gesture; writes a comment thread (no undo step).
 
 | Argument | Type |
 | --- | --- |
 | `threadId` | string |
 | `body` | string |
 
-### `resolve_comment`
+### `resolve_thread`
 
-Resolve a comment — mirrors **Resolve / reopen a comment thread** in a canvas gesture; writes a comment thread (no undo step).
+Resolve a thread — mirrors **Resolve / reopen a thread** in a canvas gesture; writes a comment thread (no undo step).
 
 | Argument | Type |
 | --- | --- |
 | `threadId` | string |
 | `resolved` | boolean *(default `true`)* |
 
-### `add_comment`
+### `start_thread`
 
-Start a comment — mirrors **Comment tool: start a thread** in a canvas gesture; writes a comment thread (no undo step).
+Start a thread — mirrors **Comment tool: start a thread with its first comment** in a canvas gesture; writes a comment thread (no undo step).
 
 | Argument | Type |
 | --- | --- |

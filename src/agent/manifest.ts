@@ -37,10 +37,10 @@ const rows: Readonly<Record<string, Omit<CapabilityRow, 'action'>>> = {
   screenshot: { operation: 'Screenshot a diagram', surface: 'agent', equivalenceTest: null, mutates: false },
   fit_view: { operation: 'Zoom to fit / zoom to selection', surface: 'keyboard', equivalenceTest: null, mutates: false },
   get_document: { operation: 'Read document, page and selection', surface: 'canvas', equivalenceTest: null, mutates: false },
-  list_comments: { operation: 'Read comment threads', surface: 'canvas', equivalenceTest: null, mutates: false },
-  reply_comment: { operation: 'Reply in a comment thread', surface: 'canvas', equivalenceTest: 'src/agent/ops/commentOps.test.ts', mutates: true },
-  resolve_comment: { operation: 'Resolve / reopen a comment thread', surface: 'canvas', equivalenceTest: 'src/agent/ops/commentOps.test.ts', mutates: true },
-  add_comment: { operation: 'Comment tool: start a thread', surface: 'canvas', equivalenceTest: 'src/agent/ops/commentOps.test.ts', mutates: true },
+  list_threads: { operation: 'Read threads', surface: 'canvas', equivalenceTest: null, mutates: false },
+  reply_to_thread: { operation: 'Add a comment to a thread', surface: 'canvas', equivalenceTest: 'src/agent/ops/threadOps.test.ts', mutates: true },
+  resolve_thread: { operation: 'Resolve / reopen a thread', surface: 'canvas', equivalenceTest: 'src/agent/ops/threadOps.test.ts', mutates: true },
+  start_thread: { operation: 'Comment tool: start a thread with its first comment', surface: 'canvas', equivalenceTest: 'src/agent/ops/threadOps.test.ts', mutates: true },
   list_pages: { operation: 'Page list', surface: 'document-bar', equivalenceTest: null, mutates: false },
 };
 

@@ -9,10 +9,10 @@ const SHOTS = process.env.OFK_SHOTS_DIR;
 type V2Api = {
   getState(): { nodes: string[]; revision: number; saveStatus?: string };
   getNodeRect(id: string): { x: number; y: number; width: number; height: number } | null;
-  getDocument(): { pages: { comments?: { resolved: boolean; anchor: { nodeId: string | null }; messages: { body: string; author: { kind: string; name: string } }[] }[] }[] };
+  getDocument(): { pages: { threads?: { resolved: boolean; anchor: { nodeId: string | null }; comments: { body: string; author: { kind: string; name: string } }[] }[] }[] };
 };
 const api = <T,>(page: Page, run: (v2: V2Api) => T) => page.evaluate(`(${run.toString()})(window.__V2__)`) as Promise<T>;
-const threads = (page: Page) => api(page, (v2) => v2.getDocument().pages[0]!.comments ?? []);
+const threads = (page: Page) => api(page, (v2) => v2.getDocument().pages[0]!.threads ?? []);
 const shot = async (page: Page, name: string) => { if (SHOTS) await page.screenshot({ path: `${SHOTS}/${name}.png` }); };
 
 async function start(page: Page, preferences: Record<string, unknown> = {}): Promise<{ id: string; centre: { x: number; y: number } }> {
@@ -49,7 +49,7 @@ test('press C, click a node, type, Enter: a pin appears, survives a reload, and 
   await comment(page, centre, 'Why is this a queue?');
   const pin = page.getByTestId('v2-comment-pin');
   await expect(pin).toHaveCount(1);
-  expect(await threads(page)).toMatchObject([{ anchor: { nodeId: id }, resolved: false, messages: [{ body: 'Why is this a queue?', author: { kind: 'human', name: 'User' } }] }]);
+  expect(await threads(page)).toMatchObject([{ anchor: { nodeId: id }, resolved: false, comments: [{ body: 'Why is this a queue?', author: { kind: 'human', name: 'User' } }] }]);
   await expect(pin.getByRole('button', { name: 'Comment by User' })).toBeVisible();
   await expect(pin.locator('.ofk-comment-avatar svg')).toHaveCount(1);
   // The tip of the pin is where it was clicked.
@@ -105,7 +105,7 @@ test('the pin opens its thread: reply, edit, resolve hides the pin and keeps the
 
   await thread.getByRole('button', { name: 'Resolve thread' }).click();
   await expect(page.getByTestId('v2-comment-pin')).toHaveCount(0);
-  expect(await threads(page)).toMatchObject([{ resolved: true, messages: [{ body: 'First' }, { body: 'Edited' }] }]);
+  expect(await threads(page)).toMatchObject([{ resolved: true, comments: [{ body: 'First' }, { body: 'Edited' }] }]);
 });
 
 test('deleting a thread asks first, in the app and not in the browser', async ({ page }) => {
@@ -171,7 +171,7 @@ test('the comment tool stays active after posting; a second click starts a secon
   await box.fill('Second');
   await box.press('Enter');
   await expect(page.getByTestId('v2-comment-pin')).toHaveCount(2);
-  expect(await threads(page)).toMatchObject([{ messages: [{ body: 'First' }] }, { messages: [{ body: 'Second' }] }]);
+  expect(await threads(page)).toMatchObject([{ comments: [{ body: 'First' }] }, { comments: [{ body: 'Second' }] }]);
   // Clicking an existing pin opens its thread, not a new composer.
   await page.getByTestId('v2-comment-pin').first().getByRole('button').click();
   await expect(page.getByTestId('v2-comment-thread')).toBeVisible();
@@ -249,7 +249,7 @@ test('live comments: each new human message is posted to the agent, and the agen
     await expect(page.locator('[data-bridge-status="connected"]').first()).toBeVisible({ timeout: 30_000 });
     await comment(page, centre, 'Is this right?');
     await expect.poll(() => fake.events.length).toBe(1);
-    expect(fake.events[0]).toMatchObject({ type: 'comment', kind: 'new_thread', nodeId: id, author: 'User', body: 'Is this right?' });
+    expect(fake.events[0]).toMatchObject({ type: 'thread', kind: 'new_thread', nodeId: id, author: 'User', body: 'Is this right?' });
     const threadId = fake.events[0]!.threadId as string;
 
     await page.getByTestId('v2-comment-pin').getByRole('button').click();
@@ -261,7 +261,7 @@ test('live comments: each new human message is posted to the agent, and the agen
     expect(fake.events[1]).toMatchObject({ kind: 'reply', threadId, body: 'And this?' });
 
     // The agent replies (no undo step, no drawing cursor) and its message shows under its own name.
-    fake.send({ id: 'r1', op: 'reply_comment', input: { threadId, body: 'Looks right to me.' }, client: 'claude-code' });
+    fake.send({ id: 'r1', op: 'reply_to_thread', input: { threadId, body: 'Looks right to me.' }, client: 'claude-code' });
     await expect(thread.getByTestId('v2-comment-message')).toHaveCount(3);
     await expect(thread.getByTestId('v2-comment-message').nth(2)).toContainText('Claude Code');
     await expect(thread.getByTestId('v2-comment-message').nth(2)).toContainText('Looks right to me.');
@@ -271,7 +271,7 @@ test('live comments: each new human message is posted to the agent, and the agen
     await shot(page, 'comment-agent-reply');
 
     // The agent starts a thread of its own on the node.
-    fake.send({ id: 'r2', op: 'add_comment', input: { nodeId: id, body: 'Also check the queue.' }, client: 'claude-code' });
+    fake.send({ id: 'r2', op: 'start_thread', input: { nodeId: id, body: 'Also check the queue.' }, client: 'claude-code' });
     // The thread is open over the first pin: the agent's is the second.
     await expect(page.getByTestId('v2-comment-pin')).toHaveCount(2);
     await expect(page.locator('.ofk-comment-pin[data-kind="agent"]')).toHaveCount(1);

@@ -34,7 +34,7 @@ text → `update_diagram` with `{ frameId, dsl }` → `openflow_save`. Not `crea
 diagram. `update_diagram` redraws from the text, so `canvasEdits` (the user's recolours, moves, renames) are lost
 unless you merge each `carry` into that node's one `[ … ]` list; `discarded` lists any lost. To re-read it, `get_diagram`
 with `diffOnly: true` returns `dslDiff`, only the lines the canvas changed. "The box I selected" is `selection` in `get_document`.
-Pinned comments: `list_comments`, `reply_comment`, `resolve_comment`, `add_comment` (`nodeId` or `point`). Not DSL; `get_document` counts them.
+Pinned threads: `list_threads` (`unanswered: true` = waiting on you; `threadId`), `reply_to_thread`, `resolve_thread`, `start_thread` (`nodeId` or `point`). Not DSL; `get_document` counts them.
 
 ## Draw this repo's architecture
 

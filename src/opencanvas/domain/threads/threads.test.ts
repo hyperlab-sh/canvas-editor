@@ -1,21 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { commitSessionCommand, createDocumentSession, redoSessionCommand, undoSessionCommand, updateSessionComments } from '../../application/session/session';
+import { commitSessionCommand, createDocumentSession, redoSessionCommand, undoSessionCommand, updateSessionThreads } from '../../application/session/session';
 import { createTestDocument, createTestNode } from '../../testing/builders/documentBuilder';
 import type { DocumentCommand } from '../commands/types';
 import { COMMENT_BODY_MAX, type SceneDocumentV1, type SceneNode } from '../document/types';
 import { validateSceneDocumentV1 } from '../document/validation';
 import {
-  CommentError,
-  addReply,
+  ThreadError,
+  addComment,
   addThread,
-  carryComments,
-  editMessage,
+  carryThreads,
+  editComment,
   findThread,
   openThreadCount,
-  removeMessage,
+  removeComment,
   removeThread,
   setThreadResolved,
-} from './comments';
+} from './threads';
 
 const human = { kind: 'human' as const, name: 'Ada' };
 const agent = { kind: 'agent' as const, name: 'Claude Code' };
@@ -28,7 +28,7 @@ function node(id: string, x = 0, y = 0, overrides: Partial<SceneNode> = {}): Sce
 function withThread(document: SceneDocumentV1, threadId = 't1', nodeId: string | null = 'a', point = { x: 110, y: 120 }) {
   return addThread(document, {
     pageId: 'page-1', threadId, nodeId, point,
-    message: { id: `${threadId}-m1`, author: human, body: '  Why is this here?  ', createdAt: at },
+    comment: { id: `${threadId}-m1`, author: human, body: '  Why is this here?  ', createdAt: at },
   });
 }
 
@@ -41,66 +41,66 @@ const page = (document: SceneDocumentV1) => document.pages[0]!;
 describe('comment threads', () => {
   it('pins to a node relative to its world origin, or to the page', () => {
     const document = withThread(withThread(createTestDocument({ nodes: [node('a', 100, 100)] })), 't2', null, { x: 5, y: 6 });
-    const [onNode, onPage] = page(document).comments!;
+    const [onNode, onPage] = page(document).threads!;
     expect(onNode!.anchor).toEqual({ nodeId: 'a', offset: { x: 10, y: 20 }, point: { x: 110, y: 120 } });
     expect(onPage!.anchor).toEqual({ nodeId: null, offset: null, point: { x: 5, y: 6 } });
-    expect(onNode!.messages[0]!.body).toBe('Why is this here?');
+    expect(onNode!.comments[0]!.body).toBe('Why is this here?');
     expect(validateSceneDocumentV1(document).success).toBe(true);
   });
 
   it('pins to the page when the node is not on it', () => {
     const document = withThread(createTestDocument(), 't1', 'missing');
-    expect(page(document).comments![0]!.anchor.nodeId).toBeNull();
+    expect(page(document).threads![0]!.anchor.nodeId).toBeNull();
   });
 
   it('uses the world origin of a nested node', () => {
     const document = withThread(createTestDocument({ nodes: [node('p', 100, 0), node('a', 10, 0, { parentId: 'p' })] }), 't1', 'a', { x: 115, y: 0 });
-    expect(page(document).comments![0]!.anchor.offset).toEqual({ x: 5, y: 0 });
+    expect(page(document).threads![0]!.anchor.offset).toEqual({ x: 5, y: 0 });
   });
 
   it('replies, edits, resolves and deletes', () => {
     let document = withThread(createTestDocument({ nodes: [node('a')] }));
-    document = addReply(document, 't1', { id: 'm2', author: agent, body: 'It routes auth.', createdAt: at });
-    document = editMessage(document, 't1', 'm2', 'It routes auth traffic.', '2026-10-26T12:01:00.000Z');
-    expect(findThread(document, 't1')!.thread.messages[1]).toMatchObject({ body: 'It routes auth traffic.', editedAt: '2026-10-26T12:01:00.000Z' });
+    document = addComment(document, 't1', { id: 'm2', author: agent, body: 'It routes auth.', createdAt: at });
+    document = editComment(document, 't1', 'm2', 'It routes auth traffic.', '2026-10-26T12:01:00.000Z');
+    expect(findThread(document, 't1')!.thread.comments[1]).toMatchObject({ body: 'It routes auth traffic.', editedAt: '2026-10-26T12:01:00.000Z' });
     document = setThreadResolved(document, 't1', true);
     expect(openThreadCount(page(document))).toBe(0);
     // A reply reopens it.
-    document = addReply(document, 't1', { id: 'm3', author: human, body: 'Thanks', createdAt: at });
+    document = addComment(document, 't1', { id: 'm3', author: human, body: 'Thanks', createdAt: at });
     expect(findThread(document, 't1')!.thread.resolved).toBe(false);
-    document = removeMessage(document, 't1', 'm3');
-    expect(findThread(document, 't1')!.thread.messages).toHaveLength(2);
+    document = removeComment(document, 't1', 'm3');
+    expect(findThread(document, 't1')!.thread.comments).toHaveLength(2);
     // Deleting the opening message deletes the thread, and the last thread drops the key.
-    document = removeMessage(document, 't1', 't1-m1');
-    expect(page(document).comments).toBeUndefined();
+    document = removeComment(document, 't1', 't1-m1');
+    expect(page(document).threads).toBeUndefined();
     expect(validateSceneDocumentV1(document).success).toBe(true);
   });
 
   it('refuses empty, too long, unknown and duplicate input', () => {
     const document = withThread(createTestDocument({ nodes: [node('a')] }));
-    expect(() => addReply(document, 't1', { id: 'x', author: human, body: '   ', createdAt: at })).toThrow(CommentError);
-    expect(() => addReply(document, 't1', { id: 'x', author: human, body: 'x'.repeat(COMMENT_BODY_MAX + 1), createdAt: at })).toThrow(CommentError);
-    expect(() => addReply(document, 'nope', { id: 'x', author: human, body: 'hi', createdAt: at })).toThrow(CommentError);
-    expect(() => editMessage(document, 't1', 'nope', 'hi', at)).toThrow(CommentError);
-    expect(() => removeThread(document, 'nope')).toThrow(CommentError);
-    expect(() => withThread(document)).toThrow(CommentError);
-    expect(() => addThread(document, { pageId: 'nope', threadId: 't9', nodeId: null, point: { x: 0, y: 0 }, message: { id: 'm', author: human, body: 'hi', createdAt: at } })).toThrow(CommentError);
+    expect(() => addComment(document, 't1', { id: 'x', author: human, body: '   ', createdAt: at })).toThrow(ThreadError);
+    expect(() => addComment(document, 't1', { id: 'x', author: human, body: 'x'.repeat(COMMENT_BODY_MAX + 1), createdAt: at })).toThrow(ThreadError);
+    expect(() => addComment(document, 'nope', { id: 'x', author: human, body: 'hi', createdAt: at })).toThrow(ThreadError);
+    expect(() => editComment(document, 't1', 'nope', 'hi', at)).toThrow(ThreadError);
+    expect(() => removeThread(document, 'nope')).toThrow(ThreadError);
+    expect(() => withThread(document)).toThrow(ThreadError);
+    expect(() => addThread(document, { pageId: 'nope', threadId: 't9', nodeId: null, point: { x: 0, y: 0 }, comment: { id: 'm', author: human, body: 'hi', createdAt: at } })).toThrow(ThreadError);
   });
 });
 
 describe('comment validation', () => {
   const valid = withThread(createTestDocument({ nodes: [node('a')] }));
-  const threadAt = (patch: object) => ({ ...valid, pages: [{ ...page(valid), comments: [{ ...page(valid).comments![0]!, ...patch }] }] });
+  const threadAt = (patch: object) => ({ ...valid, pages: [{ ...page(valid), threads: [{ ...page(valid).threads![0]!, ...patch }] }] });
 
   it('accepts a thread whose node is gone', () => {
     expect(validateSceneDocumentV1({ ...valid, pages: [{ ...page(valid), nodes: [] }] }).success).toBe(true);
   });
 
   it.each([
-    ['no messages', { messages: [] }],
-    ['a bad author', { messages: [{ id: 'm', author: { kind: 'bot', name: 'x' }, body: 'hi', createdAt: at }] }],
-    ['an empty body', { messages: [{ id: 'm', author: human, body: ' ', createdAt: at }] }],
-    ['a body over the limit', { messages: [{ id: 'm', author: human, body: 'x'.repeat(COMMENT_BODY_MAX + 1), createdAt: at }] }],
+    ['no comments', { comments: [] }],
+    ['a bad author', { comments: [{ id: 'm', author: { kind: 'bot', name: 'x' }, body: 'hi', createdAt: at }] }],
+    ['an empty body', { comments: [{ id: 'm', author: human, body: ' ', createdAt: at }] }],
+    ['a body over the limit', { comments: [{ id: 'm', author: human, body: 'x'.repeat(COMMENT_BODY_MAX + 1), createdAt: at }] }],
     ['an offset without a node', { anchor: { nodeId: null, offset: { x: 0, y: 0 }, point: { x: 0, y: 0 } } }],
     ['a node without an offset', { anchor: { nodeId: 'a', offset: null, point: { x: 0, y: 0 } } }],
     ['a non-boolean resolved', { resolved: 'no' }],
@@ -109,8 +109,8 @@ describe('comment validation', () => {
   });
 
   it('rejects duplicate thread ids', () => {
-    const thread = page(valid).comments![0]!;
-    expect(validateSceneDocumentV1({ ...valid, pages: [{ ...page(valid), comments: [thread, thread] }] }).success).toBe(false);
+    const thread = page(valid).threads![0]!;
+    expect(validateSceneDocumentV1({ ...valid, pages: [{ ...page(valid), threads: [thread, thread] }] }).success).toBe(false);
   });
 });
 
@@ -120,60 +120,60 @@ describe('comments and history', () => {
   it('follow the node as it moves and stay where it was deleted', () => {
     let session = createDocumentSession(withThread(createTestDocument({ nodes: [a] })));
     session = commitSessionCommand(session, move(a, 300, 400), session.revision);
-    expect(page(session.document).comments![0]!.anchor.point).toEqual({ x: 310, y: 420 });
+    expect(page(session.document).threads![0]!.anchor.point).toEqual({ x: 310, y: 420 });
     const moved = page(session.document).nodes[0]!;
     session = commitSessionCommand(session, { kind: 'remove-node', id: 'rm', label: 'Delete', pageId: 'page-1', index: 0, node: moved }, session.revision);
-    expect(page(session.document).comments![0]!.anchor).toEqual({ nodeId: 'a', offset: { x: 10, y: 20 }, point: { x: 310, y: 420 } });
+    expect(page(session.document).threads![0]!.anchor).toEqual({ nodeId: 'a', offset: { x: 10, y: 20 }, point: { x: 310, y: 420 } });
     // Undo brings the node back and the pin follows it again.
     session = undoSessionCommand(session, session.revision);
     session = undoSessionCommand(session, session.revision);
-    expect(page(session.document).comments![0]!.anchor.point).toEqual({ x: 110, y: 120 });
+    expect(page(session.document).threads![0]!.anchor.point).toEqual({ x: 110, y: 120 });
   });
 
   it('a comment change is a revision with no undo step, and undo/redo keep it', () => {
     let session = createDocumentSession(createTestDocument({ nodes: [a] }));
     session = commitSessionCommand(session, move(a, 0, 0), session.revision);
     const pastBefore = session.history.past;
-    session = updateSessionComments(session, (document) => withThread(document), session.revision);
+    session = updateSessionThreads(session, (document) => withThread(document), session.revision);
     expect(session.revision).toBe(2);
     expect(session.history.past).toBe(pastBefore);
     expect(session.history.present).toBe(session.document);
     session = undoSessionCommand(session, session.revision);
     expect(page(session.document).nodes[0]!.transform.translation).toEqual({ x: 100, y: 100 });
-    expect(page(session.document).comments).toHaveLength(1);
+    expect(page(session.document).threads).toHaveLength(1);
     session = redoSessionCommand(session, session.revision);
-    expect(page(session.document).comments).toHaveLength(1);
+    expect(page(session.document).threads).toHaveLength(1);
   });
 
   it('an unchanged comment update is not a revision', () => {
     const session = createDocumentSession(createTestDocument());
-    expect(updateSessionComments(session, (document) => document, 0)).toBe(session);
+    expect(updateSessionThreads(session, (document) => document, 0)).toBe(session);
   });
 
   it('a page snapshot (set-page) neither drops nor restores comments, and its undo still applies', () => {
     let session = createDocumentSession(createTestDocument({ nodes: [a] }));
     const before = page(session.document);
     session = commitSessionCommand(session, { kind: 'set-page', id: 'rename', label: 'Rename', pageId: 'page-1', before, after: { ...before, name: 'Renamed' } }, session.revision);
-    session = updateSessionComments(session, (document) => withThread(document), session.revision);
+    session = updateSessionThreads(session, (document) => withThread(document), session.revision);
     session = undoSessionCommand(session, session.revision);
     expect(page(session.document).name).toBe('Page 1');
-    expect(page(session.document).comments).toHaveLength(1);
+    expect(page(session.document).threads).toHaveLength(1);
   });
 
   it('deleting a page takes its threads; undoing the delete brings them back', () => {
     let session = createDocumentSession(withThread(createTestDocument({ nodes: [a] })));
-    const second = { ...page(session.document), id: 'page-2', comments: undefined };
+    const second = { ...page(session.document), id: 'page-2', threads: undefined };
     session = commitSessionCommand(session, { kind: 'insert-page', id: 'add', label: 'Add', index: 1, page: second }, session.revision);
     // The threads at deletion time count, not the stale copy in the command.
-    session = updateSessionComments(session, (document) => addReply(document, 't1', { id: 'm2', author: agent, body: 'later', createdAt: at }), session.revision);
+    session = updateSessionThreads(session, (document) => addComment(document, 't1', { id: 'm2', author: agent, body: 'later', createdAt: at }), session.revision);
     session = commitSessionCommand(session, { kind: 'remove-page', id: 'rm', label: 'Delete', index: 0, page: withThread(createTestDocument({ nodes: [a] })).pages[0]! }, session.revision);
     expect(findThread(session.document, 't1')).toBeUndefined();
     session = undoSessionCommand(session, session.revision);
-    expect(findThread(session.document, 't1')!.thread.messages).toHaveLength(2);
+    expect(findThread(session.document, 't1')!.thread.comments).toHaveLength(2);
   });
 
-  it('carryComments returns the same document when nothing changes', () => {
+  it('carryThreads returns the same document when nothing changes', () => {
     const document = withThread(createTestDocument({ nodes: [a] }));
-    expect(carryComments(document, document)).toBe(document);
+    expect(carryThreads(document, document)).toBe(document);
   });
 });
