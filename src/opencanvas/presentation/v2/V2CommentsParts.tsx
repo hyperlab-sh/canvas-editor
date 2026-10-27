@@ -1,11 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { IconArrowUp, IconCheck, IconDots, IconPencil, IconSparkles, IconTrash, IconX } from '@tabler/icons-react';
+import { IconArrowUp, IconCheck, IconDots, IconPencil, IconSparkles, IconTrash, IconUser, IconX } from '@tabler/icons-react';
 import type { SceneCommentMessage, SceneCommentThread } from '../../domain/document/types';
 import { COMMENT_BODY_MAX } from '../../domain/document/types';
 import { Button, Icon, IconButton, Menu, MenuItem } from '../design-system';
-import { DISPLAY_NAME_MAX } from './useV2Preferences';
 import { V2LiveCommentsToggle } from './V2LiveCommentsToggle';
-import { avatarColor, initialOf, relativeTime } from './v2CommentsView';
+import { avatarColor, relativeTime } from './v2CommentsView';
 
 // Keys typed into a comment belong to the comment: they never reach the editor's shortcuts.
 export const keep = (event: KeyboardEvent): void => event.stopPropagation();
@@ -13,7 +12,7 @@ export const keep = (event: KeyboardEvent): void => event.stopPropagation();
 export function Avatar({ kind, name, size = 24 }: { readonly kind: 'human' | 'agent'; readonly name: string; readonly size?: number }): React.JSX.Element {
   return kind === 'agent'
     ? <span className="ofk-comment-avatar" data-kind="agent" style={{ width: size, height: size }} aria-hidden="true"><Icon icon={IconSparkles} /></span>
-    : <span className="ofk-comment-avatar" style={{ width: size, height: size, background: avatarColor(name) }} aria-hidden="true">{initialOf(name)}</span>;
+    : <span className="ofk-comment-avatar" style={{ width: size, height: size, background: avatarColor(name) }} aria-hidden="true"><Icon icon={IconUser} /></span>;
 }
 
 /** Enter sends, Shift+Enter breaks a line, Esc leaves; the box grows with its text. */
@@ -60,38 +59,11 @@ export function CommentInput(props: {
   );
 }
 
-/** Asked once, the first time someone writes: the name their comments carry. */
-export function NameGate(props: { readonly onName: (name: string) => void; readonly onEscape?: () => void }): React.JSX.Element {
-  const [name, setName] = useState('');
-  const ref = useRef<HTMLInputElement>(null);
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => ref.current?.focus({ preventScroll: true }));
-    return () => cancelAnimationFrame(frame);
-  }, []);
-  const save = () => { if (name.trim()) props.onName(name.trim()); };
-  return (
-    <div className="ofk-comment-name">
-      <label>
-        <span>Your name, shown on comments</span>
-        <input ref={ref} value={name} maxLength={DISPLAY_NAME_MAX} placeholder="Name" onChange={(event) => setName(event.target.value)}
-          onKeyDown={(event) => {
-            keep(event);
-            if (event.key === 'Escape') { event.preventDefault(); props.onEscape?.(); }
-            else if (event.key === 'Enter') { event.preventDefault(); save(); }
-          }} />
-      </label>
-      <Button variant="primary" disabled={!name.trim()} onClick={save}>Continue</Button>
-    </div>
-  );
-}
-
 interface Live { readonly on: boolean; readonly available: boolean; readonly onChange: (on: boolean) => void }
 
 /** A new thread's opening box, next to the ghost pin. */
 export function CommentComposer(props: {
-  readonly name: string;
   readonly live: Live;
-  readonly onName: (name: string) => void;
   readonly onSend: (body: string) => void;
   readonly onCancel: () => void;
 }): React.JSX.Element {
@@ -99,13 +71,9 @@ export function CommentComposer(props: {
   return (
     <div className="ofk-comment-card ofk-comment-composer" role="dialog" aria-label="New comment" data-comment-ui data-comment-open
       onKeyDown={keep}>
-      {props.name ? (
-        <>
-          <CommentInput value={body} onChange={setBody} onSend={() => props.onSend(body)} onEscape={props.onCancel}
-            placeholder="Add a comment" label="Comment" autoFocus />
-          <V2LiveCommentsToggle compact on={props.live.on} available={props.live.available} onChange={props.live.onChange} />
-        </>
-      ) : <NameGate onName={props.onName} onEscape={props.onCancel} />}
+      <CommentInput value={body} onChange={setBody} onSend={() => props.onSend(body)} onEscape={props.onCancel}
+        placeholder="Add a comment" label="Comment" autoFocus />
+      <V2LiveCommentsToggle compact on={props.live.on} available={props.live.available} onChange={props.live.onChange} />
     </div>
   );
 }
@@ -163,9 +131,7 @@ function Message(props: {
 export function ThreadPopover(props: {
   readonly thread: SceneCommentThread;
   readonly readOnly: boolean;
-  readonly name: string;
   readonly live: Live;
-  readonly onName: (name: string) => void;
   readonly onClose: () => void;
   readonly onResolve: () => void;
   readonly onDeleteThread: () => void;
@@ -229,13 +195,9 @@ export function ThreadPopover(props: {
       </ul>
       {readOnly ? null : (
         <footer>
-          {props.name ? (
-            <>
-              <CommentInput value={reply} onChange={setReply} placeholder="Reply" label="Reply" sendLabel="Send reply"
-                onSend={() => { props.onReply(reply); setReply(''); }} onEscape={props.onClose} />
-              <V2LiveCommentsToggle compact on={props.live.on} available={props.live.available} onChange={props.live.onChange} />
-            </>
-          ) : <NameGate onName={props.onName} onEscape={props.onClose} />}
+          <CommentInput value={reply} onChange={setReply} placeholder="Reply" label="Reply" sendLabel="Send reply"
+            onSend={() => { props.onReply(reply); setReply(''); }} onEscape={props.onClose} />
+          <V2LiveCommentsToggle compact on={props.live.on} available={props.live.available} onChange={props.live.onChange} />
         </footer>
       )}
     </div>

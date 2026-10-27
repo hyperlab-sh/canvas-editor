@@ -93,19 +93,21 @@ interface Props {
   readonly hostRef: RefObject<PixiRendererHost | null>;
   readonly cameraRef: RefObject<CanvasCamera>;
   readonly tool: V2Tool;
-  readonly setTool: (tool: V2Tool) => void;
   /** Pins and threads show; nothing can be added or changed. */
   readonly readOnly: boolean;
   /** The canvas shows another page than the one holding the threads (Map): their coordinates mean nothing there. */
   readonly hidden: boolean;
   readonly updateComments: (change: (document: SceneDocumentV1) => SceneDocumentV1) => void;
-  readonly displayName: string;
-  readonly onDisplayName: (name: string) => void;
   readonly liveComments: boolean;
   readonly bridgeConnected: boolean;
   readonly onLiveComments: (on: boolean) => void;
   readonly onLiveMessage: (event: BridgeCommentEvent) => void;
 }
+
+/** Every human comment is written by this name until named commenters exist; the data model, the bridge event and the MCP meta already carry it. */
+export const HUMAN_AUTHOR_NAME = 'User';
+
+const HUMAN_AUTHOR = { kind: 'human' as const, name: HUMAN_AUTHOR_NAME };
 
 const nodeLabelOf = (page: ScenePage, nodeId: string | null): string | null => {
   const label = nodeId === null ? undefined : page.nodes.find((node) => node.id === nodeId)?.content?.label;
@@ -114,7 +116,7 @@ const nodeLabelOf = (page: ScenePage, nodeId: string | null): string | null => {
 
 /** Comment pins over the canvas, the composer a click with the comment tool opens, and a pin's thread. DOM, so no export ever draws them. */
 export function V2Comments(props: Props): React.JSX.Element | null {
-  const { page, hidden, readOnly, tool, setTool, sectionRef, hostRef, cameraRef, updateComments } = props;
+  const { page, hidden, readOnly, tool, sectionRef, hostRef, cameraRef, updateComments } = props;
   const [open, setOpen] = useState<Open | null>(null);
   const [now, setNow] = useState(() => Date.now());
   // The loop reads the refs when a frame runs, never during render.
@@ -163,11 +165,10 @@ export function V2Comments(props: Props): React.JSX.Element | null {
   useEffect(() => { if (tool !== 'comment') setOpen((current) => (current?.kind === 'composer' ? null : current)); }, [tool]);
 
   const documentId = props.document?.id ?? '';
-  const author = useMemo(() => ({ kind: 'human' as const, name: props.displayName }), [props.displayName]);
-  const message = useCallback((body: string) => ({ id: mintV2Id('msg'), author, body, createdAt: new Date().toISOString() }), [author]);
+  const message = useCallback((body: string) => ({ id: mintV2Id('msg'), author: HUMAN_AUTHOR, body, createdAt: new Date().toISOString() }), []);
   const announce = (event: Omit<BridgeCommentEvent, 'type' | 'documentId' | 'pageId' | 'author'>) => {
     if (props.liveComments && props.bridgeConnected) {
-      props.onLiveMessage({ type: 'comment', documentId, pageId: page.id, author: props.displayName, ...event });
+      props.onLiveMessage({ type: 'comment', documentId, pageId: page.id, author: HUMAN_AUTHOR_NAME, ...event });
     }
   };
 
@@ -180,8 +181,8 @@ export function V2Comments(props: Props): React.JSX.Element | null {
     const next = message(body);
     updateComments((doc) => addThread(doc, { pageId: page.id, threadId, nodeId: open.nodeId, point: open.world, message: next }));
     announce({ threadId, messageId: next.id, nodeId: open.nodeId, nodeLabel: nodeLabelOf(page, open.nodeId), kind: 'new_thread', body: next.body });
+    // The comment tool stays active: the next click starts the next thread. Esc or another tool leaves it.
     setOpen(null);
-    setTool('select');
   };
   const reply = (thread: SceneCommentThread, body: string) => {
     const next = message(body);
@@ -203,8 +204,8 @@ export function V2Comments(props: Props): React.JSX.Element | null {
               <Avatar kind={lead.author.kind} name={lead.author.name} size={22} />
             </button>
             {selected && openThread ? (
-              <ThreadPopover thread={openThread} readOnly={readOnly} name={props.displayName} live={live} now={now}
-                onName={props.onDisplayName} onClose={() => { setOpen(null); sectionRef.current?.focus({ preventScroll: true }); }}
+              <ThreadPopover thread={openThread} readOnly={readOnly} live={live} now={now}
+                onClose={() => { setOpen(null); sectionRef.current?.focus({ preventScroll: true }); }}
                 onResolve={() => { updateComments((doc) => setThreadResolved(doc, thread.id, true)); setOpen(null); }}
                 onDeleteThread={() => { updateComments((doc) => removeThread(doc, thread.id)); setOpen(null); }}
                 onReply={(body) => reply(thread, body)}
@@ -216,26 +217,25 @@ export function V2Comments(props: Props): React.JSX.Element | null {
       })}
       {open?.kind === 'composer' ? (
         <Anchored world={open.world} className="ofk-comment-pinned" testId="v2-comment-composer">
-          <span className="ofk-comment-pin" data-ghost><Avatar kind="human" name={props.displayName || '?'} size={22} /></span>
-          <CommentComposer name={props.displayName} live={live} onName={props.onDisplayName} onSend={create} onCancel={() => setOpen(null)} />
+          <span className="ofk-comment-pin" data-ghost><Avatar kind="human" name={HUMAN_AUTHOR_NAME} size={22} /></span>
+          <CommentComposer live={live} onSend={create} onCancel={() => setOpen(null)} />
         </Anchored>
       ) : null}
     </PlacementContext.Provider>
   );
 }
 
-type HostInput = Omit<Props, 'document' | 'displayName' | 'onDisplayName' | 'liveComments' | 'onLiveComments' | 'onLiveMessage' | 'updateComments' | 'cameraRef'> & {
+type HostInput = Omit<Props, 'document' | 'liveComments' | 'onLiveComments' | 'onLiveMessage' | 'updateComments' | 'cameraRef'> & {
   readonly session: { readonly document: SceneDocumentV1 | null; readonly updateComments: Props['updateComments'] };
   readonly cameraRef: RefObject<CanvasCamera>;
-  readonly preferences: { readonly displayName: string; readonly liveComments: boolean };
-  readonly updatePreferences: (patch: { displayName?: string; liveComments?: boolean }) => void;
+  readonly preferences: { readonly liveComments: boolean };
+  readonly updatePreferences: (patch: { liveComments?: boolean }) => void;
 };
 
 /** V2Comments wired to the editor's session, preferences and the agent bridge's comment poster. */
 export function V2CommentsHost({ session, preferences, updatePreferences, ...rest }: HostInput): React.JSX.Element | null {
   return (
     <V2Comments {...rest} document={session.document} updateComments={session.updateComments}
-      displayName={preferences.displayName} onDisplayName={(displayName) => updatePreferences({ displayName })}
       liveComments={preferences.liveComments} onLiveComments={(liveComments) => updatePreferences({ liveComments })}
       onLiveMessage={(event) => { void postCommentEvent(event); }} />
   );

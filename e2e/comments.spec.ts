@@ -15,7 +15,7 @@ const api = <T,>(page: Page, run: (v2: V2Api) => T) => page.evaluate(`(${run.toS
 const threads = (page: Page) => api(page, (v2) => v2.getDocument().pages[0]!.comments ?? []);
 const shot = async (page: Page, name: string) => { if (SHOTS) await page.screenshot({ path: `${SHOTS}/${name}.png` }); };
 
-async function start(page: Page, preferences: Record<string, unknown> = { displayName: 'Ada' }): Promise<{ id: string; centre: { x: number; y: number } }> {
+async function start(page: Page, preferences: Record<string, unknown> = {}): Promise<{ id: string; centre: { x: number; y: number } }> {
   await page.addInitScript((value) => localStorage.setItem('openflowkit-v2-preferences', JSON.stringify({ theme: 'dark', ...value })), preferences);
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
@@ -49,7 +49,9 @@ test('press C, click a node, type, Enter: a pin appears, survives a reload, and 
   await comment(page, centre, 'Why is this a queue?');
   const pin = page.getByTestId('v2-comment-pin');
   await expect(pin).toHaveCount(1);
-  expect(await threads(page)).toMatchObject([{ anchor: { nodeId: id }, resolved: false, messages: [{ body: 'Why is this a queue?', author: { kind: 'human', name: 'Ada' } }] }]);
+  expect(await threads(page)).toMatchObject([{ anchor: { nodeId: id }, resolved: false, messages: [{ body: 'Why is this a queue?', author: { kind: 'human', name: 'User' } }] }]);
+  await expect(pin.getByRole('button', { name: 'Comment by User' })).toBeVisible();
+  await expect(pin.locator('.ofk-comment-avatar svg')).toHaveCount(1);
   // The tip of the pin is where it was clicked.
   const before = (await pin.boundingBox())!;
   expect(Math.abs(before.x - centre.x)).toBeLessThan(2);
@@ -158,24 +160,29 @@ test('Esc and clicking away cancel the composer; an empty comment cannot be sent
   expect(await threads(page)).toHaveLength(0);
 });
 
-test('the first comment asks for a name, once', async ({ page }) => {
-  const { centre } = await start(page, {});
-  await page.keyboard.press('c');
-  await page.mouse.click(centre.x, centre.y);
-  const composer = page.getByRole('dialog', { name: 'New comment' });
-  await expect(composer).toContainText('Your name, shown on comments');
-  await shot(page, 'comment-name');
-  await composer.getByRole('textbox').fill('Grace');
-  await composer.getByRole('textbox').press('Enter');
-  const box = composer.getByRole('textbox', { name: 'Comment' });
-  await box.fill('Hello');
-  await box.press('Enter');
-  expect(await threads(page)).toMatchObject([{ messages: [{ author: { kind: 'human', name: 'Grace' } }] }]);
-  // Next time it is known.
-  await page.keyboard.press('c');
+test('the comment tool stays active after posting; a second click starts a second thread; Esc leaves it', async ({ page }) => {
+  const { centre } = await start(page);
+  await comment(page, centre, 'First');
+  await expect(page.getByTestId('v2-comment-pin')).toHaveCount(1);
+  // No second press of C: the tool is still the comment tool.
   await page.mouse.click(centre.x + 200, centre.y + 150);
-  await expect(composer.getByRole('textbox', { name: 'Comment' })).toBeVisible();
-  await expect(composer).not.toContainText('Your name');
+  const box = page.getByTestId('v2-comment-composer').getByRole('textbox', { name: 'Comment' });
+  await expect(box).toBeFocused();
+  await box.fill('Second');
+  await box.press('Enter');
+  await expect(page.getByTestId('v2-comment-pin')).toHaveCount(2);
+  expect(await threads(page)).toMatchObject([{ messages: [{ body: 'First' }] }, { messages: [{ body: 'Second' }] }]);
+  // Clicking an existing pin opens its thread, not a new composer.
+  await page.getByTestId('v2-comment-pin').first().getByRole('button').click();
+  await expect(page.getByTestId('v2-comment-thread')).toBeVisible();
+  await expect(page.getByTestId('v2-comment-composer')).toHaveCount(0);
+  // Esc leaves the tool: a click on the canvas no longer starts a thread.
+  await page.getByTestId('v2-canvas').focus();
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.mouse.click(centre.x + 200, centre.y - 150);
+  await expect(page.getByTestId('v2-comment-composer')).toHaveCount(0);
+  expect(await threads(page)).toHaveLength(2);
 });
 
 test('live comments are off without an agent, and say why', async ({ page }) => {
@@ -238,11 +245,11 @@ async function bridge() {
 test('live comments: each new human message is posted to the agent, and the agent answers in the thread', async ({ page }) => {
   const fake = await bridge();
   try {
-    const { id, centre } = await start(page, { displayName: 'Ada', liveComments: true, agentBridgeEnabled: true, bridgePort: fake.port, bridgeToken: '' });
+    const { id, centre } = await start(page, { liveComments: true, agentBridgeEnabled: true, bridgePort: fake.port, bridgeToken: '' });
     await expect(page.locator('[data-bridge-status="connected"]').first()).toBeVisible({ timeout: 30_000 });
     await comment(page, centre, 'Is this right?');
     await expect.poll(() => fake.events.length).toBe(1);
-    expect(fake.events[0]).toMatchObject({ type: 'comment', kind: 'new_thread', nodeId: id, author: 'Ada', body: 'Is this right?' });
+    expect(fake.events[0]).toMatchObject({ type: 'comment', kind: 'new_thread', nodeId: id, author: 'User', body: 'Is this right?' });
     const threadId = fake.events[0]!.threadId as string;
 
     await page.getByTestId('v2-comment-pin').getByRole('button').click();

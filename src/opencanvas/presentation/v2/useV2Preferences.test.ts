@@ -33,14 +33,21 @@ describe('comment preferences', () => {
   beforeEach(() => localStorage.clear());
   const store = (value: unknown) => localStorage.setItem('openflowkit-v2-preferences', JSON.stringify(value));
 
-  it('default to no name and live comments off', () => {
-    expect(readPreferences()).toMatchObject({ displayName: '', liveComments: false });
+  it('default to live comments off', () => {
+    expect(readPreferences()).toMatchObject({ liveComments: false });
   });
 
-  it('keep a trimmed, capped name and only a literal true for live comments', () => {
-    store({ displayName: `  ${'a'.repeat(60)}  `, liveComments: true });
-    expect(readPreferences()).toMatchObject({ displayName: 'a'.repeat(40), liveComments: true });
-    store({ displayName: 7, liveComments: 'yes' });
-    expect(readPreferences()).toMatchObject({ displayName: '', liveComments: false });
+  it('keep only a literal true for live comments', () => {
+    store({ liveComments: true });
+    expect(readPreferences()).toMatchObject({ liveComments: true });
+    store({ liveComments: 'yes' });
+    expect(readPreferences()).toMatchObject({ liveComments: false });
+  });
+
+  it('ignore a displayName stored by an earlier version', () => {
+    store({ displayName: 'Ada', liveComments: true });
+    const loaded = readPreferences();
+    expect(loaded).toMatchObject({ liveComments: true });
+    expect(loaded).not.toHaveProperty('displayName');
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { avatarColor, initialOf, relativeTime } from './v2CommentsView';
+import { avatarColor, relativeTime } from './v2CommentsView';
 
 const NOW = Date.parse('2026-10-26T12:00:00.000Z');
 const ago = (ms: number) => new Date(NOW - ms).toISOString();
@@ -28,13 +28,6 @@ describe('relativeTime', () => {
 });
 
 describe('avatars', () => {
-  it('takes the first letter, uppercased, whatever the script', () => {
-    expect(initialOf('  ada')).toBe('A');
-    expect(initialOf('émile')).toBe('É');
-    expect(initialOf('😀 smile')).toBe('😀');
-    expect(initialOf('   ')).toBe('?');
-  });
-
   it('gives a name one stable colour, regardless of case and padding', () => {
     expect(avatarColor('Ada')).toBe(avatarColor(' ada '));
     expect(avatarColor('Ada')).toMatch(/^hsl\(\d{1,3} 55% 42%\)$/);

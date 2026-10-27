@@ -1496,7 +1496,7 @@
   display: flex; align-items: flex-end; gap: 6px; padding: 5px 5px 5px 12px; border-radius: 10px; background: rgb(255 255 255 / .08);
   box-shadow: inset 0 0 0 1px var(--c-line);
 }
-.ofk-comment-input textarea:focus-visible, .ofk-comment-name input:focus-visible { outline: none; }
+.ofk-comment-input textarea:focus-visible { outline: none; }
 .ofk-comment-input:focus-within { box-shadow: inset 0 0 0 2px var(--c-accent, #0d99ff); }
 .ofk-comment-input textarea {
   flex: 1; min-width: 0; margin: 0; padding: 4px 0; border: 0; outline: 0; background: transparent; color: var(--c-text); font: inherit;
@@ -1512,14 +1512,6 @@
 .ofk-comment-send svg { width: 16px; height: 16px; }
 .ofk-comment-edit { margin-top: 4px; }
 
-.ofk-comment-name { display: grid; gap: 8px; }
-.ofk-comment-name label { display: grid; gap: 4px; }
-.ofk-comment-name span { color: var(--c-muted); font-size: 12px; }
-.ofk-comment-name input {
-  box-sizing: border-box; width: 100%; padding: 7px 10px; border: 0; border-radius: 8px; outline: 0; background: rgb(255 255 255 / .08);
-  box-shadow: inset 0 0 0 1px var(--c-line); color: var(--c-text); font: inherit;
-}
-.ofk-comment-name input:focus { box-shadow: inset 0 0 0 2px var(--c-accent, #0d99ff); }
 .ofk-comment-confirm { padding: 8px 10px; border-radius: 8px; background: rgb(240 70 70 / .16); box-shadow: inset 0 0 0 1px rgb(240 70 70 / .5); }
 .ofk-comment-confirm p { margin-bottom: 8px; }
 .ofk-comment-confirm > div { display: flex; gap: 6px; }

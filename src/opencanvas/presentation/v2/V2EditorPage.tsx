@@ -437,7 +437,7 @@ export function V2EditorPage({ shared }: { readonly shared?: V2SharedView } = {}
               gestureApiRef={gestureApiRef} input={input} fitAll={fitAll} />
             <V2EditorCanvas
               comments={<V2CommentsHost session={session} page={page} sectionRef={sectionRef} hostRef={hostRef} cameraRef={camera.cameraRef} tool={tool}
-                setTool={setTool} readOnly={docReadOnly} hidden={map.active} preferences={preferences} updatePreferences={updatePreferences}
+                readOnly={docReadOnly} hidden={map.active} preferences={preferences} updatePreferences={updatePreferences}
                 bridgeConnected={agents.agentBridge.status === 'connected'} />}
               agentCursor={<AgentCursor ref={agents.presence.cursorRef} name={agents.agentShown} working={agents.agentBridge.activity?.doing === 'drawing'} data-testid="v2-agent-cursor" />}
               page={page} viewPage={viewPage ?? page} hostRef={hostRef} sectionRef={sectionRef} pageRef={pageRef} selectionRef={selectionRef}

@@ -16,12 +16,6 @@ export function relativeTime(iso: string, now: number = Date.now()): string {
   return new Date(then).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-/** The first letter of a name, uppercased; "?" for a name with none. */
-export function initialOf(name: string): string {
-  const first = [...name.trim()][0];
-  return first ? first.toUpperCase() : '?';
-}
-
 /** The same name always gets the same colour (a hue from a hash), dark enough for white text. */
 export function avatarColor(name: string): string {
   let hash = 0;
