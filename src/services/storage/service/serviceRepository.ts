@@ -99,3 +99,16 @@ export function createServiceRepository(project: string, origin: string = SERVIC
     listThumbnails: async () => new Map(),
   };
 }
+
+/** Renames a service diagram; the service rewrites the file's `name`. */
+export async function renameServiceDiagram(project: string, id: string, name: string, origin: string = SERVICE_ORIGIN): Promise<void> {
+  let response: Response;
+  try {
+    response = await fetch(`${origin}/projects/${encodeURIComponent(project)}/diagrams/${encodeURIComponent(id)}`, {
+      method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name }),
+    });
+  } catch (error) {
+    throw new V2StorageUnavailableError(`The local service is not reachable at ${origin}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  if (!response.ok) throw await failure(response, 'rename');
+}
