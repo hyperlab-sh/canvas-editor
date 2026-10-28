@@ -16,9 +16,9 @@ interface ServiceSyncInput {
     readonly replaceDocument: (document: SceneDocumentV1, label: string) => number | null;
     readonly updateThreads: (change: (document: SceneDocumentV1) => SceneDocumentV1) => number | null;
   };
-  /** Autosave takes the current copy as saved at this save number, and resumes if a conflict had stopped it. */
-  /** Edits not yet saved (waiting out the debounce, or mid-save). */
+  /** Edits that have not reached the service: waiting out the debounce, mid-save, or a save that failed or met a 409. */
   readonly unsaved: boolean;
+  /** Autosave takes the current copy as saved at this save number, and resumes if a conflict had stopped it. */
   readonly adoptSaved: (saveRevision: number) => void;
   readonly pushToast: (toast: ToastItem) => void;
 }
@@ -37,14 +37,18 @@ export function useServiceSync(input: ServiceSyncInput) {
   /** One read at a time; an event that lands meanwhile makes it read once more. */
   const running = useRef(false);
   const again = useRef(false);
+  /** A 409 that landed while a read was running: the next pass is the conflict's, with its toast. */
+  const pendingConflict = useRef(false);
 
   const sync = useCallback(async (conflict: boolean): Promise<void> => {
-    if (running.current) { again.current = true; return; }
+    if (running.current) { again.current = true; pendingConflict.current ||= conflict; return; }
     running.current = true;
     let resume = conflict;
     try {
       do {
         again.current = false;
+        resume ||= pendingConflict.current;
+        pendingConflict.current = false;
         const { repository: repo, id: diagramId } = latest.current;
         if (!repo || !diagramId) return;
         const current = await repo.fetchCurrent(diagramId);

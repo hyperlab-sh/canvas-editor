@@ -270,7 +270,7 @@ export function V2EditorPage({ shared, repository }: { readonly shared?: V2Share
     onConflict: () => serviceConflictRef.current ? serviceConflictRef.current() : setAnnouncement('Another tab saved first. Reload to continue.'),
     onSaved: (saved) => { if (id) scheduleV2Thumbnail(repository, id, withMapScene(saved)); },
   });
-  const serviceSync = useServiceSync({ repository: onService && isServiceRepository(repository) ? repository : null, id, load, session, unsaved: saveStatus.state === 'pending', adoptSaved, pushToast });
+  const serviceSync = useServiceSync({ repository: onService && isServiceRepository(repository) ? repository : null, id, load, session, unsaved: saveStatus.state !== 'clean' && saveStatus.state !== 'saved', adoptSaved, pushToast });
   serviceConflictRef.current = onService ? serviceSync.onConflict : null;
 
   const proposal = useV2Proposal({

@@ -16,7 +16,7 @@ export interface SetDocumentNameCommand {
   readonly after: string;
 }
 
-/** A whole document in place of this one (an incoming copy from the service); threads stay (see carryThreads). */
+/** A whole document in place of this one (an incoming copy from the service); threads are not part of the step: replaceSessionDocument sets them from the incoming copy (takeThreads). */
 export interface ReplaceDocumentCommand {
   readonly kind: 'replace-document';
   readonly id: string;
