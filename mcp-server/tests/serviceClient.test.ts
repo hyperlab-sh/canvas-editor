@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises';
 import { createServer, type Server } from 'node:http';
 import { basename, join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import type { BridgeThreadEvent } from '../src/lib/agent.js';
@@ -267,12 +267,14 @@ describe('a port held by something else (R-5)', () => {
 
 describe('starting the service (AC-4, D10)', () => {
   const saved = { config: process.env.OPENFLOWKIT_SERVICE_CONFIG, home: process.env.HOME };
-  let pid = 0;
-  beforeEach(() => { pid = 0; });
-  afterEach(() => {
+  let url = '';
+  afterEach(async () => {
     if (saved.config === undefined) delete process.env.OPENFLOWKIT_SERVICE_CONFIG; else process.env.OPENFLOWKIT_SERVICE_CONFIG = saved.config;
     process.env.HOME = saved.home;
-    if (pid) try { process.kill(pid); } catch { /* already gone */ }
+    // Whatever the test got to, the service it started must not outlive the run.
+    const running = url ? await fetch(`${url}/health`).then((reply) => reply.json() as Promise<{ pid: number }>).catch(() => null) : null;
+    if (running) process.kill(running.pid);
+    url = '';
   });
 
   it('spawns serve on the first call, keeps it after the server closes, and a second server finds it', async () => {
@@ -288,7 +290,7 @@ describe('starting the service (AC-4, D10)', () => {
     await writeFile(file, JSON.stringify({ port, projects: projects.projects }));
     process.env.OPENFLOWKIT_SERVICE_CONFIG = file;
     process.env.HOME = home;
-    const url = `http://127.0.0.1:${port}`;
+    url = `http://127.0.0.1:${port}`;
     const health = async () => (await (await fetch(`${url}/health`)).json()) as { pid: number };
 
     const first = await session(url);
@@ -296,7 +298,7 @@ describe('starting the service (AC-4, D10)', () => {
     const made = await first.json('create_diagram', { project: 'alpha', dsl: DSL });
     expect(Date.now() - started).toBeLessThan(10_000);
     expect(made.url).toBe(`${url}/#/p/alpha/${made.diagram}`);
-    pid = (await health()).pid;
+    const pid = (await health()).pid;
     expect(pid).not.toBe(process.pid);
 
     // The MCP server goes away; the service is the user's and stays.
