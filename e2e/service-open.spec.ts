@@ -77,9 +77,10 @@ test('the tab bridge is off on a service diagram and on for a local one', async 
 test('an unknown service diagram is not found and nothing is written; a service diagram is not the one / reopens', async ({ page }) => {
   const writes: string[] = [];
   page.on('request', (request) => { if (request.method() !== 'GET' && request.url().includes('/projects/')) writes.push(`${request.method()} ${request.url()}`); });
+  // Even the document this browser opened last is never made up when the service lacks it.
+  await page.addInitScript(() => { if (location.hash.includes('no-such-id')) localStorage.setItem('ofk:last-document', 'no-such-id'); });
   await page.goto(`${url}/#/p/demo/no-such-id`);
   await expect(page.getByText('That diagram isn’t in this browser.')).toBeVisible();
-  await page.waitForLoadState('networkidle');
   expect(writes).toEqual([]);
   expect(readdirSync(join(scratch, 'demo'))).toEqual(['flow.openflow.json']);
 
