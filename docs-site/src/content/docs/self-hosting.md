@@ -140,8 +140,9 @@ The MCP server looks for the service at `http://127.0.0.1:43120`. If you changed
 A diagram's link is `http://127.0.0.1:<port>/#/p/<project>/<diagram id>`; open it in any browser on the machine.
 Edits in the app are written to the file. Home lists the service's diagrams by project.
 
-The service is for one person on one machine: no accounts, no remote access, and when two tabs edit the same diagram
-the later save wins.
+The service is for one person on one machine: no accounts, no remote access, and when two tabs edit the same diagram,
+the first save wins: the other tab's save is refused, it loads the newer copy and says so in a toast (its unsaved
+edits are replaced).
 
 ## Share links (optional)
 
