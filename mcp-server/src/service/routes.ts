@@ -226,13 +226,13 @@ export function createHandler(deps: ServiceDeps, routes: readonly Route[] = buil
   const send = (response: ServerResponse, reply: RouteReply): void => {
     // The unread upload of a refused oversize body must not keep the connection busy.
     const close = reply.status === 413 ? { connection: 'close' } : {};
-    const head = response.req.method === 'HEAD';
     const data = reply.raw ? reply.raw.data : JSON.stringify(reply.json ?? null);
     const headers = reply.raw
       ? { 'content-type': reply.raw.type, ...APP_HEADERS, ...reply.raw.headers }
       : { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...APP_HEADERS };
     response.writeHead(reply.status, { ...headers, ...close, 'content-length': Buffer.byteLength(data) });
-    response.end(head ? undefined : data);
+    // Node sends no body for a HEAD reply, whatever is passed here.
+    response.end(data);
   };
   const fail = (response: ServerResponse, status: number, error: string): void => send(response, { status, json: { error } });
 
