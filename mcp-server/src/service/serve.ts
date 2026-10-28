@@ -2,30 +2,32 @@ import { createServer, type Server } from 'node:http';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { CliIo } from '../cli.js';
-import { loadConfig } from './config.js';
+import { loadConfig, type ServiceConfig } from './config.js';
 import { buildRoutes, createHandler, type Route } from './routes.js';
 import { createStore } from './store.js';
 
 export interface RunningService {
   readonly port: number;
+  /** The address the socket is bound to. */
+  readonly address: string;
   readonly url: string;
   close(): Promise<void>;
 }
 
 export interface StartOptions {
   readonly port: number;
-  readonly configPath?: string;
+  readonly config: ServiceConfig;
   readonly appDir: string;
   /** Extra route rows, tried after the API's and before the app fallback. */
   readonly routes?: readonly Route[];
 }
 
 /** `<mcp-server>/../dist`, from either src/service or dist/service. */
-export const defaultAppDir = (): string => resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'dist');
+const defaultAppDir = (): string => resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'dist');
 
 /** Binds 127.0.0.1 only. Rejects with the listen error (EADDRINUSE included). */
 export async function startService(options: StartOptions): Promise<RunningService> {
-  const config = await loadConfig(options.configPath);
+  const { config } = options;
   const store = createStore(config);
   let bound = options.port;
   const table = [...buildRoutes(), ...(options.routes ?? [])];
@@ -38,9 +40,11 @@ export async function startService(options: StartOptions): Promise<RunningServic
     });
   });
   const address = server.address();
-  if (address && typeof address === 'object') bound = address.port;
+  if (!address || typeof address !== 'object') throw new Error('The service socket has no address.');
+  bound = address.port;
   return {
     port: bound,
+    address: address.address,
     url: `http://127.0.0.1:${bound}`,
     close: () => new Promise<void>((done) => {
       server.close(() => done());
@@ -84,11 +88,11 @@ function parseArgs(args: readonly string[]): { port?: number; config?: string; a
 export async function runServe(args: readonly string[], io: CliIo, onStart?: (service: RunningService) => void): Promise<number> {
   const parsed = parseArgs(args);
   if (typeof parsed === 'string') { io.err(parsed); return 2; }
-  const configPath = parsed.config;
-  const port = parsed.port ?? (await loadConfig(configPath)).port;
+  const config = await loadConfig(parsed.config);
+  const port = parsed.port ?? config.port;
   const appDir = parsed.app ?? process.env.OPENFLOWKIT_APP_DIR ?? defaultAppDir();
   try {
-    const service = await startService({ port, appDir, ...(configPath ? { configPath } : {}) });
+    const service = await startService({ port, appDir, config });
     io.out(`openflowkit service listening on ${service.url} (app: ${resolve(appDir)})`);
     onStart?.(service);
     return 0;

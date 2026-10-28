@@ -79,7 +79,7 @@ Options:
   --name <name>   discover: system name (default: directory name)
   --max-files <n> discover/drift: cap on files scanned (default: 2000)
   --port <n>      serve: port (default: the config's, 43120)
-  --config <path> serve: service config file (default: ~/.config/openflowkit/service.json)
+  --config <path> serve: service config file (default: OPENFLOWKIT_SERVICE_CONFIG, else ~/.config/openflowkit/service.json)
   --app <dir>     serve: the built app to serve (default: OPENFLOWKIT_APP_DIR, else <repo>/dist)
   --help          this text; <command> --help for one command's
   --version       the version

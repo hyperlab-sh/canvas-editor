@@ -27,6 +27,15 @@ async function configWith(body: unknown): Promise<string> {
 }
 
 describe('loadConfig', () => {
+  it('reads the file at an explicit path ahead of the environment', async () => {
+    const dir = join(home, 'proj');
+    await mkdir(dir);
+    await configWith({ port: 1, projects: [] });
+    const explicit = join(home, 'explicit.json');
+    await writeFile(explicit, JSON.stringify({ port: 4242, projects: [{ name: 'p', path: dir }] }));
+    expect(await loadConfig(explicit)).toEqual({ port: 4242, projects: [{ name: 'p', path: dir }] });
+  });
+
   it('writes a default file with the scratch project when none exists', async () => {
     const config = await loadConfig();
     const scratch = join(home, '.local', 'share', 'openflowkit', 'diagrams');

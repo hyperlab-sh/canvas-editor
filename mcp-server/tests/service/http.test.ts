@@ -1,12 +1,12 @@
-import { request } from 'node:http';
+import { createServer, request } from 'node:http';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createAgentDocument } from '../../src/lib/agent.js';
 import { MCP_SERVER_VERSION } from '../../src/lib/version.js';
-import { loadConfig } from '../../src/service/config.js';
 import { startService, type RunningService } from '../../src/service/serve.js';
-import type { Route } from '../../src/service/routes.js';
+import { createHandler, type Route } from '../../src/service/routes.js';
+import { createStore } from '../../src/service/store.js';
 import { putFile, tempConfig, tempDir } from './helpers.js';
 
 const running: RunningService[] = [];
@@ -18,9 +18,7 @@ afterEach(async () => {
 async function boot(options: { appDir?: string; routes?: readonly Route[]; projects?: string[] } = {}) {
   const config = await tempConfig(...(options.projects ?? ['alpha', 'beta']));
   const root = await tempDir();
-  const configPath = join(root, 'service.json');
-  await writeFile(configPath, JSON.stringify({ ...config, port: 43120 }));
-  const service = await startService({ port: 0, configPath, appDir: options.appDir ?? join(root, 'no-app'), ...(options.routes ? { routes: options.routes } : {}) });
+  const service = await startService({ port: 0, config, appDir: options.appDir ?? join(root, 'no-app'), ...(options.routes ? { routes: options.routes } : {}) });
   running.push(service);
   return { service, config, folder: (name: string) => config.projects.find((p) => p.name === name)!.path, root };
 }
@@ -46,6 +44,19 @@ function withHost(service: RunningService, host: string): Promise<{ status: numb
       let body = '';
       res.on('data', (chunk) => { body += chunk; });
       res.on('end', () => resolve({ status: res.statusCode ?? 0, body }));
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+/** node:http sends the Sec-Fetch-* headers as given; fetch rewrites sec-fetch-mode and -dest itself. */
+function rawGet(service: RunningService, path: string, headers: Record<string, string>): Promise<{ status: number; text: string }> {
+  return new Promise((resolve, reject) => {
+    const req = request({ host: '127.0.0.1', port: service.port, path, headers }, (res) => {
+      let text = '';
+      res.on('data', (chunk) => { text += chunk; });
+      res.on('end', () => resolve({ status: res.statusCode ?? 0, text }));
     });
     req.on('error', reject);
     req.end();
@@ -130,7 +141,7 @@ describe('diagram routes', () => {
     expect(await call(service, 'PUT', url, { document })).toMatchObject({ status: 400, json: { error: 'Saving needs the "revision" you last loaded.' } });
     expect((await call(service, 'PUT', url, { document: { nope: true }, revision })).status).toBe(400);
     const other = await call(service, 'PUT', url, { document: { ...document, id: 'other' }, revision });
-    expect(other.status).toBe(500);
+    expect(other.status).toBe(400);
     expect(other.json.error).toBe(`Document id "other" does not match diagram "${created.id}".`);
   });
 
@@ -143,7 +154,7 @@ describe('diagram routes', () => {
     const read = (await call(service, 'GET', url)).json;
     expect(read.document.name).toBe('Better');
     expect(read.revision).toBe(created.revision + 1);
-    expect((await call(service, 'PATCH', url, {})).status).toBe(400);
+    expect(await call(service, 'PATCH', url, {})).toMatchObject({ status: 400, json: { error: 'Renaming needs a "name".' } });
   });
 
   it('answers 405 on a known path with the wrong method and 404 on an unknown API path', async () => {
@@ -203,7 +214,7 @@ describe('Host and Origin checks', () => {
     const { service } = await boot();
     const refused = await withHost(service, 'evil.example');
     expect(refused.status).toBe(403);
-    expect(JSON.parse(refused.body).error).toMatch(/^Host not allowed/);
+    expect(JSON.parse(refused.body).error).toBe('Host not allowed. The service answers 127.0.0.1, localhost and [::1] only.');
     expect((await withHost(service, 'evil.example:80')).status).toBe(403);
     for (const host of ['localhost:9000', '127.0.0.1', '[::1]:3000']) expect((await withHost(service, host)).status).toBe(200);
   });
@@ -232,9 +243,86 @@ describe('the route table', () => {
   });
 });
 
-describe('listening', () => {
-  it('loads the config file it was given', async () => {
-    const { root, config } = await boot();
-    expect(await loadConfig(join(root, 'service.json'))).toEqual({ ...config, port: 43120 });
+describe('request failures', () => {
+  const NAV = { 'sec-fetch-site': 'cross-site', 'sec-fetch-mode': 'navigate', 'sec-fetch-dest': 'document' };
+
+  it('lets a link from another page open the app but not read the API', async () => {
+    const dir = join(await tempDir(), 'app');
+    await mkdir(dir, { recursive: true });
+    await writeFile(join(dir, 'index.html'), '<html>app</html>');
+    const { service } = await boot({ appDir: dir });
+    expect(await rawGet(service, '/', NAV)).toEqual({ status: 200, text: '<html>app</html>' });
+    expect(await rawGet(service, '/p/alpha/x', { ...NAV, 'sec-fetch-site': 'same-site' })).toMatchObject({ status: 200 });
+    expect(await rawGet(service, '/projects', NAV)).toEqual({ status: 403, text: '{"error":"Origin not allowed. The service is local-only."}' });
+    // A subresource fetch of the app from another site is still refused.
+    expect((await rawGet(service, '/assets/x.js', { ...NAV, 'sec-fetch-mode': 'no-cors', 'sec-fetch-dest': 'script' })).status).toBe(403);
+  });
+
+  it('refuses a write that is not application/json, so a cross-origin page needs a preflight', async () => {
+    const { service, folder } = await boot();
+    for (const method of ['POST', 'PUT', 'PATCH']) {
+      const url = method === 'POST' ? '/projects/alpha/diagrams' : '/projects/alpha/diagrams/x';
+      const res = await fetch(`${service.url}${url}`, { method, headers: { 'content-type': 'text/plain', origin: 'http://localhost:5173' }, body: '{"name":"Evil"}' });
+      expect(res.status, method).toBe(415);
+      expect(await res.json()).toEqual({ error: 'The request body must be application/json.' });
+    }
+    const bare = await fetch(`${service.url}/projects/alpha/diagrams`, { method: 'POST', body: '{"name":"Evil"}', headers: { 'content-type': '' } });
+    expect(bare.status).toBe(415);
+    expect((await call(service, 'GET', '/projects')).json[0].diagrams).toEqual([]);
+    expect(folder('alpha')).toBeTruthy();
+  });
+
+  it('answers 413 for a body over 32 MB', async () => {
+    const { service } = await boot();
+    const res = await fetch(`${service.url}/projects/alpha/diagrams`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'x'.repeat(33 * 1024 * 1024) }) }).catch(() => null);
+    // The server may reset the upload once it has answered; when the reply arrives it is the 413.
+    if (res) expect({ status: res.status, body: await res.json() }).toEqual({ status: 413, body: { error: 'Request body too large.' } });
+    else expect((await call(service, 'GET', '/health')).status).toBe(200);
+  });
+
+  it('answers 400 for an undecodable path and for a body that is not an object', async () => {
+    const { service } = await boot();
+    expect(await call(service, 'GET', '/projects/alpha/diagrams/%E0%A4%A')).toMatchObject({ status: 400, json: { error: 'The path is not valid.' } });
+    expect(await call(service, 'POST', '/projects/alpha/diagrams', [])).toMatchObject({ status: 400, json: { error: 'The request needs a JSON object body.' } });
+    const empty = await fetch(`${service.url}/projects/alpha/diagrams`, { method: 'POST', headers: { 'content-type': 'application/json' } });
+    expect(empty.status).toBe(400);
+    expect(await empty.json()).toEqual({ error: 'The request needs a JSON object body.' });
+  });
+
+  it('answers 404 for PUT and PATCH on an unknown diagram', async () => {
+    const { service } = await boot();
+    const document = createAgentDocument('X');
+    const put = await call(service, 'PUT', '/projects/alpha/diagrams/missing', { document: { ...document, id: 'missing' }, revision: 1 });
+    expect(put).toMatchObject({ status: 404, json: { error: 'No diagram "missing" in project "alpha".' } });
+    expect(await call(service, 'PATCH', '/projects/alpha/diagrams/missing', { name: 'N' })).toMatchObject({ status: 404, json: { error: 'No diagram "missing" in project "alpha".' } });
+    expect((await call(service, 'GET', '/projects/nope/diagrams/x')).status).toBe(404);
+  });
+
+  it('answers 409 when two files in a project carry one diagram id', async () => {
+    const { service, folder } = await boot();
+    const doc = createAgentDocument('Twin');
+    await putFile(join(folder('alpha'), 'a.openflow.json'), doc);
+    await putFile(join(folder('alpha'), 'b.openflow.json'), doc);
+    const res = await call(service, 'GET', `/projects/alpha/diagrams/${doc.id}`);
+    expect(res.status).toBe(409);
+    expect(res.json.error).toBe(`Diagram id "${doc.id}" appears in both a.openflow.json and b.openflow.json in project "alpha"; rename or remove one.`);
+  });
+
+  it('answers 409 when a rename keeps losing the race', async () => {
+    const config = await tempConfig('alpha');
+    const real = createStore(config);
+    const { id } = await real.create('alpha', 'Busy');
+    // A store whose every write finds a newer revision: the rename must give up, not overwrite.
+    const store = { ...real, write: async (p: string, i: string) => ({ status: 'stale' as const, revision: 9, document: (await real.read(p, i)).document }) };
+    const server = createServer(createHandler({ config, store, appDir: '/nonexistent', port: () => 0 }));
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    try {
+      const { port } = server.address() as { port: number };
+      const res = await fetch(`http://127.0.0.1:${port}/projects/alpha/diagrams/${id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: '{"name":"N"}' });
+      expect(res.status).toBe(409);
+      expect(await res.json()).toEqual({ error: 'The diagram kept changing; try the rename again.' });
+    } finally {
+      await new Promise((resolve) => { server.close(resolve); server.closeAllConnections(); });
+    }
   });
 });
