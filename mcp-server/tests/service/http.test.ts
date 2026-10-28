@@ -272,12 +272,35 @@ describe('request failures', () => {
     expect(folder('alpha')).toBeTruthy();
   });
 
-  it('answers 413 for a body over 32 MB', async () => {
+  it('answers 413 for a declared body over 32 MB without reading it', async () => {
     const { service } = await boot();
-    const res = await fetch(`${service.url}/projects/alpha/diagrams`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'x'.repeat(33 * 1024 * 1024) }) }).catch(() => null);
-    // The server may reset the upload once it has answered; when the reply arrives it is the 413.
-    if (res) expect({ status: res.status, body: await res.json() }).toEqual({ status: 413, body: { error: 'Request body too large.' } });
-    else expect((await call(service, 'GET', '/health')).status).toBe(200);
+    const reply = await new Promise<{ status: number; connection: string | undefined; body: unknown }>((resolve, reject) => {
+      const req = request({
+        host: '127.0.0.1', port: service.port, path: '/projects/alpha/diagrams', method: 'POST',
+        headers: { 'content-type': 'application/json', 'content-length': String(33 * 1024 * 1024) },
+      }, (res) => {
+        let text = '';
+        res.on('data', (chunk) => { text += chunk; });
+        res.on('end', () => resolve({ status: res.statusCode ?? 0, connection: res.headers.connection, body: JSON.parse(text) }));
+      });
+      req.on('error', reject);
+      req.write('{"name":"x"}');
+    });
+    expect(reply).toEqual({ status: 413, connection: 'close', body: { error: 'Request body too large.' } });
+  });
+
+  it('answers HEAD like GET without a body, so a link checker sees the app', async () => {
+    const dir = join(await tempDir(), 'app');
+    await mkdir(dir, { recursive: true });
+    await writeFile(join(dir, 'index.html'), '<html>app</html>');
+    const { service } = await boot({ appDir: dir });
+    const head = async (path: string) => {
+      const res = await fetch(`${service.url}${path}`, { method: 'HEAD' });
+      return { status: res.status, length: res.headers.get('content-length'), text: await res.text() };
+    };
+    expect(await head('/')).toEqual({ status: 200, length: String('<html>app</html>'.length), text: '' });
+    expect(await head('/health')).toMatchObject({ status: 200, text: '' });
+    expect((await head('/projects/alpha/diagrams/missing')).status).toBe(404);
   });
 
   it('answers 400 for an undecodable path and for a body that is not an object', async () => {

@@ -202,6 +202,8 @@ function compile(path: string): { pattern: RegExp; names: string[] } {
 }
 
 async function readBody(request: IncomingMessage): Promise<unknown> {
+  // A declared length over the limit is refused before reading a byte; the streaming check covers chunked bodies.
+  if (Number(request.headers['content-length']) > MAX_BODY_BYTES) throw new HttpError(413, 'Request body too large.');
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const chunk of request) {
@@ -222,13 +224,15 @@ export function createHandler(deps: ServiceDeps, routes: readonly Route[] = buil
   const compiled = [...routes, appRoute].map((route) => ({ route, ...compile(route.path) }));
 
   const send = (response: ServerResponse, reply: RouteReply): void => {
-    if (reply.raw) {
-      response.writeHead(reply.status, { 'content-type': reply.raw.type, ...APP_HEADERS, ...reply.raw.headers });
-      response.end(reply.raw.data);
-      return;
-    }
-    response.writeHead(reply.status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...APP_HEADERS });
-    response.end(JSON.stringify(reply.json ?? null));
+    // The unread upload of a refused oversize body must not keep the connection busy.
+    const close = reply.status === 413 ? { connection: 'close' } : {};
+    const head = response.req.method === 'HEAD';
+    const data = reply.raw ? reply.raw.data : JSON.stringify(reply.json ?? null);
+    const headers = reply.raw
+      ? { 'content-type': reply.raw.type, ...APP_HEADERS, ...reply.raw.headers }
+      : { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...APP_HEADERS };
+    response.writeHead(reply.status, { ...headers, ...close, 'content-length': Buffer.byteLength(data) });
+    response.end(head ? undefined : data);
   };
   const fail = (response: ServerResponse, status: number, error: string): void => send(response, { status, json: { error } });
 
@@ -239,7 +243,7 @@ export function createHandler(deps: ServiceDeps, routes: readonly Route[] = buil
         return fail(response, 403, 'Host not allowed. The service answers 127.0.0.1, localhost and [::1] only.');
       }
       const url = new URL(request.url ?? '/', 'http://127.0.0.1');
-      const method = request.method ?? 'GET';
+      const method = request.method === 'HEAD' ? 'GET' : request.method ?? 'GET';
       const { headers } = request;
       // A link followed from another page is a top-level navigation; the app shell holds no data, so it may load.
       const opensApp = method === 'GET' && headers['sec-fetch-mode'] === 'navigate' && headers['sec-fetch-dest'] === 'document'
