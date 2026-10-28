@@ -20,6 +20,8 @@ import type { V2GestureApi } from './v2PointerGestures';
 import type { V2ToolConfig } from './v2ToolCatalog';
 
 interface EditorChromeProps {
+  /** On a service diagram: the session holding it, and the way to release it. */
+  readonly holder?: { readonly label: string | null; readonly onDisconnect: () => void };
   readonly session: ReturnType<typeof useDocumentSession>;
   readonly pageId: string;
   readonly pages: ReturnType<typeof useV2Pages>;
@@ -80,6 +82,7 @@ export function V2EditorChrome(p: EditorChromeProps): React.JSX.Element {
       tool={p.tool} zoomPercent={camera.zoom} treeOpen={panels.treeOpen}
       onUndo={p.undo} onRedo={p.redo}
       onRetrySave={p.retrySave} onReload={p.reload} onToast={p.pushToast}
+      {...(p.holder ? { holder: p.holder } : {})}
       workspace={{
         name: workspaceFolder.folder?.name ?? null,
         onOpenFolder: () => { void workspaceFolder.openFolder(); },

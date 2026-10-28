@@ -42,11 +42,21 @@ export function createServiceRepository(project: string, origin: string = SERVIC
     eventsUrl: (id) => `${origin}/events?project=${encodeURIComponent(project)}&id=${encodeURIComponent(id)}`,
     serviceRevision: (id) => known.get(id)?.service,
     adopt: (id, editor, service) => { known.set(id, { editor, service }); },
+    postComment: async (id, event) => {
+      const response = await send(`${diagramUrl(id)}/comments`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(event) });
+      if (response.status === 409) return false;
+      if (!response.ok) throw await failure(response, 'send a comment to');
+      return true;
+    },
+    disconnect: async (id) => {
+      const response = await send(`${diagramUrl(id)}/holder`, { method: 'DELETE' });
+      if (!response.ok) throw await failure(response, 'disconnect');
+    },
     fetchCurrent: async (id) => {
       const response = await send(diagramUrl(id));
       if (!response.ok) throw await failure(response, 'reload');
-      const { document, revision, holder } = await response.json() as { document: SceneDocumentV1; revision: number; holder?: string | null };
-      return { document, revision, holder: holder ?? null };
+      const { document, revision, holder } = await response.json() as { document: SceneDocumentV1; revision: number; holder?: { label: string } | null };
+      return { document, revision, holder: holder?.label ?? null };
     },
     loadDocument: async (id): Promise<LoadV2DocumentResult> => {
       const response = await send(diagramUrl(id));

@@ -172,5 +172,5 @@ export function useV2EditorAgents(input: EditorAgentsInput) {
       if (reveal && nodeIds.length + ends.length) camera.revealNodes([...nodeIds, ...ends]);
     },
   });
-  return { aiSettings, assistant, diagramCount, selectedDiagramCount, agentBridge, webMcp, presence, agentShown };
+  return { aiSettings, assistant, diagramCount, selectedDiagramCount, agentBridge, webMcp, presence, agentShown, commentsReach: onService || agentBridge.status === 'connected' };
 }

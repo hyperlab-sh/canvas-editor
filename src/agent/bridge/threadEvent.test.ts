@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { postThreadEvent, setThreadEventSender } from './threadEvent';
+import { deliverThreadEvent, NoHolderError, postThreadEvent, setThreadEventSender } from './threadEvent';
 import { bridgeUrls, isBridgeThreadEvent, type BridgeThreadEvent } from './protocol';
 
 const EVENT: BridgeThreadEvent = {
@@ -21,6 +21,19 @@ describe('postThreadEvent', () => {
     expect(send).toHaveBeenCalledWith(EVENT);
     setThreadEventSender(async () => { throw new Error('not delivered'); });
     await expect(postThreadEvent(EVENT)).resolves.toBe(false);
+  });
+});
+
+describe('deliverThreadEvent', () => {
+  it('tells nobody-holds-it apart from any other failure', async () => {
+    await expect(deliverThreadEvent(EVENT)).resolves.toBe('failed');
+    setThreadEventSender(async () => { throw new NoHolderError(); });
+    await expect(deliverThreadEvent(EVENT)).resolves.toBe('no-holder');
+    await expect(postThreadEvent(EVENT)).resolves.toBe(false);
+    setThreadEventSender(async () => { throw new Error('down'); });
+    await expect(deliverThreadEvent(EVENT)).resolves.toBe('failed');
+    setThreadEventSender(async () => undefined);
+    await expect(deliverThreadEvent(EVENT)).resolves.toBe('sent');
   });
 });
 

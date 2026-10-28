@@ -29,6 +29,7 @@ interface V2ChromeProps extends V2SettingsProps {
   readonly onRetrySave: () => void;
   readonly onReload: () => void;
   readonly onToast: (toast: ToastItem) => void;
+  readonly holder?: { readonly label: string | null; readonly onDisconnect: () => void };
   readonly onRename: (name: string) => void;
   readonly workspace?: {
     readonly name: string | null;
@@ -89,6 +90,7 @@ export function V2Chrome(props: V2ChromeProps): React.JSX.Element {
         onRetrySave={props.onRetrySave}
         onReload={props.onReload}
         onToast={props.onToast}
+        {...(props.holder ? { holder: props.holder } : {})}
         onRename={props.onRename}
         {...(props.workspace ? { workspace: props.workspace } : {})}
         {...(props.breadcrumb ? { breadcrumb: props.breadcrumb } : {})}

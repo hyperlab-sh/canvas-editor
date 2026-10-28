@@ -4,6 +4,7 @@ import { takeThreads, withoutThreads } from '../../domain/threads/threads';
 import type { SceneDocumentV1 } from '../../domain/document/types';
 import type { ServiceRepository } from '../../../services/storage/v2/serviceSync';
 import type { ToastItem } from '../design-system';
+import { NoHolderError, setThreadEventSender } from '../../../agent/bridge/threadEvent';
 
 interface ServiceSyncInput {
   /** Null off the service path (`/d/`): nothing is subscribed. */
@@ -99,7 +100,26 @@ export function useServiceSync(input: ServiceSyncInput) {
     return () => source.close();
   }, [repository, id, ready, sync]);
 
+  // Comments go to the session holding this diagram. The sender is set while the tab is on the service; a 409 means nobody holds it.
+  useEffect(() => {
+    if (!repository || !id) return;
+    setThreadEventSender(async (event) => { if (!(await repository.postComment(id, event))) throw new NoHolderError(); });
+    return () => setThreadEventSender(null);
+  }, [repository, id]);
+
+  /** The holder is cleared by the service's own event; a failure says so, since the badge would otherwise stay. */
+  const disconnect = useCallback(async (): Promise<void> => {
+    const { repository: repo, id: diagramId } = latest.current;
+    if (!repo || !diagramId) return;
+    try {
+      await repo.disconnect(diagramId);
+      setHolder(null);
+    } catch (error) {
+      latest.current.pushToast({ id: 'service-disconnect', tone: 'danger', title: 'Couldn’t disconnect', description: error instanceof Error ? error.message : String(error) });
+    }
+  }, []);
+
   /** Autosave met a 409: the service holds something newer. */
   const onConflict = useCallback(() => { void sync(true); }, [sync]);
-  return { holder, onConflict };
+  return { holder, onConflict, disconnect };
 }
