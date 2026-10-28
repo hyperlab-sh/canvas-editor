@@ -3,7 +3,7 @@ import { useLocation, useParams } from 'react-router-dom';
 import { replaceSelection } from '../../application/selection/selection';
 import { useDocumentSession } from '../../application/session/useDocumentSession';
 import type { PixiRendererHost, PixiRendererStatus } from '../../infrastructure/pixi/PixiRendererHost';
-import { createV2Repository, type V2DocumentRepository } from '../../../services/storage/v2/v2Repository';
+import type { V2DocumentRepository } from '../../../services/storage/v2/v2Repository';
 import { dslFrames } from '../../../dsl/frameScene';
 import type { LandingDirection } from '../../domain/camera/readableLanding';
 import { archFrameOf, placedElementId } from '../../../dsl/model/model';
@@ -77,7 +77,7 @@ import './v2EditorPage.css';
 /** A shared link opens here: the decrypted document, read-only, never stored; `onEdit` saves a local copy. */
 export interface V2SharedView { readonly document: SceneDocumentV1; readonly onEdit: () => Promise<void> }
 
-export function V2EditorPage({ shared, repository: given }: { readonly shared?: V2SharedView; readonly repository?: V2DocumentRepository } = {}): React.JSX.Element {
+export function V2EditorPage({ shared, repository }: { readonly shared?: V2SharedView; readonly repository: V2DocumentRepository }): React.JSX.Element {
   // Under /s/:id the route's id is the share's, not a stored document's.
   const { id: routeId, project } = useParams();
   const onService = project !== undefined; // /p/:project/:id: kept by the local service, which is also the agent's path
@@ -91,10 +91,6 @@ export function V2EditorPage({ shared, repository: given }: { readonly shared?: 
   const appearance = useV2Appearance(preferences.theme);
   const canvasDefaultColor = appearance === 'dark' ? '#191b19' : '#f7f7f5';
   const canvasColor = preferences.canvasColor ?? canvasDefaultColor;
-  const repository = useMemo(
-    () => given ?? createV2Repository(typeof window === 'undefined' ? null : window.indexedDB),
-    [given]
-  );
   const hostRef = useRef<PixiRendererHost | null>(null);
   const sectionRef = useRef<HTMLElement | null>(null);
   const pasteRef = useRef<(event: ClipboardEvent) => void>(() => undefined);

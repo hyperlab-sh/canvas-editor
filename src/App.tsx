@@ -3,6 +3,7 @@ import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom
 import { lastDocumentId, mintV2Id } from '@/opencanvas/presentation/v2/v2Document';
 import { V2ErrorBoundary } from '@/opencanvas/presentation/v2/V2ErrorBoundary';
 import { BrandLoader } from '@/opencanvas/presentation/v2/BrandLoader';
+import { createV2Repository } from '@/services/storage/v2/v2Repository';
 import { createServiceRepository } from '@/services/storage/service/serviceRepository';
 
 const loadEditor = () => import('@/opencanvas/presentation/v2/V2EditorPage');
@@ -66,8 +67,8 @@ function HomeDocument({ then = '' }: { readonly then?: string }): React.JSX.Elem
 function EditorRoute(): React.JSX.Element {
   const { project, id } = useParams();
   // /d/ keeps documents in this browser; /p/ keeps them in the local service's project.
-  const repository = useMemo(() => project === undefined ? undefined : createServiceRepository(project), [project]);
-  return <EditorPage key={project === undefined ? id : `${project}/${id}`} {...(repository ? { repository } : {})} />;
+  const repository = useMemo(() => project === undefined ? createV2Repository(window.indexedDB) : createServiceRepository(project), [project]);
+  return <EditorPage key={project === undefined ? id : `${project}/${id}`} repository={repository} />;
 }
 
 function LegacyV2Redirect(): React.JSX.Element {

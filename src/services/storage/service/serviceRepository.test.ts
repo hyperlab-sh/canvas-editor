@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -78,6 +78,29 @@ describe('createServiceRepository', () => {
     expect(result).toEqual({ status: 'stale', storedRevision: theirs });
     const stored = await repository.loadDocument(id);
     expect(stored.status === 'ok' && stored.record.document.name).toBe('Theirs');
+  });
+
+  it('will not guess which service revision an unpaired save replaces', async () => {
+    const { id } = await post('/projects/alpha/diagrams', { name: 'Flow' });
+    const fresh = createServiceRepository('alpha', service.url);
+    const loaded = await createServiceRepository('alpha', service.url).loadDocument(id);
+    if (loaded.status !== 'ok') throw new Error('did not open');
+    const { revision } = loaded.record;
+    await expect(fresh.saveDocument(id, loaded.record.document, revision + 1, revision)).rejects.toThrow(/Open the diagram again/);
+    // Paired by a load, a save at a revision the load did not give is refused the same way.
+    await fresh.loadDocument(id);
+    await expect(fresh.saveDocument(id, loaded.record.document, revision + 5, revision + 4)).rejects.toThrow(/Open the diagram again/);
+  });
+
+  it('reports a hand-edited file the service cannot read, in the service’s words', async () => {
+    const { id } = await post('/projects/alpha/diagrams', { name: 'Flow' });
+    const file = join(root, 'alpha', 'flow.openflow.json');
+    const original = JSON.parse(await readFile(file, 'utf8')) as Record<string, unknown>;
+    const repository = createServiceRepository('alpha', service.url);
+    await writeFile(file, JSON.stringify({ ...original, schemaVersion: 999 }));
+    await expect(repository.loadDocument(id)).rejects.toThrow(/Unsupported schema version/);
+    await writeFile(file, JSON.stringify({ ...original, pages: 'nope' }));
+    await expect(repository.loadDocument(id)).rejects.toThrow(V2StorageError);
   });
 
   it('refuses a document the service will not store, in the service’s words', async () => {
