@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { areStructurallyEqual } from '../../domain/commands/equality';
 import type { SceneDocumentV1 } from '../../domain/document/types';
-import type { ServiceRepository } from '../../../services/storage/service/serviceRepository';
+import type { ServiceRepository } from '../../../services/storage/v2/serviceSync';
 import type { ToastItem } from '../design-system';
 
 interface ServiceSyncInput {

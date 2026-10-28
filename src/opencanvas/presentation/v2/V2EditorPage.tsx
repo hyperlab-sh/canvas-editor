@@ -24,7 +24,7 @@ import { isEditableTarget } from './pointerOperations';
 import { useV2Appearance } from './useV2Appearance';
 import { useV2Architecture } from './useV2Architecture';
 import { useV2ArchitectureActions } from './useV2ArchitectureActions';
-import { isServiceRepository } from '../../../services/storage/service/serviceRepository';
+import { isServiceRepository } from '../../../services/storage/v2/serviceSync';
 import { useV2Autosave } from './useV2Autosave';
 import { useServiceSync } from './useServiceSync';
 import { useV2Camera } from './useV2Camera';
