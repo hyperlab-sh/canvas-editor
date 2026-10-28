@@ -29,7 +29,7 @@ export function registerPrompts(server: McpServer): void {
               `Read \`openflowkit://docs/grammar\`, then write OpenFlow DSL yourself for this flowchart.\n\n` +
               `Description:\n${description}\n\n` +
               `Call \`validate_openflow_dsl\` on your DSL and fix any errors. Then call \`create_diagram\` with the final DSL ` +
-              `(or \`openflow_create\` + \`create_diagram\` for file mode) and report what was drawn.`,
+              `(or \`openflow_create\` + \`create_diagram\` for file mode; with the local service, \`create_diagram\` with a \`project\` makes a diagram and returns its link, or \`connect_diagram\` first for an existing diagram the user names) and report what was drawn.`,
           },
         },
       ],

@@ -21,7 +21,7 @@ import { svgBeside, tryWriteSvgBeside } from '../lib/svgBeside.js';
 import { toolError } from '../lib/errors.js';
 import { clientHasChannel, clientShowsApps, diagramCard, VIEWER_TOOL_META, type Card } from '../lib/card.js';
 import { DEFAULT_APP_ORIGIN, openUrl } from '../lib/openLink.js';
-import type { ServiceBinding, ServiceClient } from '../lib/serviceClient.js';
+import type { ServiceBinding, ServiceClient, ServiceProject } from '../lib/serviceClient.js';
 import { diagramField, NO_CHANNEL_NOTE, pickBinding, pickProject } from './serviceTools.js';
 
 export interface OpToolDeps {
@@ -173,11 +173,13 @@ export function registerOpTools(server: McpServer, deps: OpToolDeps): void {
           : result;
       const service = deps.service;
       // The service answers for a diagram this session holds or names; the legacy modes keep everything else.
-      const viaService = async (): Promise<CallToolResult> => {
+      const viaService = async (view: { projects: ServiceProject[] | null; bindings: ServiceBinding[] }): Promise<CallToolResult> => {
         await service!.ensure();
-        const projects = op.name === 'list_diagrams' ? await service!.projects() : null;
-        const held = await service!.bindings();
-        if (projects && !held.length) return text({ projects });
+        const held = view.bindings;
+        const listing = op.name === 'list_diagrams';
+        const projects = listing ? view.projects ?? await service!.projects() : null;
+        // The listing is how a session that holds several finds the project it wants: it needs no single diagram.
+        if (projects && typeof diagram !== 'string' && held.length !== 1) return text({ projects });
         let binding: ServiceBinding;
         let made = false;
         if (op.name === 'create_diagram' && (typeof project === 'string' || !held.length)) {
@@ -206,15 +208,12 @@ export function registerOpTools(server: McpServer, deps: OpToolDeps): void {
           : result;
       };
       try {
-        const named = typeof project === 'string' || typeof diagram === 'string';
-        if (service && !documentId && (named || (await service.bindings()).length)) return await viaService();
+        const view = service && !documentId ? await service.view() : { projects: null, bindings: [] };
+        if (service && !documentId && (typeof project === 'string' || typeof diagram === 'string' || view.bindings.length)) return await viaService(view);
         if (!documentId && !deps.bridge.connected) await deps.bridge.retryPort();
-        // Nothing paired and nothing opened: the service is how a first diagram gets made or the projects get listed.
-        if (service && !documentId && !deps.bridge.connected && !deps.store.latest() && (op.name === 'create_diagram' || op.name === 'list_diagrams')) {
-          try { return await viaService(); } catch (error) {
-            throw new Error(`${error instanceof Error ? error.message : String(error)} ${deps.bridge.unpairedReason ?? NOT_PAIRED}`);
-          }
-        }
+        // Nothing paired and nothing opened: the service is how a first diagram gets made. A listing only reads a service that already runs.
+        if (service && !documentId && !deps.bridge.connected && !deps.store.latest()
+          && (op.name === 'create_diagram' || (op.name === 'list_diagrams' && await service.running()))) return await viaService(view);
         if (!documentId && deps.bridge.connected) {
           const output = await deps.bridge.call(op.name, input, requestedPage, agent);
           // Live: the diagram is on the user's canvas already, so no link; the card shows the frame as the editor drew it.

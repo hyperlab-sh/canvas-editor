@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { createServerWithDeps } from './server.js';
+import { createServerWithDeps, type CreatedServer } from './server.js';
+import { ServiceClient } from './lib/serviceClient.js';
 import { CONNECT_URL } from './lib/bridge.js';
 
 async function main(): Promise<void> {
-  const { server, bridge, service } = createServerWithDeps();
+  // The client name is known only once the client has initialized, so the service client asks the server for it lazily.
+  const created: { current?: CreatedServer } = {};
+  const service = new ServiceClient({ clientName: () => created.current?.server.server.getClientVersion()?.name });
+  created.current = createServerWithDeps({ service });
+  const { server, bridge } = created.current;
   try {
     const port = await bridge.start();
     // stderr only — stdout is the MCP protocol channel.

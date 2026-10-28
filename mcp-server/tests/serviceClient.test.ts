@@ -1,10 +1,12 @@
-import { readdir } from 'node:fs/promises';
+import { readdir, writeFile } from 'node:fs/promises';
 import { createServer, type Server } from 'node:http';
 import { basename, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import type { BridgeThreadEvent } from '../src/lib/agent.js';
+import { bridgeUrls, type BridgeThreadEvent } from '../src/lib/agent.js';
 import { LiveBridge } from '../src/lib/bridge.js';
 import { ServiceClient } from '../src/lib/serviceClient.js';
 import { createServerWithDeps } from '../src/server.js';
@@ -35,8 +37,33 @@ async function boot(...projects: string[]) {
   return { service, config };
 }
 
+async function pairEditor(bridge: LiveBridge) {
+  const urls = bridgeUrls(await bridge.start());
+  const headers = { 'content-type': 'text/plain;charset=UTF-8' };
+  await fetch(urls.hello, {
+    method: 'POST', headers,
+    body: JSON.stringify({ document: { documentId: 'doc-live', name: 'Live', revision: 1, pageId: 'p1', pages: [{ pageId: 'p1', name: 'Page 1', nodes: 0, connectors: 0 }], app: 'test-editor' } }),
+  });
+  return {
+    /** Parks on the bridge; resolves with the op the agent sent, after answering it. */
+    answer: async (output: unknown): Promise<{ op: string }> => {
+      const request = await (await fetch(`${urls.next}?wait=5`, { headers })).json() as { id: string; op: string };
+      await fetch(urls.result, { method: 'POST', headers, body: JSON.stringify({ id: request.id, ok: true, output }) });
+      return request;
+    },
+  };
+}
+
+async function freePort(): Promise<number> {
+  const probe = createServer();
+  await new Promise<void>((ready) => probe.listen(0, '127.0.0.1', ready));
+  const port = (probe.address() as { port: number }).port;
+  await new Promise<void>((done) => probe.close(() => done()));
+  return port;
+}
+
 /** One MCP server and its client, as one agent session would have them. */
-async function session(url: string, options: { name?: string; channel?: boolean } = {}) {
+async function session(url: string, options: { name?: string; channel?: boolean; paired?: boolean } = {}) {
   const bridge = new LiveBridge({ port: 0, log: () => undefined });
   bridges.push(bridge);
   const { server, service } = createServerWithDeps({ bridge, service: new ServiceClient({ url, clientName: () => options.name ?? 'claude-code', log: () => undefined }), log: () => undefined });
@@ -52,6 +79,8 @@ async function session(url: string, options: { name?: string; channel?: boolean 
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
   clients.push(client);
+  // A fake editor pairs the way bridge.test.ts does: hello, then park on /next and answer what comes.
+  const editor = options.paired ? await pairEditor(bridge) : null;
   const call = async (name: string, args: Record<string, unknown> = {}) => {
     const result = await client.callTool({ name, arguments: args }) as { isError?: boolean; content: { type: string; text: string }[] };
     return { isError: result.isError === true, texts: result.content.map(({ text }) => text), text: result.content[0]!.text };
@@ -65,7 +94,7 @@ async function session(url: string, options: { name?: string; channel?: boolean 
     while (!notices.length) await new Promise<void>((wake) => waiting.push(wake));
     return notices.shift()!;
   };
-  return { call, json, service, nextNotice };
+  return { call, json, service, nextNotice, editor };
 }
 
 describe('create_diagram in a project', () => {
@@ -150,23 +179,48 @@ describe('which diagram a drawing tool lands on', () => {
     const agent = await session(service.url);
     const folder = config.projects[0]!.path;
 
-    const none = await agent.call('update_diagram', { diagram: 'ghost', frameId: 'f', dsl: DSL });
-    expect(none.isError).toBe(true);
-    expect(none.text).toContain('not connected');
-    expect((await agent.call('list_pages', {})).isError).toBe(true);
+    const ghost = await agent.call('update_diagram', { diagram: 'ghost', frameId: 'f', dsl: DSL });
+    expect(ghost.isError).toBe(true);
+    expect(ghost.text).toContain('not connected');
     expect(await readdir(folder)).toEqual([]);
-    expect((await agent.json('whoami')).service.bindings).toEqual([]);
 
     const first = await agent.json('create_diagram', { project: 'alpha', diagramName: 'First', dsl: DSL });
     const second = await agent.json('create_diagram', { project: 'alpha', diagramName: 'Second', dsl: DSL });
     const refused = await agent.call('list_pages', {});
     expect(refused.isError).toBe(true);
+    expect(refused.text).toMatch(/connected to 2 diagrams[\s\S]*Pass "diagram"/);
     expect(refused.text).toContain(first.diagram);
     expect(refused.text).toContain(second.diagram);
 
     await agent.json('disconnect_diagram', { diagram: first.diagram });
-    const pages = await agent.json('list_pages', {});
-    expect(JSON.stringify(pages)).toContain(second.diagram);
+    expect(JSON.stringify(await agent.json('list_pages', {}))).toContain(second.diagram);
+
+    // Registered, with nothing connected: a drawing tool that names nothing does nothing (D5).
+    await agent.json('disconnect_diagram', { diagram: second.diagram });
+    const files = await readdir(folder);
+    expect(files).toHaveLength(2);
+    const none = await agent.call('update_diagram', { frameId: 'f', dsl: DSL });
+    expect(none.isError).toBe(true);
+    expect(none.text).toMatch(/No editor is paired/);
+    expect(await readdir(folder)).toEqual(files);
+    expect((await agent.json('whoami')).service.bindings).toEqual([]);
+    const named = await agent.call('update_diagram', { diagram: second.diagram, frameId: 'f', dsl: DSL });
+    expect(named.text).toMatch(/not connected to a diagram\. Ask the user/);
+  });
+
+  it('lists the projects for a session that holds several diagrams', async () => {
+    const { service } = await boot('alpha', 'beta');
+    const agent = await session(service.url);
+    const one = await agent.json('create_diagram', { project: 'alpha', dsl: DSL });
+    const two = await agent.json('create_diagram', { project: 'beta', dsl: DSL });
+    const listed = await agent.json('list_diagrams');
+    const label = { label: `claude-code · ${NAME}` };
+    expect(listed.projects).toEqual([
+      { name: 'alpha', path: expect.any(String), diagrams: [expect.objectContaining({ id: one.diagram, holder: label })] },
+      { name: 'beta', path: expect.any(String), diagrams: [expect.objectContaining({ id: two.diagram, holder: label })] },
+    ]);
+    // With a diagram named, the listing is that diagram's frames as well.
+    expect((await agent.json('list_diagrams', { diagram: one.diagram })).output.diagrams).toHaveLength(1);
   });
 
   it('draws on the connected diagram when no project is named', async () => {
@@ -208,7 +262,56 @@ describe('which diagram a drawing tool lands on', () => {
   it('does not touch the service for a session that never used it', async () => {
     const down = new ServiceClient({ url: 'http://127.0.0.1:1', clientName: () => 'x', log: () => undefined });
     expect(await down.bindings()).toEqual([]);
-    expect(down.registered).toBe(false);
+    expect(await down.status()).toMatchObject({ running: false, sessionId: null, bindings: [] });
+  });
+});
+
+describe('mode order', () => {
+  it('goes to a paired editor, and never to the service, when nothing is connected', async () => {
+    const { service, config } = await boot('alpha');
+    const agent = await session(service.url, { paired: true });
+    const served = agent.editor!.answer({ frameId: 'dsl-live', nodes: 2 });
+    const drawn = await agent.json('create_diagram', { dsl: DSL });
+    expect(drawn.project).toBeUndefined();
+    expect((await served).op).toBe('create_diagram');
+    expect(await readdir(config.projects[0]!.path)).toEqual([]);
+    expect((await agent.json('whoami')).service).toMatchObject({ sessionId: null, bindings: [] });
+  });
+
+  it('prefers a connected service diagram to a paired editor', async () => {
+    const { service, config } = await boot('alpha');
+    const agent = await session(service.url, { paired: true });
+    const made = await agent.json('create_diagram', { project: 'alpha', dsl: DSL });
+    // No editor request is parked: a call that reached the bridge would hang until its timeout.
+    const again = await agent.json('create_diagram', { dsl: 'flowchart\n  C -> D' });
+    expect(again.diagram).toBe(made.diagram);
+    expect(await readdir(config.projects[0]!.path)).toHaveLength(1);
+  });
+});
+
+describe('when the service is not running', () => {
+  it('does not start one for a listing, and says what the legacy modes say', async () => {
+    const port = await freePort();
+    const agent = await session(`http://127.0.0.1:${port}`);
+    const listed = await agent.call('list_diagrams');
+    expect(listed.isError).toBe(true);
+    expect(listed.text).toMatch(/^No editor is paired/);
+    expect((await fetch(`http://127.0.0.1:${port}/health`).catch(() => null))).toBeNull();
+  });
+
+  it('gives the service error alone when create_diagram cannot start one', async () => {
+    const other = createServer((_request, response) => { response.writeHead(200, { 'content-type': 'text/html' }); response.end('hi'); });
+    await new Promise<void>((ready) => other.listen(0, '127.0.0.1', ready));
+    try {
+      const port = (other.address() as { port: number }).port;
+      const refused = await (await session(`http://127.0.0.1:${port}`)).call('create_diagram', { dsl: DSL });
+      expect(refused.isError).toBe(true);
+      expect(refused.text).toContain(`Port ${port} is in use`);
+      expect(refused.text).not.toContain('No editor is paired');
+    } finally {
+      other.closeAllConnections();
+      await new Promise<void>((done) => other.close(() => done()));
+    }
   });
 });
 
@@ -277,37 +380,53 @@ describe('starting the service (AC-4, D10)', () => {
     url = '';
   });
 
-  it('spawns serve on the first call, keeps it after the server closes, and a second server finds it', async () => {
-    // A free port, then a config that names it: the spawned process reads both from this environment.
-    const probe = createServer();
-    await new Promise<void>((ready) => probe.listen(0, '127.0.0.1', ready));
-    const port = (probe.address() as { port: number }).port;
-    await new Promise<void>((done) => probe.close(() => done()));
+  /** A free port and a config file naming it; the spawned processes read both from the environment. */
+  async function environment(config: string | ((port: number, projects: unknown) => string)) {
+    const port = await freePort();
     const home = await tempDir();
-    const projects = await tempConfig('alpha');
-    const { writeFile } = await import('node:fs/promises');
     const file = join(home, 'service.json');
-    await writeFile(file, JSON.stringify({ port, projects: projects.projects }));
-    process.env.OPENFLOWKIT_SERVICE_CONFIG = file;
-    process.env.HOME = home;
+    await writeFile(file, typeof config === 'string' ? config : config(port, (await tempConfig('alpha')).projects));
     url = `http://127.0.0.1:${port}`;
+    return { port, home, file, env: { OPENFLOWKIT_SERVICE_URL: url, OPENFLOWKIT_SERVICE_CONFIG: file, HOME: home } };
+  }
+  const settings = (port: number, projects: unknown): string => JSON.stringify({ port, projects });
+
+  it('a real MCP server process starts serve, the service outlives it, and a second server reuses it', async () => {
+    const { env } = await environment(settings);
+    Object.assign(process.env, { OPENFLOWKIT_SERVICE_CONFIG: env.OPENFLOWKIT_SERVICE_CONFIG, HOME: env.HOME });
     const health = async () => (await (await fetch(`${url}/health`)).json()) as { pid: number };
 
-    const first = await session(url);
+    const transport = new StdioClientTransport({
+      command: process.execPath, args: ['--import', 'tsx', 'src/index.ts'], cwd: fileURLToPath(new URL('..', import.meta.url)), stderr: 'ignore',
+      env: { ...process.env as Record<string, string>, ...env, OPENFLOWKIT_BRIDGE_PORT: String(await freePort()) },
+    });
+    const child = new Client({ name: 'claude-code', version: '0.0.0' });
+    await child.connect(transport);
+    const childPid = transport.pid!;
     const started = Date.now();
-    const made = await first.json('create_diagram', { project: 'alpha', dsl: DSL });
+    const result = await child.callTool({ name: 'create_diagram', arguments: { project: 'alpha', dsl: DSL } }) as { content: { text: string }[] };
     expect(Date.now() - started).toBeLessThan(10_000);
+    const made = JSON.parse(result.content[0]!.text);
     expect(made.url).toBe(`${url}/#/p/alpha/${made.diagram}`);
     const pid = (await health()).pid;
-    expect(pid).not.toBe(process.pid);
+    expect(pid).not.toBe(childPid);
 
-    // The MCP server goes away; the service is the user's and stays.
-    closers.splice(0).forEach((close) => close());
-    await Promise.all(clients.splice(0).map((client) => client.close()));
+    // The MCP server process ends; the service is the user's and stays.
+    await child.close();
+    expect(() => process.kill(childPid, 0)).toThrow(/ESRCH/);
     expect(() => process.kill(pid, 0)).not.toThrow();
 
     const second = await session(url, { name: 'Cursor' });
     await second.json('create_diagram', { project: 'alpha', dsl: DSL });
     expect((await health()).pid).toBe(pid);
+  }, 30_000);
+
+  it('says what went wrong when serve cannot read its config, not that the port is taken', async () => {
+    const { port, env } = await environment('{not json');
+    Object.assign(process.env, { OPENFLOWKIT_SERVICE_CONFIG: env.OPENFLOWKIT_SERVICE_CONFIG, HOME: env.HOME });
+    const client = new ServiceClient({ url, clientName: () => 'x', log: () => undefined });
+    const failure = await client.ensure().then(() => '', (error: Error) => error.message);
+    expect(failure).toMatch(/exited with code 2[\s\S]*openflowkit serve/);
+    expect(failure).not.toContain(`Port ${port}`);
   }, 30_000);
 });

@@ -4,7 +4,7 @@ import { registerViewer } from './lib/card.js';
 import { MCP_SERVER_NAME, MCP_SERVER_VERSION } from './lib/version.js';
 import { CONNECT_URL, LiveBridge } from './lib/bridge.js';
 import { DocumentStore } from './lib/documentStore.js';
-import { ServiceClient } from './lib/serviceClient.js';
+import type { ServiceClient } from './lib/serviceClient.js';
 import { registerServiceTools } from './tools/serviceTools.js';
 import { registerValidateDsl } from './tools/validateDsl.js';
 import { registerAnalyzeCodebase } from './tools/analyzeCodebase.js';
@@ -25,7 +25,7 @@ export interface ServerOptions extends Partial<OpToolDeps> {
 
 export interface CreatedServer {
   readonly server: McpServer;
-  readonly service: ServiceClient;
+  readonly service?: ServiceClient;
   readonly bridge: LiveBridge;
   readonly store: DocumentStore;
 }
@@ -74,9 +74,10 @@ export function createServerWithDeps(options: ServerOptions = {}): CreatedServer
     void server.server.notification({ method: 'notifications/claude/channel', params: { content: event.body, meta } } as never).catch(() => undefined);
   };
   (bridge as Partial<LiveBridge>).onEvent?.(forward);
-  const service = options.service ?? new ServiceClient({ clientName: () => server.server.getClientVersion()?.name, log });
-  service.onEvent(forward);
-  const deps: OpToolDeps = { store, bridge, service };
+  // Only the stdio entry point builds a service client (index.ts); a server made without one has no service tools.
+  const service = options.service;
+  service?.onEvent(forward);
+  const deps: OpToolDeps = { store, bridge, ...(service ? { service } : {}) };
 
   registerValidateDsl(server);
   registerAnalyzeCodebase(server);
@@ -86,7 +87,7 @@ export function createServerWithDeps(options: ServerOptions = {}): CreatedServer
   registerArchitectureTools(server, store);
   registerDocumentTools(server, deps);
   registerOpTools(server, deps);
-  registerServiceTools(server, service);
+  if (service) registerServiceTools(server, service);
   registerResources(server);
   // Beside this module in src/ and in dist/ (scripts/build-dist.mjs copies it).
   registerViewer(server, () => readFile(new URL('./viewer/viewer.html', import.meta.url), 'utf8'));
