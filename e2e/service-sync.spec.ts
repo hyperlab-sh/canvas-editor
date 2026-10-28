@@ -195,3 +195,24 @@ test('a tab that lost its event stream catches up when the stream comes back', a
   await page.unroute('**/events?**', blocked);
   await expect.poll(() => labels(page), { timeout: 15_000 }).toEqual(['Again', 'Back']);
 });
+
+test('an edit whose save failed is kept when an agent op arrives', async ({ page }) => {
+  const { id, file } = await newDiagram('sync-failed-save');
+  await openTab(page, id);
+  const session = (await api<{ sessionId: string }>('POST', '/sessions', { client: 'e2e', cwd: scratch, pid: process.pid })).json.sessionId;
+  expect((await api('POST', `/sessions/${session}/bindings`, { project: 'demo', id })).status).toBe(200);
+
+  await page.route(`**/projects/demo/diagrams/${id}`, (route) => route.request().method() === 'PUT' ? route.abort() : route.continue());
+  const failed = page.waitForEvent('requestfailed');
+  await drawShape(page, 'r', 300, 300);
+  await failed;
+
+  const read = page.waitForResponse((response) => response.request().method() === 'GET' && response.url().endsWith(`/diagrams/${id}`));
+  const drawn = await api<{ ok: boolean }>('POST', `/sessions/${session}/ops`, { project: 'demo', id, op: 'create_diagram', input: { dsl: 'flowchart\n  Up -> Down\n' } });
+  expect(drawn.json.ok).toBe(true);
+  await (await read).finished();
+  // The tab read the service's copy and left the unsaved shape alone.
+  await expect.poll(async () => (await state(page)).nodes.length).toBe(1);
+  expect(await labels(page)).toEqual([]);
+  expect(diskLabels(file)).toEqual(['Down', 'Up']);
+});
