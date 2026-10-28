@@ -43,10 +43,26 @@ describe('GET /events', () => {
     const session = await register(service);
     const stream = await openStream(service, id);
     await bind(service, session.sessionId, id);
-    expect(await stream.next('holder')).toEqual({ project: 'alpha', id, label: session.label });
+    expect(await stream.next('holder')).toEqual({ project: 'alpha', id, label: session.label, channel: false });
     const released = await call(service, 'DELETE', `/projects/alpha/diagrams/${id}/holder`);
     expect(released.status).toBe(204);
-    expect(await stream.next('holder')).toEqual({ project: 'alpha', id, label: null });
+    expect(await stream.next('holder')).toEqual({ project: 'alpha', id, label: null, channel: false });
+    stream.close();
+  });
+
+  it('tells the tabs whether the holder hears comments: the channel it registered with', async () => {
+    const { service } = await boot();
+    const { id } = await newDiagram(service);
+    const { sessionId, label } = (await call(service, 'POST', '/sessions', { client: 'Claude Code', cwd: '/x/hyper', pid: 7, channel: true })).json;
+    const stream = await openStream(service, id);
+    await bind(service, sessionId, id);
+    expect(await stream.next('holder')).toEqual({ project: 'alpha', id, label, channel: true });
+    expect((await call(service, 'GET', `/projects/alpha/diagrams/${id}`)).json.holder).toEqual({ label, channel: true });
+    // Anything but true is no channel, including what an older MCP server sends (nothing).
+    const mute = (await call(service, 'POST', '/sessions', { client: 'Codex', cwd: '/y/o', pid: 8, channel: 'yes' })).json;
+    const { id: other } = await newDiagram(service, 'Other');
+    await bind(service, mute.sessionId, other);
+    expect((await call(service, 'GET', `/projects/alpha/diagrams/${other}`)).json.holder).toEqual({ label: mute.label, channel: false });
     stream.close();
   });
 });

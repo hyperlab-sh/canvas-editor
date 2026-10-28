@@ -222,6 +222,7 @@ The MCP server gives your agent the operations you have, on the live canvas or o
 | **See** its own result | `screenshot` returns a real image the model can look at |
 | **Hand you files** | `export`: SVG, PNG, PDF, JSON or an animated SVG |
 | **Read your repo** | `discover_architecture`, `drift_report`, `explain_element` |
+| **Answer your comments** on the canvas | `list_threads`, `reply_to_thread`, `start_thread`, `resolve_thread`; with Claude Code, new comments can be pushed live into the session |
 
 Things to ask for:
 
@@ -236,16 +237,17 @@ anything it had to drop. Every agent change is one undo step, and the Connect pa
 last one with an **Undo** button.
 
 <details>
-<summary><b>All 29 tools</b></summary>
+<summary><b>All 35 tools</b></summary>
 
-Sixteen editor operations, which also work on files: `create_diagram`, `update_diagram`,
+Twenty editor operations, which also work on files: `create_diagram`, `update_diagram`,
 `get_diagram`, `list_diagrams`, `get_syntax`, `search_icons`, `find_icons_for`, `move`, `style`,
-`delete`, `add_shape`, `export`, `screenshot`, `fit_view`, `get_document`, `list_pages`.
+`delete`, `add_shape`, `export`, `screenshot`, `fit_view`, `get_document`, `list_pages`,
+`list_threads`, `start_thread`, `reply_to_thread`, `resolve_thread`.
 
-Thirteen for files and repositories: `openflow_create`, `openflow_open`, `openflow_save`, `whoami`,
-`server_info`, `validate_openflow_dsl`, `list_diagram_node_types`, `list_starter_templates`,
-`get_starter_template`, `analyze_codebase`, `discover_architecture`, `drift_report`,
-`explain_element`.
+Fifteen for files, repositories and the local service: `openflow_create`, `openflow_open`,
+`openflow_save`, `whoami`, `server_info`, `validate_openflow_dsl`, `list_diagram_node_types`,
+`list_starter_templates`, `get_starter_template`, `analyze_codebase`, `discover_architecture`,
+`drift_report`, `explain_element`, `connect_diagram`, `disconnect_diagram`.
 
 Arguments and examples: [MCP server docs](https://docs.openflowkit.com/mcp-server/). The op
 manifest is [`src/agent/manifest.ts`](src/agent/manifest.ts). Requires Node 20.11+.

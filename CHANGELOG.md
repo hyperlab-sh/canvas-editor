@@ -30,7 +30,12 @@ separately; its changes are listed under *For developers* in each release.
   `openThreads`. With **Live comments** on in the editor, each comment you write is pushed into the running Claude Code
   session as a channel event (`type: "thread"`, `POST /event` on the bridge; start Claude Code with
   `--dangerously-load-development-channels plugin:openflowkit@openflowkit`). The MCP server now declares the
-  `claude/channel` capability; nothing changes for clients that ignore it.
+  `claude/channel` capability; nothing changes for clients that ignore it. Live comments work with Claude Code only
+  (no other agent can take a pushed message yet); with any agent, `list_threads` still reads the threads on request.
+  The editor learns whether the connected session can hear comments (`channel` in the bridge's `/hello` and `/health`,
+  a `{ "channel" }` notice on `/next` when it changes, and in the service's `holder` events) and keeps the **Live
+  comments** switch and the **Send … to agent** button off, with the reason in their tooltip, for a session that
+  cannot.
 - **Private repos in the browser.** On the "not found, or it is private" screen, **Private repo? Use a GitHub token**
   takes a fine-grained token with Contents read-only access; the files are then read through the GitHub API. The
   token stays in this tab.

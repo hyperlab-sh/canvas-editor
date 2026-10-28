@@ -55,6 +55,8 @@ export class ServiceClient {
   private starting: Promise<void> | null = null;
   private registering: Promise<void> | null = null;
   private listeners: ((event: BridgeThreadEvent) => void)[] = [];
+  /** Whether this session can receive the comments it registers for; told to the service, which tells the editor. */
+  private channel: () => boolean = () => false;
   private polling: AbortController | null = null;
   private closed = false;
 
@@ -135,7 +137,7 @@ export class ServiceClient {
   private register(pid: number): Promise<void> {
     if (this.sessionId && this.servicePid === pid) return Promise.resolve();
     this.registering ??= (async () => {
-      const reply = await this.request('POST', '/sessions', { client: this.clientName() ?? 'MCP client', cwd: process.cwd(), pid: process.pid });
+      const reply = await this.request('POST', '/sessions', { client: this.clientName() ?? 'MCP client', cwd: process.cwd(), pid: process.pid, channel: this.channel() });
       const body = reply.json as { sessionId: string; label: string };
       this.sessionId = body.sessionId;
       this.label = body.label;
@@ -226,6 +228,11 @@ export class ServiceClient {
   /** Receives each thread event the service hands this session. */
   onEvent(listener: (event: BridgeThreadEvent) => void): void {
     this.listeners.push(listener);
+  }
+
+  /** Whether the events reach the session's model. Read at registration, which follows the client's initialize. */
+  channelFrom(source: () => boolean): void {
+    this.channel = source;
   }
 
   /** Stops the event stream. The service keeps running: it belongs to the user, not to this process. */

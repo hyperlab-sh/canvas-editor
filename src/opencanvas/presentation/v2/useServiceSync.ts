@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { areStructurallyEqual } from '../../domain/commands/equality';
 import { takeThreads, withoutThreads } from '../../domain/threads/threads';
 import type { SceneDocumentV1 } from '../../domain/document/types';
-import type { ServiceRepository } from '../../../services/storage/v2/serviceSync';
+import type { ServiceHolder, ServiceRepository } from '../../../services/storage/v2/serviceSync';
 import type { ToastItem } from '../design-system';
 import { NoHolderError, setThreadEventSender } from '../../../agent/bridge/threadEvent';
 
@@ -32,7 +32,7 @@ const LABEL = 'Updated from the service';
 export function useServiceSync(input: ServiceSyncInput) {
   const { repository, id } = input;
   const ready = input.load.phase === 'ready' && !input.load.readOnly; // events before that have nothing to replace
-  const [holder, setHolder] = useState<string | null>(null);
+  const [holder, setHolder] = useState<ServiceHolder | null>(null);
   const latest = useRef(input);
   useEffect(() => { latest.current = input; });
   /** One read at a time; an event that lands meanwhile makes it read once more. */
@@ -90,8 +90,9 @@ export function useServiceSync(input: ServiceSyncInput) {
     source.addEventListener('open', () => { void sync(false); });
     source.addEventListener('holder', (event) => {
       try {
-        const { label } = JSON.parse((event as MessageEvent<string>).data) as { label?: unknown };
-        const next = typeof label === 'string' ? label : label === null ? null : undefined;
+        const { label, channel } = JSON.parse((event as MessageEvent<string>).data) as { label?: unknown; channel?: unknown };
+        // A service before 0.2.5 sends no channel: none.
+        const next = typeof label === 'string' ? { label, channel: channel === true } : label === null ? null : undefined;
         if (next !== undefined) setHolder(next);
       } catch (error) {
         console.warn('Ignored a malformed holder event', error);

@@ -50,6 +50,20 @@ export interface BridgeHealth {
   readonly pageId: string | null;
   readonly pages: readonly BridgePageSummary[];
   readonly lastSeenMs: number | null;
+  /** Servers after 0.2.4: the session owning this port can receive comments (a channel). */
+  readonly channel?: boolean;
+}
+
+/**
+ * What `/hello` answers, and what `/next` answers in place of a request when the channel changed since the hello
+ * (the client declares it at initialize, which can follow the editor's hello). Absent on a server before 0.2.5: no channel.
+ */
+export interface BridgeChannelNotice {
+  readonly channel: boolean;
+}
+
+export function isBridgeChannelNotice(value: unknown): value is BridgeChannelNotice {
+  return typeof value === 'object' && value !== null && typeof (value as { channel?: unknown }).channel === 'boolean';
 }
 
 /**

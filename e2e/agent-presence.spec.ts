@@ -27,7 +27,7 @@ async function bridge(): Promise<Bridge> {
   const server = createServer((request, response) => {
     const path = new URL(request.url ?? '/', 'http://127.0.0.1').pathname;
     if (request.method === 'OPTIONS') { reply(response, 204); return; }
-    if (path === '/hello') { request.resume(); request.on('end', () => reply(response, 200, { ok: true, protocol: 1 })); return; }
+    if (path === '/hello') { request.resume(); request.on('end', () => reply(response, 200, { ok: true, protocol: 1, channel: true })); return; }
     if (path === '/result') {
       let body = '';
       request.on('data', (chunk) => { body += String(chunk); });

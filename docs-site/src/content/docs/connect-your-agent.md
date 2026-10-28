@@ -255,23 +255,44 @@ so nothing costs tokens until you ask. It can add a comment to a thread (`reply_
 (`resolve_thread`) or start one (`start_thread`). Its comments carry its name, such as "Claude Code". Threads are
 not drawing, so they never become an undo step.
 
-Live comments is opt-in. Turn it on in the editor (the **Live comments** toggle, available while an agent is
-connected) and each comment you write, in a new thread or an existing one, is pushed into your running Claude Code session as it
-arrives. Claude Code shows it as a channel message, and the agent answers with `reply_to_thread` in the same thread.
-Start Claude Code with the channel flag:
+**Live comments work with Claude Code only.** Pushing a comment into a running session uses Claude Code's
+[channels](https://code.claude.com/docs/en/channels-reference), a Claude Code feature with no counterpart in
+other agents yet: Codex, OpenCode, Pi, Gemini CLI and the rest have no way for an MCP server to put a message in
+front of the model between turns. With those agents everything above still works: the agent reads your threads
+with `list_threads` when you ask, and answers with `reply_to_thread`. Support for other agents is tracked upstream;
+see [other agents](#other-agents) below.
+
+Live comments is opt-in. Turn it on in the editor (the **Live comments** toggle in the Threads panel) and each comment
+you write, in a new thread or an existing one, is pushed into your running Claude Code session as it arrives. Claude
+Code shows it as a channel message, and the agent answers with `reply_to_thread` in the same thread. Start Claude Code
+with the channel flag, and tell OpenFlowKit so with `OPENFLOWKIT_CHANNEL=1` in the environment the MCP server
+starts in (Claude Code does not announce its channels to the server):
 
 ```bash
-claude --dangerously-load-development-channels plugin:openflowkit@openflowkit
+OPENFLOWKIT_CHANNEL=1 claude --dangerously-load-development-channels plugin:openflowkit@openflowkit
 ```
 
 This needs the plugin installed (see [Claude Code](#claude-code)), Claude Code 2.1.80 or newer, an interactive session
 (not `-p`), and, on Team and Enterprise plans, an organization that allows channels. Channels are a research preview;
 OpenFlowKit is not on the approved list yet, which is why the flag is needed.
 
+The editor knows whether the connected session can hear comments. The switch and the **Send … to agent** button are
+enabled only while an agent is connected whose session has a channel; otherwise both are off, and their tooltip says
+whether to connect an agent or to restart Claude Code with the flag. The MCP server tells the editor when it pairs
+(`channel` in the bridge's hello and health, and in the service's holder events); `server_info` and `whoami` show the
+agent the same flag.
+
 Only the session that owns the connection to the editor receives live comments: when several agent sessions share one
-canvas, that is the first one that started. A session started without the flag, or one that does not own the
-connection, drops the comment silently and the editor shows no error. Nothing else changes: all the tools work as
-before, and agent comments are never pushed back.
+canvas, that is the first one that started. A session that owns the connection but was started without the flag shows
+in the editor as unable to receive comments. Nothing else changes: all the tools work as before, and agent comments
+are never pushed back.
+
+### Other agents
+
+Pi and OpenCode could get live comments through a plugin of their own, since both can inject a message into a running
+session from an extension (Pi's `sendUserMessage`, OpenCode's `session.prompt`); Codex and Gemini CLI cannot today.
+Until such plugins exist, use **Send … to agent**'s pull side instead: ask the agent to check the comments, and it
+calls `list_threads` with `unanswered: true`.
 
 ## Troubleshooting
 

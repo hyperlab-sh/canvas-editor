@@ -12,7 +12,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  BRIDGE_POLL_SECONDS, bridgeUrls, isBridgeRequest,
+  BRIDGE_POLL_SECONDS, bridgeUrls, isBridgeChannelNotice, isBridgeRequest,
   type BridgeClientInfo, type BridgePageSummary, type BridgeRequest,
 } from '../../../agent/bridge/protocol';
 import { setThreadEventSender } from '../../../agent/bridge/threadEvent';
@@ -44,6 +44,8 @@ export interface V2AgentActivity {
 interface V2AgentBridge {
   readonly status: V2BridgeStatus;
   readonly detail: string;
+  /** Connected to a session that receives comments (a Claude Code channel); false until the server says so. */
+  readonly channel: boolean;
   readonly activity: V2AgentActivity | null;
   /** Agents that sent requests over this connection, latest first: several sessions can share one canvas. */
   readonly agents: readonly string[];
@@ -128,6 +130,7 @@ const until = (signal: AbortSignal): Promise<void> => new Promise((resolve) => {
 export function useV2AgentBridge(options: V2AgentBridgeOptions): V2AgentBridge {
   const [status, setStatus] = useState<V2BridgeStatus>('off');
   const [detail, setDetail] = useState('');
+  const [channel, setChannel] = useState(false);
   const [agents, setAgents] = useState<readonly string[]>([]);
   const [activity, setActivity] = useState<{ agent: string; doing: string | null; change: { label: string; id: string } | null } | null>(null);
   // The poll loop outlives renders; it reads the status it last set from here, not from its closure.
@@ -191,7 +194,11 @@ export function useV2AgentBridge(options: V2AgentBridgeOptions): V2AgentBridge {
           })),
           app: 'openflowkit-editor',
         };
-        check(await post(urls.hello, { document: info }, hold));
+        const response = await post(urls.hello, { document: info }, hold);
+        check(response);
+        // An older server answers without it: no channel.
+        const reply: unknown = await response.json().catch(() => null);
+        setChannel(isBridgeChannelNotice(reply) && reply.channel);
       };
 
       const runRequest = async (request: BridgeRequest): Promise<void> => {
@@ -224,6 +231,7 @@ export function useV2AgentBridge(options: V2AgentBridgeOptions): V2AgentBridge {
         check(response);
         const payload: unknown = await response.json();
         if (isBridgeRequest(payload)) await runRequest(payload);
+        else if (isBridgeChannelNotice(payload)) setChannel(payload.channel);
       };
 
       // A lock granted after a wait can outlive the server: look before sending the token.
@@ -244,6 +252,7 @@ export function useV2AgentBridge(options: V2AgentBridgeOptions): V2AgentBridge {
       } finally {
         setThreadEventSender(null);
         announceRef.current = null;
+        setChannel(false);
       }
     };
 
@@ -340,7 +349,7 @@ export function useV2AgentBridge(options: V2AgentBridgeOptions): V2AgentBridge {
   // The change line is the undo top's, or nothing: after an Undo (or any later edit) the panel's Undo would act under a stale label.
   const change = activity?.change && activity.change.id === (options.undoTopId ?? null) ? activity.change.label : null;
   const shown = activity && (activity.doing || change) ? { agent: activity.agent, doing: activity.doing, change } : null;
-  return { status, detail, activity: shown, agents, claim };
+  return { status, detail, channel: status === 'connected' && channel, activity: shown, agents, claim };
 }
 
 /**

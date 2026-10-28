@@ -57,11 +57,11 @@ it('a 409 that lands while an event read is running still takes the copy and say
 
 it('an event leaves unsaved edits alone, a conflict does not', async () => {
   const { hook, pushToast, replaceDocument, fire } = setup({
-    unsaved: true, fetchCurrent: async () => ({ document: incoming, revision: 5, holder: 'Claude Code' }),
+    unsaved: true, fetchCurrent: async () => ({ document: incoming, revision: 5, holder: { label: 'Claude Code', channel: true } }),
   });
   await act(async () => { fire('revision'); });
   expect(replaceDocument).not.toHaveBeenCalled();
-  expect(hook.result.current.holder).toBe('Claude Code');
+  expect(hook.result.current.holder).toEqual({ label: 'Claude Code', channel: true });
   await act(async () => { hook.result.current.onConflict(); });
   await vi.waitFor(() => expect(pushToast).toHaveBeenCalled());
   expect(replaceDocument).toHaveBeenCalledTimes(1);
@@ -73,8 +73,13 @@ it('ignores a malformed holder event', async () => {
   act(() => fire('holder', { data: '{not json' }));
   act(() => fire('holder', { data: '{"label":5}' }));
   expect(hook.result.current.holder).toBeNull();
+  // An older service names the holder without a channel: none. Anything but true is none too.
   act(() => fire('holder', { data: '{"label":"Codex"}' }));
-  expect(hook.result.current.holder).toBe('Codex');
+  expect(hook.result.current.holder).toEqual({ label: 'Codex', channel: false });
+  act(() => fire('holder', { data: '{"label":"Claude Code","channel":true}' }));
+  expect(hook.result.current.holder).toEqual({ label: 'Claude Code', channel: true });
+  act(() => fire('holder', { data: '{"label":"Claude Code","channel":"yes"}' }));
+  expect(hook.result.current.holder).toEqual({ label: 'Claude Code', channel: false });
   warn.mockRestore();
 });
 
@@ -99,10 +104,10 @@ it('Disconnect releases the holder, and a failure says so and keeps the badge', 
   const disconnect = vi.fn(async () => undefined);
   const { hook, pushToast, fire } = setup({ fetchCurrent: async () => ({ document: local, revision: 0, holder: null }), repository: { disconnect } });
   act(() => fire('holder', { data: '{"label":"Claude Code · hyper"}' }));
-  expect(hook.result.current.holder).toBe('Claude Code · hyper');
+  expect(hook.result.current.holder).toMatchObject({ label: 'Claude Code · hyper' });
   disconnect.mockRejectedValueOnce(new Error('service down'));
   await act(async () => { await hook.result.current.disconnect(); });
-  expect(hook.result.current.holder).toBe('Claude Code · hyper');
+  expect(hook.result.current.holder).toMatchObject({ label: 'Claude Code · hyper' });
   expect(pushToast).toHaveBeenCalledWith(expect.objectContaining({ title: 'Couldn’t disconnect', description: 'service down' }));
   await act(async () => { await hook.result.current.disconnect(); });
   expect(disconnect).toHaveBeenCalledWith('d1');

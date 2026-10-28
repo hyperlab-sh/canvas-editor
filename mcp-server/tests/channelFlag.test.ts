@@ -38,6 +38,36 @@ describe('channel flag', () => {
   });
 });
 
+describe('the editor hears about the channel', () => {
+  const hello = (port: number) => fetch(`http://127.0.0.1:${port}/hello`, {
+    method: 'POST', headers: { 'content-type': 'text/plain' },
+    body: JSON.stringify({ document: { documentId: 'doc', name: 'Doc', revision: 1, pageId: 'p1', pages: [], app: 'test-editor' } }),
+  });
+
+  it('hello and health say true for a client that declared claude/channel', async () => {
+    await connect({ experimental: { 'claude/channel': {} } });
+    const port = await bridge!.start();
+    expect(await (await hello(port)).json()).toEqual({ ok: true, protocol: 1, channel: true });
+    expect(bridge!.health().channel).toBe(true);
+  });
+
+  it('hello says false for a client without one, and the next poll reports a channel declared after the hello', async () => {
+    bridge = new LiveBridge({ port: 0, log: () => undefined });
+    const { server } = createServerWithDeps({ bridge, log: () => undefined });
+    const port = await bridge.start();
+    // The editor paired before the client initialized (index.ts starts the bridge first).
+    expect(await (await hello(port)).json()).toEqual({ ok: true, protocol: 1, channel: false });
+    const client = new Client({ name: 'test', version: '0.0.0' }, { capabilities: { experimental: { 'claude/channel': {} } } });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
+    const poll = await fetch(`http://127.0.0.1:${port}/next?wait=1`);
+    expect(poll.status).toBe(200);
+    expect(await poll.json()).toEqual({ channel: true });
+    // Told once: the poll after that parks as usual.
+    expect((await fetch(`http://127.0.0.1:${port}/next?wait=1`)).status).toBe(204);
+  });
+});
+
 describe('OPENFLOWKIT_CHANNEL (D15)', () => {
   const saved = process.env.OPENFLOWKIT_CHANNEL;
   afterEach(() => { if (saved === undefined) delete process.env.OPENFLOWKIT_CHANNEL; else process.env.OPENFLOWKIT_CHANNEL = saved; });

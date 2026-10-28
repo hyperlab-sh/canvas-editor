@@ -83,10 +83,10 @@ async function requireBody(context: RouteContext): Promise<Record<string, unknow
   return body;
 }
 
-/** The holder as the API shows it: `{label}`, or null when no session holds the diagram. */
-const holderOf = (deps: ServiceDeps, project: string, id: string): { label: string } | null => {
+/** The holder as the API shows it: `{label, channel}`, or null when no session holds the diagram. */
+const holderOf = (deps: ServiceDeps, project: string, id: string): { label: string; channel: boolean } | null => {
   const holder = deps.sessions.holderOf(project, id);
-  return holder ? { label: holder.label } : null;
+  return holder ? { label: holder.label, channel: holder.channel } : null;
 };
 
 /** The session in the path, or a 404 that tells the client to register again. */
@@ -220,11 +220,12 @@ export function buildRoutes(): Route[] {
     {
       method: 'POST', path: '/sessions',
       handle: async (context) => {
-        const { client, cwd, pid } = await requireBody(context);
+        const { client, cwd, pid, channel } = await requireBody(context);
         if (typeof cwd !== 'string' || !cwd) throw new HttpError(400, 'Registering needs the "cwd".');
         if (typeof pid !== 'number' || !Number.isSafeInteger(pid)) throw new HttpError(400, 'Registering needs the "pid".');
         const label = typeof client === 'string' && client ? client : 'MCP client';
-        return { status: 201, json: context.deps.sessions.register({ client: label, cwd, pid }) };
+        // Anything but true is "no channel": an older MCP server sends nothing here.
+        return { status: 201, json: context.deps.sessions.register({ client: label, cwd, pid, channel: channel === true }) };
       },
     },
     {

@@ -1,16 +1,18 @@
 import { Switch } from '../design-system';
 
 /**
- * Live comments: each new comment of yours is pushed into the connected agent's session. It needs the agent
- * bridge, so without one the switch is off and says why.
+ * Live comments: each new comment of yours is pushed into the connected agent's session. It needs an agent session
+ * that receives them, so without one the switch is off and says why (`why`).
  */
 export function V2LiveCommentsToggle(props: {
   readonly on: boolean;
   readonly available: boolean;
+  /** Why the switch is off, when it is. */
+  readonly why?: string | null;
   readonly onChange: (on: boolean) => void;
   readonly compact?: boolean;
 }): React.JSX.Element {
-  const why = props.available ? null : 'Connect an agent first: live comments are sent through the agent connection.';
+  const why = props.available ? null : props.why ?? 'Connect an agent first: live comments are sent through the agent connection.';
   return (
     <div className="ofk-comment-live" data-compact={props.compact || undefined} title={why ?? undefined}>
       <Switch label="Live comments" checked={props.on && props.available} disabled={!props.available}

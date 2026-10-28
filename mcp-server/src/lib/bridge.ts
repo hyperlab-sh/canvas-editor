@@ -24,6 +24,7 @@ import {
 } from './agent.js';
 import { MCP_SERVER_NAME, MCP_SERVER_VERSION } from './version.js';
 import { DEFAULT_APP_ORIGIN } from './openLink.js';
+import { isAllowedBridgeHost, isFromBrowser } from './bridgeGuards.js';
 
 /** The app's page that opens Connect agent: what a user without a paired editor is sent to. */
 export const CONNECT_URL = `${DEFAULT_APP_ORIGIN}/#/connect`;
@@ -39,23 +40,6 @@ const TAB_TAKEN = 'Another tab took over the agent connection. Press Connect in 
 const SHARE_PROTOCOL = 1;
 /** A guest that called within this window is listed in the holder's status. */
 const GUEST_WINDOW_MS = 10 * 60_000;
-
-/**
- * This machine by name: a rebound DNS name (evil.example → 127.0.0.1) is refused. Any port, so an
- * SSH or devcontainer forward (Host: localhost:9000) still pairs.
- */
-const isAllowedBridgeHost = (host: string | undefined): boolean =>
-  /^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/.test(host?.toLowerCase() ?? '');
-
-/**
- * `/call` is for MCP servers on this machine. A browser always sends Origin or Sec-Fetch-* with a POST,
- * and cannot send JSON to another origin without a preflight, so any of those marks a web page.
- */
-const isFromBrowser = (request: IncomingMessage): boolean => {
-  const { headers } = request;
-  return headers.origin !== undefined || headers['sec-fetch-site'] !== undefined || headers['sec-fetch-mode'] !== undefined
-    || !/^application\/json\b/i.test(headers['content-type'] ?? '');
-};
 
 export interface BridgeStatus {
   readonly port: number;
@@ -105,6 +89,10 @@ export class LiveBridge {
   private readonly pending = new Map<string, PendingCall>();
   private readonly options: LiveBridgeOptions;
   private eventSink: ((event: BridgeThreadEvent) => void) | null = null;
+  /** Whether the session can receive what `POST /event` brings; read when the editor asks, since a client declares it only at initialize. */
+  private channelSource: () => boolean = () => false;
+  /** What the paired editor was last told about the channel, so a change since its hello reaches it on its next poll. */
+  private toldChannel: boolean | null = null;
 
   constructor(options: LiveBridgeOptions) {
     this.options = options;
@@ -113,6 +101,11 @@ export class LiveBridge {
   /** Where `POST /event` goes (the MCP server's channel notification). Only the process that owns the port ever hears one. */
   onEvent(sink: (event: BridgeThreadEvent) => void): void {
     this.eventSink = sink;
+  }
+
+  /** Tells the editor whether comments reach the session (the `channel` of `/hello`, `/health` and a `/next` notice). */
+  channelFrom(source: () => boolean): void {
+    this.channelSource = source;
   }
 
   get connected(): boolean {
@@ -203,6 +196,7 @@ export class LiveBridge {
       name: MCP_SERVER_NAME,
       version: MCP_SERVER_VERSION,
       connected: this.connected,
+      channel: this.channelSource(),
       documentId: this.client?.documentId ?? null,
       documentName: this.client?.name ?? null,
       pageId: this.connected ? this.client?.pageId ?? null : null,
@@ -416,7 +410,8 @@ export class LiveBridge {
         this.gone = false;
         this.lastSeenAt = Date.now();
         this.options.log?.(`Editor connected: "${document.name}" (${document.pages.length} page(s))${wasConnected ? ' [replaced]' : ''}`);
-        this.respond(response, 200, { ok: true, protocol: BRIDGE_PROTOCOL_VERSION });
+        this.toldChannel = this.channelSource();
+        this.respond(response, 200, { ok: true, protocol: BRIDGE_PROTOCOL_VERSION, channel: this.toldChannel });
         return;
       }
       if (request.method === 'POST' && url.pathname === '/event') {
@@ -467,6 +462,13 @@ export class LiveBridge {
     if (this.parked) { this.respond(this.parked, 204, null); this.parked = null; }
     if (this.queue.length > 0) {
       this.respond(response, 200, this.queue.shift());
+      return;
+    }
+    // The client declares its channel at initialize, which can come after the editor's hello: the poll carries the news.
+    const channel = this.channelSource();
+    if (this.toldChannel !== null && this.toldChannel !== channel) {
+      this.toldChannel = channel;
+      this.respond(response, 200, { channel });
       return;
     }
     const waitSeconds = Math.min(60, Math.max(1, Number(url.searchParams.get('wait')) || BRIDGE_POLL_SECONDS));

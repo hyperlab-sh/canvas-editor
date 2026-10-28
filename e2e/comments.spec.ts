@@ -206,7 +206,8 @@ test('live comments are off without an agent, and say why', async ({ page }) => 
 });
 
 // A fake MCP server's bridge: long-poll /next, results on /result, and the comment events of live mode on /event.
-async function bridge() {
+// `channel` is what its hello says: whether the session hears the events (false for a session started without one).
+async function bridge(channel = true) {
   const events: Record<string, unknown>[] = [];
   const results: { id: string; ok: boolean }[] = [];
   const queue: unknown[] = [];
@@ -233,7 +234,7 @@ async function bridge() {
     request.on('end', () => {
       if (path === '/event') events.push(JSON.parse(body));
       if (path === '/result') results.push(JSON.parse(body));
-      reply(response, 200, { ok: true, protocol: 1 });
+      reply(response, 200, { ok: true, protocol: 1, channel });
     });
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -243,6 +244,25 @@ async function bridge() {
     close: () => new Promise<void>((resolve) => { server.closeAllConnections(); server.close(() => resolve()); }),
   };
 }
+
+test('an agent whose session cannot hear comments keeps live comments and Send off, and says why', async ({ page }) => {
+  const fake = await bridge(false);
+  try {
+    const { centre } = await start(page, { liveComments: true, agentBridgeEnabled: true, bridgePort: fake.port, bridgeToken: '' });
+    await expect(page.locator('[data-bridge-status="connected"]').first()).toBeVisible({ timeout: 30_000 });
+    await comment(page, centre, 'Anyone listening?');
+    const panel = page.getByTestId('v2-threads-panel');
+    await expect(panel.getByRole('switch', { name: 'Live comments' })).toBeDisabled();
+    await expect(panel.locator('.ofk-comment-live')).toHaveAttribute('title', /cannot receive comments/);
+    const send = page.getByTestId('v2-threads-send');
+    await expect(send).toHaveText('Send 1 comment to agent');
+    await expect(send).toBeDisabled();
+    await expect(send).toHaveAttribute('title', /cannot receive comments/);
+    expect(fake.events).toHaveLength(0);
+  } finally {
+    await fake.close();
+  }
+});
 
 test('on /d/ there is no holder badge, and Send to agent still reaches the bridge', async ({ page }) => {
   const fake = await bridge();

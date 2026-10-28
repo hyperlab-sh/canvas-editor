@@ -9,6 +9,7 @@ import type { DocumentCommand } from '../../domain/commands/types';
 import type { LandingDirection } from '../../domain/camera/readableLanding';
 import type { ScenePage } from '../../domain/document/types';
 import type { PixiRendererHost } from '../../infrastructure/pixi/PixiRendererHost';
+import type { ServiceHolder } from '../../../services/storage/v2/serviceSync';
 import { track, trackOnce } from '../../../services/usage/usage';
 import type { ToastItem } from '../design-system';
 import type { useV2MapMode } from './map/useV2MapMode';
@@ -59,14 +60,20 @@ interface EditorAgentsInput {
   readonly pushToast: (toast: ToastItem) => void;
   /** On a service diagram the service is the agent path: the tab bridge stays off. */
   readonly onService: boolean;
+  /** The session holding the service diagram, with whether comments reach it; null with none (or off the service). */
+  readonly serviceHolder: ServiceHolder | null;
 }
+
+/** Why live comments are off: nothing to send them to, or a session that would never see them. */
+export const NO_AGENT_FOR_COMMENTS = 'Connect an agent first: live comments are sent through the agent connection.';
+export const NO_CHANNEL_FOR_COMMENTS = 'Your agent session cannot receive comments. Live comments need Claude Code started with the channel flag (see the docs).';
 
 /** Local agent pairing and the in-page assistant: the MCP bridge, WebMCP, the cursor, and how an agent's change reaches the map's drawing. */
 export function useV2EditorAgents(input: EditorAgentsInput) {
   const {
     id, session, load, repo, map, panels, camera, code, preferences, updatePreferences, proposal, compileDraft, page, viewPage, pageRef, hostRef,
     selectionRef, selectedConnectorIdsRef, selectionNodeIds, applySelection, applyConnectorSelection, pinnable, openDrawingRef, showDrawing,
-    setActivePageId, writable, landingDirection, toastZoomedToRead, setAnnouncement, pushToast, onService,
+    setActivePageId, writable, landingDirection, toastZoomedToRead, setAnnouncement, pushToast, onService, serviceHolder,
   } = input;
   const { openWorkspace } = panels;
   // Local agent pairing: the ops run here, against this session, through the
@@ -172,5 +179,9 @@ export function useV2EditorAgents(input: EditorAgentsInput) {
       if (reveal && nodeIds.length + ends.length) camera.revealNodes([...nodeIds, ...ends]);
     },
   });
-  return { aiSettings, assistant, diagramCount, selectedDiagramCount, agentBridge, webMcp, presence, agentShown, commentsReach: onService || agentBridge.status === 'connected' };
+  // Comments reach the agent only through a session that listens for them (a channel): the holder's on the service, the port owner's on the bridge.
+  const connected = onService ? serviceHolder !== null : agentBridge.status === 'connected';
+  const channel = onService ? serviceHolder?.channel === true : agentBridge.channel;
+  const commentsBlocked = !connected ? NO_AGENT_FOR_COMMENTS : !channel ? NO_CHANNEL_FOR_COMMENTS : null;
+  return { aiSettings, assistant, diagramCount, selectedDiagramCount, agentBridge, webMcp, presence, agentShown, commentsReach: commentsBlocked === null, commentsBlocked };
 }
