@@ -6,6 +6,8 @@ import { createAgentDocument } from '../../src/lib/agent.js';
 import { MCP_SERVER_VERSION } from '../../src/lib/version.js';
 import { startService, type RunningService } from '../../src/service/serve.js';
 import { createHandler, type Route } from '../../src/service/routes.js';
+import { createEvents } from '../../src/service/events.js';
+import { createSessions } from '../../src/service/sessions.js';
 import { createStore } from '../../src/service/store.js';
 import { putFile, tempConfig, tempDir } from './helpers.js';
 
@@ -235,11 +237,11 @@ describe('Host and Origin checks', () => {
 describe('the route table', () => {
   it('takes extra rows with :params ahead of the app fallback', async () => {
     const extra: Route = {
-      method: 'GET', path: '/sessions/:id/events',
+      method: 'GET', path: '/extras/:id/events',
       handle: async ({ param, deps }) => ({ status: 200, json: { id: param('id'), projects: deps.config.projects.length } }),
     };
     const { service } = await boot({ routes: [extra] });
-    expect((await call(service, 'GET', '/sessions/a%20b/events')).json).toEqual({ id: 'a b', projects: 2 });
+    expect((await call(service, 'GET', '/extras/a%20b/events')).json).toEqual({ id: 'a b', projects: 2 });
   });
 });
 
@@ -336,8 +338,9 @@ describe('request failures', () => {
     const real = createStore(config);
     const { id } = await real.create('alpha', 'Busy');
     // A store whose every write finds a newer revision: the rename must give up, not overwrite.
+    const sessions = createSessions();
     const store = { ...real, write: async (p: string, i: string) => ({ status: 'stale' as const, revision: 9, document: (await real.read(p, i)).document }) };
-    const server = createServer(createHandler({ config, store, appDir: '/nonexistent', port: () => 0 }));
+    const server = createServer(createHandler({ config, store, sessions, events: createEvents(store, sessions), appDir: '/nonexistent', port: () => 0 }));
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
     try {
       const { port } = server.address() as { port: number };

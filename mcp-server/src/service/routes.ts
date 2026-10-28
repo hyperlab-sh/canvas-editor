@@ -1,10 +1,13 @@
 import { readFile, stat } from 'node:fs/promises';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { extname, join, normalize, sep } from 'node:path';
-import { isAllowedBridgeOrigin, parseAgentDocument } from '../lib/agent.js';
+import { isAllowedBridgeOrigin, isBridgeThreadEvent, parseAgentDocument } from '../lib/agent.js';
 import { MCP_SERVER_VERSION } from '../lib/version.js';
 import type { ServiceConfig } from './config.js';
+import { MAX_WAIT_S, type Events } from './events.js';
+import { runOp } from './ops.js';
 import { ConflictError, listDiagrams, NotFoundError } from './projects.js';
+import type { Sessions } from './sessions.js';
 import type { Store } from './store.js';
 
 const BODY_METHODS = new Set(['POST', 'PUT', 'PATCH']);
@@ -13,6 +16,8 @@ const MAX_BODY_BYTES = 32 * 1024 * 1024;
 export interface ServiceDeps {
   readonly config: ServiceConfig;
   readonly store: Store;
+  readonly sessions: Sessions;
+  readonly events: Events;
   /** Directory of the built app. */
   readonly appDir: string;
   /** The port the server is bound to; read per request because port 0 is only known after listen. */
@@ -33,6 +38,8 @@ export interface RouteReply {
   readonly status: number;
   /** JSON-encoded unless `raw` is set. */
   readonly json?: unknown;
+  /** Takes over the response (an SSE stream); the handler sends nothing else. */
+  readonly stream?: (response: ServerResponse) => void;
   readonly raw?: { readonly type: string; readonly data: Buffer | string; readonly headers?: Record<string, string> };
 }
 
@@ -74,6 +81,25 @@ async function requireBody(context: RouteContext): Promise<Record<string, unknow
   const body = await context.body();
   if (!isRecord(body)) throw new HttpError(400, 'The request needs a JSON object body.');
   return body;
+}
+
+/** The holder as the API shows it: `{label}`, or null when no session holds the diagram. */
+const holderOf = (deps: ServiceDeps, project: string, id: string): { label: string } | null => {
+  const holder = deps.sessions.holderOf(project, id);
+  return holder ? { label: holder.label } : null;
+};
+
+/** The session in the path, or a 404 that tells the client to register again. */
+function sessionOf(context: RouteContext): string {
+  const id = context.param('sid');
+  if (!context.deps.sessions.get(id)) throw new HttpError(404, `Unknown session ${id}. Register again.`);
+  return id;
+}
+
+async function readDiagramRef(context: RouteContext): Promise<{ project: string; id: string }> {
+  const { project, id } = await requireBody(context);
+  if (typeof project !== 'string' || typeof id !== 'string' || !project || !id) throw new HttpError(400, 'The body needs a "project" and an "id".');
+  return { project, id };
 }
 
 async function serveApp(context: RouteContext): Promise<RouteReply> {
@@ -122,11 +148,10 @@ export function buildRoutes(): Route[] {
         const listing = await listDiagrams(deps.config);
         return {
           status: 200,
-          // holder is filled in by the sessions unit; until then nothing holds a diagram.
           json: listing.map(({ name, diagrams }) => ({
             name,
             path: deps.config.projects.find((p) => p.name === name)?.path,
-            diagrams: diagrams.map((d) => ({ ...d, holder: null })),
+            diagrams: diagrams.map((d) => ({ ...d, holder: holderOf(deps, name, d.id) })),
           })),
         };
       },
@@ -144,8 +169,7 @@ export function buildRoutes(): Route[] {
       method: 'GET', path: '/projects/:p/diagrams/:id',
       handle: async ({ deps, param }) => {
         const { document, revision } = await deps.store.read(param('p'), param('id'));
-        // holder is filled in by the sessions unit.
-        return { status: 200, json: { document, revision, holder: null } };
+        return { status: 200, json: { document, revision, holder: holderOf(deps, param('p'), param('id')) } };
       },
     },
     {
@@ -182,6 +206,83 @@ export function buildRoutes(): Route[] {
           if (result.status === 'ok') return { status: 200, json: { revision: result.revision } };
         }
         throw new HttpError(409, 'The diagram kept changing; try the rename again.');
+      },
+    },
+    {
+      method: 'GET', path: '/events',
+      handle: async ({ url, deps }) => {
+        const project = url.searchParams.get('project');
+        const id = url.searchParams.get('id');
+        if (!project || !id) throw new HttpError(400, 'The stream needs ?project= and ?id=.');
+        return { status: 200, stream: (response) => deps.events.subscribe(project, id, response) };
+      },
+    },
+    {
+      method: 'POST', path: '/sessions',
+      handle: async (context) => {
+        const { client, cwd, pid } = await requireBody(context);
+        if (typeof cwd !== 'string' || !cwd) throw new HttpError(400, 'Registering needs the "cwd".');
+        if (typeof pid !== 'number' || !Number.isSafeInteger(pid)) throw new HttpError(400, 'Registering needs the "pid".');
+        const label = typeof client === 'string' && client ? client : 'MCP client';
+        return { status: 201, json: context.deps.sessions.register({ client: label, cwd, pid }) };
+      },
+    },
+    {
+      method: 'GET', path: '/sessions/:sid/events',
+      handle: async (context) => {
+        const sid = sessionOf(context);
+        const wait = Number(context.url.searchParams.get('wait') ?? MAX_WAIT_S);
+        const events = await context.deps.events.poll(sid, Number.isFinite(wait) ? wait : MAX_WAIT_S, context.request);
+        return events ? { status: 200, json: { events } } : { status: 204 };
+      },
+    },
+    {
+      method: 'POST', path: '/sessions/:sid/bindings',
+      handle: async (context) => {
+        const sid = sessionOf(context);
+        const { project, id } = await readDiagramRef(context);
+        // Reading proves the diagram exists (404) before anything holds it.
+        const { document } = await context.deps.store.read(project, id);
+        const bound = context.deps.sessions.bind(sid, project, id);
+        if (bound.status === 'held') return { status: 409, json: { error: `${project}/${id} is connected to ${bound.holder}.`, holder: bound.holder } };
+        return { status: 200, json: { diagram: { project, id, title: document.name } } };
+      },
+    },
+    {
+      method: 'DELETE', path: '/sessions/:sid/bindings/:p/:id',
+      handle: async (context) => {
+        context.deps.sessions.unbind(sessionOf(context), context.param('p'), context.param('id'));
+        return { status: 204 };
+      },
+    },
+    {
+      method: 'POST', path: '/sessions/:sid/ops',
+      handle: async (context) => {
+        const sid = sessionOf(context);
+        const { project, id, op, input, pageId } = await requireBody(context);
+        if (typeof project !== 'string' || typeof id !== 'string' || typeof op !== 'string') throw new HttpError(400, 'An op needs "project", "id" and "op".');
+        if (pageId !== undefined && typeof pageId !== 'string') throw new HttpError(400, '"pageId" must be a string.');
+        const { status, ...reply } = await runOp(context.deps.sessions, context.deps.store, sid, { project, id, op, input: input ?? {}, ...(pageId ? { pageId } : {}) });
+        return { status, json: reply };
+      },
+    },
+    {
+      method: 'DELETE', path: '/projects/:p/diagrams/:id/holder',
+      handle: async ({ deps, param }) => {
+        deps.sessions.disconnect(param('p'), param('id'));
+        return { status: 204 };
+      },
+    },
+    {
+      method: 'POST', path: '/projects/:p/diagrams/:id/comments',
+      handle: async (context) => {
+        const event = await context.body();
+        if (!isBridgeThreadEvent(event)) throw new HttpError(400, 'The body is not a thread event.');
+        if (event.documentId !== context.param('id')) throw new HttpError(400, `The event is for document "${event.documentId}", not "${context.param('id')}".`);
+        const holder = context.deps.sessions.holderOf(context.param('p'), context.param('id'));
+        if (!holder) return { status: 409, json: { error: 'No session holds this diagram' } };
+        context.deps.events.push(holder.id, event);
+        return { status: 202 };
       },
     },
   ];
@@ -224,6 +325,11 @@ export function createHandler(deps: ServiceDeps, routes: readonly Route[] = buil
   const compiled = [...routes, appRoute].map((route) => ({ route, ...compile(route.path) }));
 
   const send = (response: ServerResponse, reply: RouteReply): void => {
+    if (reply.stream) return reply.stream(response);
+    if (reply.status === 204) {
+      response.writeHead(204, { 'cache-control': 'no-store', ...APP_HEADERS });
+      return void response.end();
+    }
     // The unread upload of a refused oversize body must not keep the connection busy.
     const close = reply.status === 413 ? { connection: 'close' } : {};
     const data = reply.raw ? reply.raw.data : JSON.stringify(reply.json ?? null);
@@ -252,6 +358,10 @@ export function createHandler(deps: ServiceDeps, routes: readonly Route[] = buil
       // A browser no-cors GET or <img> carries no Origin but does say which site sent it; curl and Node send neither.
       if (!isAllowedBridgeOrigin(headers.origin) || (!headers.origin && !opensApp && (site === 'cross-site' || site === 'same-site'))) {
         return fail(response, 403, 'Origin not allowed. The service is local-only.');
+      }
+      // Sessions and ops are for MCP processes on this machine; no page, whatever its origin, gets in.
+      if (url.pathname.startsWith('/sessions') && (headers.origin !== undefined || site !== undefined)) {
+        return fail(response, 403, 'Sessions are for local agents, not web pages.');
       }
       let pathMatched = false;
       for (const { route, pattern, names } of compiled) {
