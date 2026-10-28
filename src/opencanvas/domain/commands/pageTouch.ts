@@ -9,6 +9,7 @@ export function commandTouchesPage(command: DocumentCommand, pageId: string): bo
   switch (command.kind) {
     case 'batch': return command.commands.some((child) => commandTouchesPage(child, pageId));
     case 'set-document-name': return false;
+    case 'replace-document': return true;
     case 'insert-page': return command.page.id === pageId || command.index === 0;
     case 'remove-page': return command.page.id === pageId;
     default: return command.pageId === pageId;
@@ -22,7 +23,7 @@ export function pageOfCommand(command: DocumentCommand): string | null {
       const pages = new Set(command.commands.map(pageOfCommand));
       return pages.size === 1 ? [...pages][0]! : null;
     }
-    case 'set-document-name': return null;
+    case 'set-document-name': case 'replace-document': return null;
     case 'insert-page': case 'remove-page': return command.page.id;
     default: return command.pageId;
   }

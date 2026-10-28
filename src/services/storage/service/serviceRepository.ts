@@ -17,12 +17,28 @@ async function failure(response: Response, action: string): Promise<V2StorageErr
   return new V2StorageError(`The local service could not ${action} the diagram: ${detail}`);
 }
 
+/** What the editor's live sync needs beyond storage: the service's current copy, its event stream, and re-pairing revisions. */
+export interface ServiceRepository extends V2DocumentRepository {
+  readonly project: string;
+  /** The service's copy now, and who holds the diagram. Does not change what this repository expects on the next save. */
+  readonly fetchCurrent: (id: string) => Promise<{ readonly document: SceneDocumentV1; readonly revision: number; readonly holder: string | null }>;
+  /** The service revision this repository last loaded or saved for the diagram. */
+  readonly serviceRevision: (id: string) => number | undefined;
+  /** The editor adopted the service's copy at `service` as its own revision `editor`: the next save expects it. */
+  readonly adopt: (id: string, editor: number, service: number) => void;
+  readonly eventsUrl: (id: string) => string;
+}
+
+export function isServiceRepository(repository: V2DocumentRepository): repository is ServiceRepository {
+  return 'eventsUrl' in repository;
+}
+
 /**
  * Documents of one service project, over the service's HTTP API.
  * The service's revisions are its own counter; the editor numbers its saves itself. `known` pairs the two
  * for the revision this repository last saw per document, so the editor's "expected" becomes the service's.
  */
-export function createServiceRepository(project: string, origin: string = SERVICE_ORIGIN): V2DocumentRepository {
+export function createServiceRepository(project: string, origin: string = SERVICE_ORIGIN): ServiceRepository {
   const known = new Map<string, { readonly editor: number; readonly service: number }>();
   const diagramUrl = (id: string): string => `${origin}/projects/${encodeURIComponent(project)}/diagrams/${encodeURIComponent(id)}`;
 
@@ -38,6 +54,16 @@ export function createServiceRepository(project: string, origin: string = SERVIC
     ({ id, revision, schemaVersion: document.schemaVersion, document, savedAt: document.updatedAt });
 
   return {
+    project,
+    eventsUrl: (id) => `${origin}/events?project=${encodeURIComponent(project)}&id=${encodeURIComponent(id)}`,
+    serviceRevision: (id) => known.get(id)?.service,
+    adopt: (id, editor, service) => { known.set(id, { editor, service }); },
+    fetchCurrent: async (id) => {
+      const response = await send(diagramUrl(id));
+      if (!response.ok) throw await failure(response, 'reload');
+      const { document, revision, holder } = await response.json() as { document: SceneDocumentV1; revision: number; holder?: string | null };
+      return { document, revision, holder: holder ?? null };
+    },
     loadDocument: async (id): Promise<LoadV2DocumentResult> => {
       const response = await send(diagramUrl(id));
       if (response.status === 404) return { status: 'missing' };
