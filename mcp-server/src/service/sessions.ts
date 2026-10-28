@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { basename } from 'node:path';
 
 /** A session that has not polled for this long is gone (AC-6). */
-export const SESSION_TTL_MS = 10_000;
+const SESSION_TTL_MS = 10_000;
 const SWEEP_MS = 1_000;
 
 export interface SessionTiming {
@@ -30,7 +30,10 @@ export interface Session {
 
 export type BindResult =
   | { readonly status: 'ok' }
+  | { readonly status: 'gone' }
   | { readonly status: 'held'; readonly holder: string };
+
+export type ReleaseListener = (sessionId: string) => void;
 
 export type HolderListener = (project: string, id: string, label: string | null) => void;
 
@@ -50,6 +53,8 @@ export interface Sessions {
   /** Frees the diagram whoever holds it (the app's Disconnect). */
   disconnect(project: string, id: string): void;
   onHolder(listener: HolderListener): () => void;
+  /** Called once a session is gone, however it went (release or sweep). */
+  onRelease(listener: ReleaseListener): () => void;
   close(): void;
 }
 
@@ -64,6 +69,7 @@ export function createSessions(timing: SessionTiming = {}): Sessions {
   const sessions = new Map<string, Session>();
   const holders = new Map<string, string>();
   const listeners = new Set<HolderListener>();
+  const releaseListeners = new Set<ReleaseListener>();
 
   const announce = (key: string, label: string | null): void => {
     const [project, id] = splitKey(key);
@@ -90,6 +96,7 @@ export function createSessions(timing: SessionTiming = {}): Sessions {
     if (!session) return;
     for (const key of [...session.bindings]) free(key);
     sessions.delete(sessionId);
+    for (const listener of releaseListeners) listener(sessionId);
   };
 
   const sweeper = setInterval(() => {
@@ -115,7 +122,8 @@ export function createSessions(timing: SessionTiming = {}): Sessions {
 
     bind: (sessionId, project, id) => {
       const session = sessions.get(sessionId);
-      if (!session) throw new Error(`Unknown session ${sessionId}.`);
+      // The sweeper may have dropped the session while the caller was awaiting something else.
+      if (!session) return { status: 'gone' };
       const key = keyOf(project, id);
       const heldBy = holders.get(key);
       if (heldBy !== undefined && heldBy !== sessionId) return { status: 'held', holder: sessions.get(heldBy)?.label ?? heldBy };
@@ -156,6 +164,11 @@ export function createSessions(timing: SessionTiming = {}): Sessions {
     onHolder: (listener) => {
       listeners.add(listener);
       return () => listeners.delete(listener);
+    },
+
+    onRelease: (listener) => {
+      releaseListeners.add(listener);
+      return () => releaseListeners.delete(listener);
     },
 
     close: () => clearInterval(sweeper),

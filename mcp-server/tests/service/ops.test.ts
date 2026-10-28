@@ -1,6 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { runOp } from '../../src/service/ops.js';
+import { createSessions } from '../../src/service/sessions.js';
+import { createStore, type Store } from '../../src/service/store.js';
+import { tempConfig } from './helpers.js';
 import { bind, boot, call, closeServicesAfterEach, newDiagram, openStream, register } from './sessionHelpers.js';
 
 closeServicesAfterEach();
@@ -94,5 +98,72 @@ describe('POST /sessions/:id/ops', () => {
     await call(service, 'DELETE', `/projects/alpha/diagrams/${id}/holder`);
     const reply = await call(service, 'POST', `/sessions/${session.sessionId}/ops`, { ...DRAW, id });
     expect(reply.status).toBe(409);
+  });
+
+  it('redoes an op on the newer document when a tab saved first, keeping both edits', async () => {
+    const config = await tempConfig('alpha');
+    const real = createStore(config);
+    const { id } = await real.create('alpha', 'Flow');
+    const sessions = createSessions();
+    const { sessionId } = sessions.register({ client: 'Claude Code', cwd: '/x/hyper', pid: 1 });
+    sessions.bind(sessionId, 'alpha', id);
+    // The tab's save lands between the op's read and its write, once.
+    let raced = false;
+    const store: Store = {
+      ...real,
+      write: async (project, doc, document, expected) => {
+        if (!raced) {
+          raced = true;
+          const tab = await real.read(project, doc);
+          await real.write(project, doc, { ...tab.document, name: 'Renamed by tab' }, tab.revision);
+        }
+        return real.write(project, doc, document, expected);
+      },
+    };
+    const outcome = await runOp(sessions, store, sessionId, { project: 'alpha', id, op: 'create_diagram', input: { dsl: 'flowchart\n  A -> B\n' } });
+    sessions.close();
+    expect(outcome).toMatchObject({ ok: true });
+    const { document } = await real.read('alpha', id);
+    expect(document.name).toBe('Renamed by tab');
+    expect(JSON.stringify(document)).toContain('"A"');
+  });
+
+  it('gives up with 409 and leaves the file when every write is stale', async () => {
+    const config = await tempConfig('alpha');
+    const real = createStore(config);
+    const { id } = await real.create('alpha', 'Flow');
+    const sessions = createSessions();
+    const { sessionId } = sessions.register({ client: 'Claude Code', cwd: '/x/hyper', pid: 1 });
+    sessions.bind(sessionId, 'alpha', id);
+    let writes = 0;
+    const store: Store = {
+      ...real,
+      write: async (project, doc) => {
+        writes += 1;
+        return { status: 'stale', revision: 9, document: (await real.read(project, doc)).document };
+      },
+    };
+    const before = await real.read('alpha', id);
+    const outcome = await runOp(sessions, store, sessionId, { project: 'alpha', id, op: 'create_diagram', input: { dsl: 'flowchart\n  A -> B\n' } });
+    sessions.close();
+    expect(outcome).toMatchObject({ status: 409, ok: false, error: 'The diagram kept changing under the op; try it again.' });
+    expect(writes).toBe(3);
+    expect((await real.read('alpha', id)).document).toEqual(before.document);
+  });
+
+  it('does not write when the diagram is disconnected while the op runs', async () => {
+    const config = await tempConfig('alpha');
+    const real = createStore(config);
+    const { id } = await real.create('alpha', 'Flow');
+    const sessions = createSessions();
+    const { sessionId } = sessions.register({ client: 'Claude Code', cwd: '/x/hyper', pid: 1 });
+    sessions.bind(sessionId, 'alpha', id);
+    // The app's Disconnect arrives while the op is reading the document.
+    const store: Store = { ...real, read: async (project, doc) => { const read = await real.read(project, doc); sessions.disconnect(project, doc); return read; } };
+    const before = await real.read('alpha', id);
+    const outcome = await runOp(sessions, store, sessionId, { project: 'alpha', id, op: 'create_diagram', input: { dsl: 'flowchart\n  A -> B\n' } });
+    sessions.close();
+    expect(outcome).toMatchObject({ status: 409, ok: false, holder: null });
+    expect((await real.read('alpha', id)).document).toEqual(before.document);
   });
 });
