@@ -72,7 +72,7 @@ describe('op tools', () => {
   // which strict tool-calling clients drop or reject. Lookups read no document, so they take no documentId.
   it('advertises self-contained input schemas: no $ref, and no documentId on lookups', async () => {
     const { tools } = await (await client()).listTools();
-    expect(tools).toHaveLength(33);
+    expect(tools).toHaveLength(35);
     for (const tool of tools) expect(JSON.stringify(tool.inputSchema), tool.name).not.toContain('$ref');
     const props = (name: string) => Object.keys((tools.find((tool) => tool.name === name)!.inputSchema as { properties: object }).properties);
     for (const name of ['get_syntax', 'search_icons', 'find_icons_for']) expect(props(name), name).not.toContain('documentId');
