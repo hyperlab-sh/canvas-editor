@@ -1,7 +1,8 @@
 import { createServer, type Server, type Socket } from 'node:net';
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import { loadConfig } from '../../src/service/config.js';
 import { runServe } from '../../src/service/serve.js';
 import { startService, type RunningService } from '../../src/service/serve.js';
 import { tempConfig, tempDir } from './helpers.js';
@@ -62,7 +63,7 @@ describe('openflowkit serve', () => {
   });
 
   it('exits 0 saying it is already running when another OpenFlowKit service holds the port', async () => {
-    const first = await startService({ port: 0, configPath: await configFile(), appDir: '/nonexistent' });
+    const first = await startService({ port: 0, config: await loadConfig(await configFile()), appDir: '/nonexistent' });
     closers.push(first.close);
     const { io: sink, err, out } = io();
     expect(await runServe(['--port', String(first.port), '--config', await configFile()], sink)).toBe(0);
@@ -81,6 +82,35 @@ describe('openflowkit serve', () => {
     expect(err[0]).toContain(`port ${port}`);
   });
 
+  it('serves the app from OPENFLOWKIT_APP_DIR when --app is not given', async () => {
+    const dir = join(await tempDir(), 'envapp');
+    await mkdir(dir);
+    await writeFile(join(dir, 'index.html'), '<html>from env</html>');
+    const saved = process.env.OPENFLOWKIT_APP_DIR;
+    process.env.OPENFLOWKIT_APP_DIR = dir;
+    closers.push(async () => {
+      if (saved === undefined) delete process.env.OPENFLOWKIT_APP_DIR;
+      else process.env.OPENFLOWKIT_APP_DIR = saved;
+    });
+    const { io: sink, out } = io();
+    let service: RunningService | undefined;
+    expect(await runServe(['--port', '0', '--config', await configFile()], sink, (s) => { service = s; closers.push(s.close); })).toBe(0);
+    expect(out).toEqual([`openflowkit service listening on ${service!.url} (app: ${dir})`]);
+    expect(await (await fetch(`${service!.url}/`)).text()).toBe('<html>from env</html>');
+  });
+
+  it('falls back to the repository build folder when neither --app nor the variable is set', async () => {
+    const saved = process.env.OPENFLOWKIT_APP_DIR;
+    delete process.env.OPENFLOWKIT_APP_DIR;
+    closers.push(async () => {
+      if (saved !== undefined) process.env.OPENFLOWKIT_APP_DIR = saved;
+    });
+    const { io: sink, out } = io();
+    expect(await runServe(['--port', '0', '--config', await configFile()], sink, (s) => closers.push(s.close))).toBe(0);
+    expect(out[0]).toMatch(/ \(app: .*\/dist\)$/);
+    expect(out[0]).not.toContain('mcp-server/dist');
+  });
+
   it('rejects bad arguments with exit 2', async () => {
     for (const [args, message] of [
       [['--port', 'abc'], 'serve: --port must be an integer from 0 to 65535, got "abc".'],
@@ -94,8 +124,8 @@ describe('openflowkit serve', () => {
   });
 
   it('binds loopback only', async () => {
-    const service = await startService({ port: 0, configPath: await configFile(), appDir: '/nonexistent' });
+    const service = await startService({ port: 0, config: await loadConfig(await configFile()), appDir: '/nonexistent' });
     closers.push(service.close);
-    expect(service.url).toMatch(/^http:\/\/127\.0\.0\.1:\d+$/);
+    expect(service.address).toBe('127.0.0.1');
   });
 });

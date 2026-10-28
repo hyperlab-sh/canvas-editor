@@ -2,6 +2,11 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import type { ProjectConfig, ServiceConfig } from './config.js';
 
+/** The project or diagram asked for does not exist. */
+export class NotFoundError extends Error {}
+/** The user's data contradicts itself (two files with one diagram id). */
+export class ConflictError extends Error {}
+
 export const DIAGRAM_SUFFIX = '.openflow.json';
 
 export interface DiagramSummary {
@@ -68,7 +73,7 @@ async function scan(project: ProjectConfig): Promise<Entry[]> {
 
 export function projectNamed(config: ServiceConfig, name: string): ProjectConfig {
   const project = config.projects.find((candidate) => candidate.name === name);
-  if (!project) throw new Error(`Unknown project "${name}". Configured: ${config.projects.map((p) => p.name).join(', ') || 'none'}.`);
+  if (!project) throw new NotFoundError(`Unknown project "${name}". Configured: ${config.projects.map((p) => p.name).join(', ') || 'none'}.`);
   return project;
 }
 
@@ -94,9 +99,9 @@ export async function listDiagrams(config: ServiceConfig): Promise<ProjectListin
 export async function resolve(config: ServiceConfig, projectName: string, id: string): Promise<ResolvedDiagram> {
   const project = projectNamed(config, projectName);
   const [first, second] = (await scan(project)).filter((entry) => entry.id === id);
-  if (!first) throw new Error(`No diagram "${id}" in project "${projectName}".`);
+  if (!first) throw new NotFoundError(`No diagram "${id}" in project "${projectName}".`);
   if (second) {
-    throw new Error(`Diagram id "${id}" appears in both ${first.file} and ${second.file} in project "${projectName}"; rename or remove one.`);
+    throw new ConflictError(`Diagram id "${id}" appears in both ${first.file} and ${second.file} in project "${projectName}"; rename or remove one.`);
   }
   return { project: projectName, id, path: first.path };
 }

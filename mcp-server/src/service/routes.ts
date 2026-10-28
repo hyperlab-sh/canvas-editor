@@ -4,9 +4,10 @@ import { extname, join, normalize, sep } from 'node:path';
 import { isAllowedBridgeOrigin, parseAgentDocument } from '../lib/agent.js';
 import { MCP_SERVER_VERSION } from '../lib/version.js';
 import type { ServiceConfig } from './config.js';
-import { listDiagrams } from './projects.js';
+import { ConflictError, listDiagrams, NotFoundError } from './projects.js';
 import type { Store } from './store.js';
 
+const BODY_METHODS = new Set(['POST', 'PUT', 'PATCH']);
 const MAX_BODY_BYTES = 32 * 1024 * 1024;
 
 export interface ServiceDeps {
@@ -47,8 +48,6 @@ export class HttpError extends Error {
     super(message);
   }
 }
-
-const NOT_FOUND = /^(Unknown project|No diagram) /;
 
 /** This machine by name: a rebound DNS name (evil.example → 127.0.0.1) is refused. Any port, so a forward still works. */
 const isAllowedHost = (host: string | undefined): boolean =>
@@ -160,6 +159,9 @@ export function buildRoutes(): Route[] {
         } catch (error) {
           throw new HttpError(400, error instanceof Error ? error.message : 'The document is not valid.');
         }
+        if (parsed.id !== context.param('id')) {
+          throw new HttpError(400, `Document id "${parsed.id}" does not match diagram "${context.param('id')}".`);
+        }
         const result = await context.deps.store.write(context.param('p'), context.param('id'), parsed, revision);
         if (result.status === 'stale') return { status: 409, json: { revision: result.revision, document: result.document } };
         return { status: 200, json: { revision: result.revision } };
@@ -173,7 +175,7 @@ export function buildRoutes(): Route[] {
         const { store } = context.deps;
         const p = context.param('p');
         const id = context.param('id');
-        // A write that lost the race to another save is re-read and retried once, so a rename never overwrites the winner.
+        // A write that lost the race to another save is re-read and retried up to twice, so a rename never overwrites the winner.
         for (let attempt = 0; attempt < 3; attempt += 1) {
           const current = await store.read(p, id);
           const result = await store.write(p, id, { ...current.document, name: name.trim() }, current.revision);
@@ -186,7 +188,7 @@ export function buildRoutes(): Route[] {
 }
 
 /** Answers every GET the API did not: the app, with `index.html` for the hash router. Always last. */
-export const appRoute: Route = { method: 'GET', path: '/*', handle: serveApp };
+const appRoute: Route = { method: 'GET', path: '/*', handle: serveApp };
 
 function compile(path: string): { pattern: RegExp; names: string[] } {
   const names: string[] = [];
@@ -236,14 +238,17 @@ export function createHandler(deps: ServiceDeps, routes: readonly Route[] = buil
       if (!isAllowedHost(request.headers.host)) {
         return fail(response, 403, 'Host not allowed. The service answers 127.0.0.1, localhost and [::1] only.');
       }
-      const { origin } = request.headers;
-      const site = request.headers['sec-fetch-site'];
-      // A browser no-cors GET or <img> carries no Origin but does say which site sent it; curl and Node send neither.
-      if (!isAllowedBridgeOrigin(origin) || (!origin && (site === 'cross-site' || site === 'same-site'))) {
-        return fail(response, 403, 'Origin not allowed. The service is local-only.');
-      }
       const url = new URL(request.url ?? '/', 'http://127.0.0.1');
       const method = request.method ?? 'GET';
+      const { headers } = request;
+      // A link followed from another page is a top-level navigation; the app shell holds no data, so it may load.
+      const opensApp = method === 'GET' && headers['sec-fetch-mode'] === 'navigate' && headers['sec-fetch-dest'] === 'document'
+        && !compiled.some(({ route, pattern }) => route !== appRoute && route.method === method && pattern.test(url.pathname));
+      const site = headers['sec-fetch-site'];
+      // A browser no-cors GET or <img> carries no Origin but does say which site sent it; curl and Node send neither.
+      if (!isAllowedBridgeOrigin(headers.origin) || (!headers.origin && !opensApp && (site === 'cross-site' || site === 'same-site'))) {
+        return fail(response, 403, 'Origin not allowed. The service is local-only.');
+      }
       let pathMatched = false;
       for (const { route, pattern, names } of compiled) {
         const match = pattern.exec(url.pathname);
@@ -251,6 +256,10 @@ export function createHandler(deps: ServiceDeps, routes: readonly Route[] = buil
         // The app fallback matches every path, so it says nothing about whether the path is known.
         if (route !== appRoute) pathMatched = true;
         if (route.method !== method) continue;
+        // Only JSON is accepted, so a cross-origin write needs a preflight, which no CORS header will pass.
+        if (BODY_METHODS.has(method) && !/^application\/json\b/i.test(headers['content-type'] ?? '')) {
+          return fail(response, 415, 'The request body must be application/json.');
+        }
         const params = new Map<string, string>();
         try {
           names.forEach((name, i) => params.set(name, decodeURIComponent(match[i + 1] ?? '')));
@@ -264,7 +273,7 @@ export function createHandler(deps: ServiceDeps, routes: readonly Route[] = buil
     } catch (error) {
       if (error instanceof HttpError) return fail(response, error.status, error.message);
       const message = error instanceof Error ? error.message : String(error);
-      return fail(response, NOT_FOUND.test(message) ? 404 : 500, message);
+      return fail(response, error instanceof NotFoundError ? 404 : error instanceof ConflictError ? 409 : 500, message);
     }
   };
 }
