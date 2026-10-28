@@ -100,12 +100,12 @@ describe('POST /sessions/:id/ops', () => {
   });
 
   /** A service over `store` with one diagram and a registered, bound session; runs `act`, then closes. */
-  async function withBoundSession(wrap: (real: Store, sessions: Sessions, sessionId: string) => Store, act: (ctx: { url: string; sessionId: string; id: string; real: Store }) => Promise<void>): Promise<void> {
+  async function withBoundSession(wrap: (real: Store, sessions: Sessions) => Store, act: (ctx: { url: string; sessionId: string; id: string; real: Store }) => Promise<void>): Promise<void> {
     const config = await tempConfig('alpha');
     const real = createStore(config);
     const { id } = await real.create('alpha', 'Flow');
     const sessions = createSessions();
-    const live = await serveWith(config, { ...real, ...wrap(real, sessions, '') }, sessions);
+    const live = await serveWith(config, { ...real, ...wrap(real, sessions) }, sessions);
     try {
       const { sessionId } = (await call(live, 'POST', '/sessions', { client: 'Claude Code', cwd: '/x/hyper', pid: 1 })).json;
       expect((await bind(live, sessionId, id)).status).toBe(200);
