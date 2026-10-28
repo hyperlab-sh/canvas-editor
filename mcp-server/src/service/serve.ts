@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 import type { CliIo } from '../cli.js';
 import { loadConfig, type ServiceConfig } from './config.js';
 import { buildRoutes, createHandler, type Route } from './routes.js';
+import { createEvents } from './events.js';
+import { createSessions, type SessionTiming } from './sessions.js';
 import { createStore } from './store.js';
 
 export interface RunningService {
@@ -20,6 +22,8 @@ export interface StartOptions {
   readonly appDir: string;
   /** Extra route rows, tried after the API's and before the app fallback. */
   readonly routes?: readonly Route[];
+  /** Session expiry and sweep interval; tests shorten them. */
+  readonly sessionTiming?: SessionTiming;
 }
 
 /** `<mcp-server>/../dist`, from either src/service or dist/service. */
@@ -29,9 +33,11 @@ const defaultAppDir = (): string => resolve(dirname(fileURLToPath(import.meta.ur
 export async function startService(options: StartOptions): Promise<RunningService> {
   const { config } = options;
   const store = createStore(config);
+  const sessions = createSessions(options.sessionTiming);
+  const events = createEvents(store, sessions);
   let bound = options.port;
   const table = [...buildRoutes(), ...(options.routes ?? [])];
-  const server: Server = createServer(createHandler({ config, store, appDir: resolve(options.appDir), port: () => bound }, table));
+  const server: Server = createServer(createHandler({ config, store, sessions, events, appDir: resolve(options.appDir), port: () => bound }, table));
   await new Promise<void>((resolveListen, reject) => {
     server.once('error', reject);
     server.listen(options.port, '127.0.0.1', () => {
@@ -47,6 +53,8 @@ export async function startService(options: StartOptions): Promise<RunningServic
     address: address.address,
     url: `http://127.0.0.1:${bound}`,
     close: () => new Promise<void>((done) => {
+      sessions.close();
+      events.close();
       server.close(() => done());
       server.closeAllConnections();
     }),
