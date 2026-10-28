@@ -41,9 +41,9 @@ const STATIC_TOOLS = [
   'openflow_open',
   'openflow_save',
   'whoami',
-  'connect_diagram',
-  'disconnect_diagram',
 ];
+
+const SERVICE_TOOLS = ['connect_diagram', 'disconnect_diagram'];
 
 export function registerDiscoveryTools(server: McpServer, bridge: Pick<LiveBridge, 'status' | 'retryPort'>, service?: Pick<ServiceClient, 'status'>): void {
   server.registerTool(
@@ -90,7 +90,7 @@ export function registerDiscoveryTools(server: McpServer, bridge: Pick<LiveBridg
                 channel: clientHasChannel(server.server.getClientCapabilities()),
                 ...(service ? { service: await service.status() } : {}),
                 modes: [`live-editor (the user pairs a tab at ${CONNECT_URL})`, 'file (.openflow.json)', ...(service ? ['service (diagrams in the projects of the local service)'] : [])],
-                tools: [...STATIC_TOOLS, ...AGENT_OPS.map(({ name }) => name)].sort(),
+                tools: [...STATIC_TOOLS, ...(service ? SERVICE_TOOLS : []), ...AGENT_OPS.map(({ name }) => name)].sort(),
                 resources: [
                   'openflowkit://docs/grammar',
                   'openflowkit://templates',
