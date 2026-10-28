@@ -3,7 +3,6 @@ import type { V2DocumentRepository } from './v2Repository';
 
 /** What the editor's live sync needs beyond storage: the service's current copy, its event stream, and re-pairing revisions. */
 export interface ServiceRepository extends V2DocumentRepository {
-  readonly project: string;
   /** The service's copy now, and who holds the diagram. Does not change what this repository expects on the next save. */
   readonly fetchCurrent: (id: string) => Promise<{ readonly document: SceneDocumentV1; readonly revision: number; readonly holder: string | null }>;
   /** The service revision this repository last loaded or saved for the diagram. */

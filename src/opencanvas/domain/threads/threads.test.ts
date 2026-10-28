@@ -17,7 +17,9 @@ import {
   removeComment,
   removeThread,
   setThreadResolved,
+  takeThreads,
   withFreeThreadNumbers,
+  withoutThreads,
 } from './threads';
 
 const human = { kind: 'human' as const, name: 'Ada' };
@@ -288,5 +290,26 @@ describe('moving a thread', () => {
 
   it('refuses an unknown thread', () => {
     expect(() => moveThread(base(), 'nope', null, { x: 0, y: 0 })).toThrow(ThreadError);
+  });
+});
+
+describe('takeThreads and withoutThreads', () => {
+  const plain = () => createTestDocument({ nodes: [node('a')] });
+  const ids = (document: SceneDocumentV1) => (document.pages[0].threads ?? []).map((thread) => thread.id);
+
+  it('puts the source page\'s threads on the page of the same id, and removes ones the source lacks', () => {
+    expect(ids(takeThreads(withThread(plain(), 'mine'), withThread(plain(), 'theirs')))).toEqual(['theirs']);
+    expect(takeThreads(withThread(plain(), 'mine'), plain()).pages[0]).not.toHaveProperty('threads');
+  });
+
+  it('returns the document itself when the threads are already the source\'s', () => {
+    const document = withThread(plain());
+    expect(takeThreads(document, document)).toBe(document);
+  });
+
+  it('strips threads so a thread-only change compares equal', () => {
+    const stripped = withoutThreads(withThread(plain(), 'mine'));
+    expect(stripped.pages[0]).not.toHaveProperty('threads');
+    expect(stripped).toEqual(withoutThreads(withThread(plain(), 'theirs')));
   });
 });

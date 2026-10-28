@@ -112,9 +112,86 @@ test('a hand edit reaches the file and the other tab; a stale save takes the ser
   await expect.poll(async () => (await state(page)).nodes.length).toBe(1);
   expect((onDisk(file) as unknown as { name: string }).name).toBe('Renamed by another writer');
 
+  // The replace is one undo step: undo brings the edit that lost the race back.
+  await page.getByTestId('v2-canvas').focus();
+  await page.keyboard.press('ControlOrMeta+z');
+  await expect.poll(async () => (await state(page)).nodes.length).toBe(2);
+  await page.keyboard.press('ControlOrMeta+Shift+z');
+  await expect.poll(async () => (await state(page)).nodes.length).toBe(1);
+
   // The next edit saves.
   await page.getByTestId('v2-canvas').focus();
   await drawShape(page, 'r', 500, 400);
   await expect.poll(() => onDisk(file).pages.flatMap((p) => p.nodes).length, { timeout: 3000 }).toBe(2);
   await other.close();
+});
+
+const threadsOf = (page: Page) => page.evaluate(() => {
+  const api = (window as unknown as { __V2__?: { getDocument(): { pages: { threads?: { id: string }[] }[] } | null } }).__V2__;
+  return (api?.getDocument()?.pages ?? []).flatMap((p) => (p.threads ?? []).map((t) => t.id));
+});
+
+test('a comment made elsewhere shows here without an undo step, and a save here keeps it', async ({ page }) => {
+  const { id, file } = await newDiagram('sync-comment');
+  await openTab(page, id);
+  await drawShape(page, 'r', 300, 300);
+  await expect.poll(() => onDisk(file).pages.flatMap((p) => p.nodes).length, { timeout: 3000 }).toBe(1);
+
+  const current = await api<{ document: { pages: Record<string, unknown>[] }; revision: number }>('GET', `/projects/demo/diagrams/${id}`);
+  const [first, ...rest] = current.json.document.pages;
+  const thread = { id: 'remote-thread', number: 1, anchor: { nodeId: null, offset: null, point: { x: 5, y: 5 } }, resolved: false,
+    comments: [{ id: 'remote-comment', author: { kind: 'human', name: 'Ann' }, body: 'from another tab', createdAt: '2026-01-01T00:00:00.000Z' }] };
+  const commented = { ...current.json.document, pages: [{ ...first, threads: [thread] }, ...rest] };
+  expect((await api('PUT', `/projects/demo/diagrams/${id}`, { document: commented, revision: current.json.revision })).status).toBe(200);
+  await expect.poll(() => threadsOf(page), { timeout: 2000 }).toEqual(['remote-thread']);
+
+  // The first undo takes the shape away: the comment did not add a step of its own.
+  await page.getByTestId('v2-canvas').focus();
+  await page.keyboard.press('ControlOrMeta+z');
+  await expect.poll(async () => (await state(page)).nodes.length).toBe(0);
+  await expect.poll(() => threadsOf(page)).toEqual(['remote-thread']);
+  // The save that follows keeps the comment in the file.
+  await expect.poll(() => onDisk(file).pages.flatMap((p) => p.nodes).length, { timeout: 3000 }).toBe(0);
+  expect(JSON.stringify(onDisk(file))).toContain('remote-thread');
+});
+
+test('an agent op that lands while this tab has an unsaved edit is not dropped silently', async ({ page }) => {
+  const { id, file } = await newDiagram('sync-unsaved');
+  await openTab(page, id);
+  const session = (await api<{ sessionId: string }>('POST', '/sessions', { client: 'e2e', cwd: scratch, pid: process.pid })).json.sessionId;
+  expect((await api('POST', `/sessions/${session}/bindings`, { project: 'demo', id })).status).toBe(200);
+
+  await drawShape(page, 'r', 300, 300);
+  // Still inside the autosave delay: the edit is not saved yet.
+  expect(onDisk(file).pages.flatMap((p) => p.nodes)).toHaveLength(0);
+  const drawn = await api<{ ok: boolean }>('POST', `/sessions/${session}/ops`, { project: 'demo', id, op: 'create_diagram', input: { dsl: 'flowchart\n  Left -> Right\n' } });
+  expect(drawn.json.ok).toBe(true);
+
+  // The edit's save meets the newer revision: the tab says so and shows the service's copy.
+  await expect(page.getByText('Updated from the service')).toBeVisible({ timeout: 5000 });
+  await expect.poll(() => labels(page)).toEqual(['Left', 'Right']);
+});
+
+test('a document in this browser opens no event stream', async ({ page }) => {
+  const streams: string[] = [];
+  page.on('request', (request) => { if (request.url().includes('/events')) streams.push(request.url()); });
+  await page.goto(`${url}/#/`);
+  await page.waitForSelector('[data-testid="v2-canvas"]');
+  await expect.poll(async () => (await doc(page)) !== null).toBe(true);
+  expect(streams).toEqual([]);
+});
+
+test('a tab that lost its event stream catches up when the stream comes back', async ({ page }) => {
+  const { id } = await newDiagram('sync-reconnect');
+  const blocked = (route: { abort(): Promise<void> }) => route.abort();
+  await page.route('**/events?**', blocked);
+  await openTab(page, id);
+  const session = (await api<{ sessionId: string }>('POST', '/sessions', { client: 'e2e', cwd: scratch, pid: process.pid })).json.sessionId;
+  expect((await api('POST', `/sessions/${session}/bindings`, { project: 'demo', id })).status).toBe(200);
+  const drawn = await api<{ ok: boolean }>('POST', `/sessions/${session}/ops`, { project: 'demo', id, op: 'create_diagram', input: { dsl: 'flowchart\n  Back -> Again\n' } });
+  expect(drawn.json.ok).toBe(true);
+  // The change was sent while the tab had no stream: nothing shows until the browser reconnects.
+  expect(await labels(page)).toEqual([]);
+  await page.unroute('**/events?**', blocked);
+  await expect.poll(() => labels(page), { timeout: 15_000 }).toEqual(['Again', 'Back']);
 });
