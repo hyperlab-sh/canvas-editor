@@ -39,7 +39,6 @@ export function createServiceRepository(project: string, origin: string = SERVIC
     ({ id, revision, schemaVersion: document.schemaVersion, document, savedAt: document.updatedAt });
 
   return {
-    project,
     eventsUrl: (id) => `${origin}/events?project=${encodeURIComponent(project)}&id=${encodeURIComponent(id)}`,
     serviceRevision: (id) => known.get(id)?.service,
     adopt: (id, editor, service) => { known.set(id, { editor, service }); },

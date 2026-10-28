@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { areStructurallyEqual } from '../../domain/commands/equality';
+import { takeThreads, withoutThreads } from '../../domain/threads/threads';
 import type { SceneDocumentV1 } from '../../domain/document/types';
 import type { ServiceRepository } from '../../../services/storage/v2/serviceSync';
 import type { ToastItem } from '../design-system';
@@ -13,8 +14,11 @@ interface ServiceSyncInput {
     readonly document: SceneDocumentV1 | null;
     readonly revision: number;
     readonly replaceDocument: (document: SceneDocumentV1, label: string) => number | null;
+    readonly updateThreads: (change: (document: SceneDocumentV1) => SceneDocumentV1) => number | null;
   };
   /** Autosave takes the current copy as saved at this save number, and resumes if a conflict had stopped it. */
+  /** Edits not yet saved (waiting out the debounce, or mid-save). */
+  readonly unsaved: boolean;
   readonly adoptSaved: (saveRevision: number) => void;
   readonly pushToast: (toast: ToastItem) => void;
 }
@@ -44,12 +48,20 @@ export function useServiceSync(input: ServiceSyncInput) {
         const { repository: repo, id: diagramId } = latest.current;
         if (!repo || !diagramId) return;
         const current = await repo.fetchCurrent(diagramId);
+        setHolder(current.holder);
         const now = latest.current;
         // The tab's own save came back as an event, or an earlier read already took this copy.
         if (!resume && current.revision <= (repo.serviceRevision(diagramId) ?? 0)) continue;
-        const same = now.session.document !== null && areStructurallyEqual(now.session.document, current.document);
+        // Unsaved edits are not dropped by an event: their save meets a 409, which takes the copy and says so.
+        if (!resume && now.unsaved) continue;
+        const local = now.session.document;
+        const shapesSame = local !== null && areStructurallyEqual(withoutThreads(local), withoutThreads(current.document));
+        const same = shapesSame && areStructurallyEqual(local, current.document);
         if (same && !resume) continue;
-        const sessionRevision = same ? now.session.revision : now.session.replaceDocument(current.document, LABEL);
+        // A comment from elsewhere changes no shape: it joins without an undo step.
+        const sessionRevision = same ? now.session.revision
+          : shapesSame ? now.session.updateThreads((document) => takeThreads(document, current.document))
+            : now.session.replaceDocument(current.document, LABEL);
         if (sessionRevision === null) return;
         const saveRevision = now.load.baseRevision + sessionRevision;
         repo.adopt(diagramId, saveRevision, current.revision);
@@ -69,9 +81,16 @@ export function useServiceSync(input: ServiceSyncInput) {
     if (!repository || !id || !ready) return;
     const source = new EventSource(repository.eventsUrl(id));
     source.addEventListener('revision', () => { void sync(false); });
+    // Opening (also after a reconnect) catches up on what was missed while the stream was down, and learns the holder.
+    source.addEventListener('open', () => { void sync(false); });
     source.addEventListener('holder', (event) => {
-      const { label } = JSON.parse((event as MessageEvent<string>).data) as { label: string | null };
-      setHolder(label);
+      try {
+        const { label } = JSON.parse((event as MessageEvent<string>).data) as { label?: unknown };
+        const next = typeof label === 'string' ? label : label === null ? null : undefined;
+        if (next !== undefined) setHolder(next);
+      } catch (error) {
+        console.warn('Ignored a malformed holder event', error);
+      }
     });
     return () => source.close();
   }, [repository, id, ready, sync]);

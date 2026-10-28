@@ -1,3 +1,4 @@
+import { takeThreads } from '../../domain/threads/threads';
 import type { DocumentCommand } from '../../domain/commands/types';
 import type { SceneDocumentV1 } from '../../domain/document/types';
 import {
@@ -92,7 +93,8 @@ export function updateSessionThreads(
 
 /**
  * An incoming copy of the document (another tab or the agent saved it) as one undo step: undo brings back
- * what this tab had. Threads stay as they are here; the revision moves forward like any commit.
+ * what this tab had. The threads are the incoming copy's, not this tab's: a comment made elsewhere shows
+ * here, and a save from this tab does not delete it. They sit outside history, so undo and redo keep them.
  */
 export function replaceSessionDocument(
   session: DocumentSession,
@@ -104,7 +106,9 @@ export function replaceSessionDocument(
     kind: 'replace-document', id: `replace-document:${session.revision}`, label,
     before: session.document, after: document,
   };
-  return commitSessionCommand(session, command, expectedRevision);
+  const committed = commitSessionCommand(session, command, expectedRevision);
+  const present = takeThreads(committed.document, document);
+  return { ...committed, document: present, history: { ...committed.history, present } };
 }
 
 export function undoSessionCommand(

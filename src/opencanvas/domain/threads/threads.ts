@@ -88,6 +88,25 @@ export function carryThreads(next: SceneDocumentV1, current: SceneDocumentV1): S
   return changed ? { ...next, pages } : next;
 }
 
+/** `document` with every page's threads taken from the page of the same id in `source` (an incoming copy of the document). */
+export function takeThreads(document: SceneDocumentV1, source: SceneDocumentV1): SceneDocumentV1 {
+  const sourceById = new Map(source.pages.map((page) => [page.id, page]));
+  let changed = false;
+  const pages = document.pages.map((page) => {
+    const incoming = sourceById.get(page.id)?.threads;
+    if (incoming === page.threads) return page;
+    changed = true;
+    const { threads: _dropped, ...rest } = page;
+    return incoming ? { ...rest, threads: incoming } : rest;
+  });
+  return changed ? { ...document, pages } : document;
+}
+
+/** `document` as the shapes see it: every page without its threads, to tell a thread-only change from an edit. */
+export function withoutThreads(document: SceneDocumentV1): SceneDocumentV1 {
+  return takeThreads(document, { ...document, pages: document.pages.map(({ threads: _threads, ...page }) => page) });
+}
+
 /**
  * `page` as it can join `document`: a thread whose number a thread already in the document has gets the
  * next free one. Numbers are unique across the document, and a page brought back by undoing its removal

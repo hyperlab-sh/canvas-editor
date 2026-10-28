@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DocumentCommand } from '../../domain/commands/types';
+import type { SceneDocumentV1 } from '../../domain/document/types';
 import { addThread } from '../../domain/threads/threads';
 import { createTestDocument, createTestNode } from '../../testing/builders/documentBuilder';
 import {
@@ -117,19 +118,31 @@ describe('revisioned document session', () => {
       expect(redone.document).toEqual(replaced.document);
     });
 
-    it('carries the threads this tab has across the replace, undo and redo', () => {
-      const withThread = addThread(session().document, {
-        pageId: 'page-1', threadId: 't1', nodeId: null, point: { x: 10, y: 10 },
-        comment: { id: 'c1', author: { kind: 'human', name: 'Ann' } as never, body: 'look here', createdAt: '2026-01-01T00:00:00.000Z' },
-      });
-      const start = createDocumentSession(withThread);
-      const threadIds = (document: typeof withThread) => (document.pages[0].threads ?? []).map((thread) => thread.id);
+    const comment = (id: string) => ({ id, author: { kind: 'human', name: 'Ann' } as const, body: id, createdAt: '2026-01-01T00:00:00.000Z' });
+    const withThread = (document: SceneDocumentV1, threadId: string) =>
+      addThread(document, { pageId: 'page-1', threadId, nodeId: null, point: { x: 10, y: 10 }, comment: comment(`c-${threadId}`) });
+    const threadIds = (document: SceneDocumentV1) => (document.pages[0].threads ?? []).map((thread) => thread.id);
 
-      const replaced = replaceSessionDocument(start, incoming(), 'Updated from the service', 0);
-      expect(threadIds(replaced.document)).toEqual(['t1']);
+    it('takes the incoming copy\'s threads, not this tab\'s, and undo and redo keep them', () => {
+      // This tab has its own thread; the copy from elsewhere has another one (a comment made in another tab).
+      const start = createDocumentSession(withThread(session().document, 'mine'));
+      const replaced = replaceSessionDocument(start, withThread(incoming(), 'theirs'), 'Updated from the service', 0);
+      expect(threadIds(replaced.document)).toEqual(['theirs']);
+      expect(replaced.history.present).toBe(replaced.document);
       const undone = undoSessionCommand(replaced, 1);
-      expect(threadIds(undone.document)).toEqual(['t1']);
-      expect(threadIds(redoSessionCommand(undone, 2).document)).toEqual(['t1']);
+      expect(undone.document.pages[0].nodes.map((node) => node.id)).toEqual(['node-1']);
+      expect(threadIds(undone.document)).toEqual(['theirs']);
+      expect(threadIds(redoSessionCommand(undone, 2).document)).toEqual(['theirs']);
+    });
+
+    it('shows a thread the incoming copy has and this tab lacks', () => {
+      const replaced = replaceSessionDocument(session(), withThread(incoming(), 'theirs'), 'Updated from the service', 0);
+      expect(threadIds(replaced.document)).toEqual(['theirs']);
+    });
+
+    it('drops a thread the incoming copy no longer has', () => {
+      const start = createDocumentSession(withThread(session().document, 'mine'));
+      expect(threadIds(replaceSessionDocument(start, incoming(), 'Updated from the service', 0).document)).toEqual([]);
     });
 
     it('rejects a stale expected revision', () => {
