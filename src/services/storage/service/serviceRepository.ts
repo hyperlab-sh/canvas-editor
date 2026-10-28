@@ -81,15 +81,7 @@ export function createServiceRepository(project: string, origin: string = SERVIC
       return { status: 'saved', record: record(id, document, revision) };
     },
 
-    listDocuments: async () => {
-      const response = await send(`${origin}/projects`);
-      if (!response.ok) throw await failure(response, 'list');
-      const projects = await response.json() as readonly ServiceProject[];
-      // The listing reads only a file's head, so what the summary needs from the pages stays empty.
-      return projects.flatMap(({ name, diagrams }): V2DocumentSummary[] => diagrams.map((diagram) => ({
-        id: diagram.id, name: diagram.title, savedAt: diagram.modifiedAt, pageCount: 0, pageIds: [], searchText: '', project: name,
-      }))).sort((a, b) => (a.savedAt < b.savedAt ? 1 : -1));
-    },
+    listDocuments: () => listServiceDocuments(origin),
 
     listArchive: async () => [],
     archiveDocuments: async () => unsupported('Archiving'),
@@ -111,4 +103,20 @@ export async function renameServiceDiagram(project: string, id: string, name: st
     throw new V2StorageUnavailableError(`The local service is not reachable at ${origin}: ${error instanceof Error ? error.message : String(error)}`);
   }
   if (!response.ok) throw await failure(response, 'rename');
+}
+
+/** Every project's diagrams the service lists, most recently saved first. */
+export async function listServiceDocuments(origin: string = SERVICE_ORIGIN): Promise<readonly V2DocumentSummary[]> {
+  let response: Response;
+  try {
+    response = await fetch(`${origin}/projects`);
+  } catch (error) {
+    throw new V2StorageUnavailableError(`The local service is not reachable at ${origin}: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  if (!response.ok) throw await failure(response, 'list');
+  const projects = await response.json() as readonly ServiceProject[];
+  // The listing reads only a file's head, so what the summary needs from the pages stays empty.
+  return projects.flatMap(({ name, diagrams }): V2DocumentSummary[] => diagrams.map((diagram) => ({
+    id: diagram.id, name: diagram.title, savedAt: diagram.modifiedAt, pageCount: 0, pageIds: [], searchText: '', project: name,
+  }))).sort((a, b) => (a.savedAt < b.savedAt ? 1 : -1));
 }
