@@ -22,7 +22,7 @@ import { toolError } from '../lib/errors.js';
 import { clientHasChannel, clientShowsApps, diagramCard, VIEWER_TOOL_META, type Card } from '../lib/card.js';
 import { DEFAULT_APP_ORIGIN, openUrl } from '../lib/openLink.js';
 import type { ServiceBinding, ServiceClient, ServiceProject } from '../lib/serviceClient.js';
-import { diagramField, NO_CHANNEL_NOTE, pickBinding, pickProject } from './serviceTools.js';
+import { CONNECT_HINT, diagramField, NO_CHANNEL_NOTE, pickBinding, pickProject } from './serviceTools.js';
 
 export interface OpToolDeps {
   readonly store: DocumentStore;
@@ -183,7 +183,7 @@ export function registerOpTools(server: McpServer, deps: OpToolDeps): void {
         let binding: ServiceBinding;
         let made = false;
         if (op.name === 'create_diagram' && (typeof project === 'string' || !held.length)) {
-          const target = await pickProject(service!, typeof project === 'string' ? project : undefined);
+          const target = await pickProject(service!, typeof project === 'string' ? project : undefined, view.projects);
           const name = typeof diagramName === 'string' ? diagramName : 'Untitled diagram';
           const created = await service!.create(target, name);
           binding = { project: target, id: created.id, title: name, url: created.url };
@@ -222,7 +222,7 @@ export function registerOpTools(server: McpServer, deps: OpToolDeps): void {
         }
         const id = (typeof documentId === 'string' ? documentId : undefined) ?? deps.store.latest()?.id;
         if (!id && !LOOKUPS.has(op.name)) {
-          throw new Error(deps.bridge.unpairedReason ?? NOT_PAIRED);
+          throw new Error(`${deps.bridge.unpairedReason ?? NOT_PAIRED}${view.projects ? ` ${CONNECT_HINT}` : ''}`);
         }
         // Grammar and icon lookups read no document, so an agent may call them before it has one.
         const document = id ? deps.store.get(id) as unknown as SceneDocumentV1 : SCRATCH;

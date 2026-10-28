@@ -173,6 +173,61 @@ describe('connections', () => {
   });
 });
 
+describe('a session survives a bad request', () => {
+  const sameSession = async (agent: Awaited<ReturnType<typeof session>>) => {
+    const { sessionId, label, bindings } = (await agent.json('whoami')).service;
+    return { sessionId, label, bindings };
+  };
+
+  it('keeps its session and connections when connect_diagram names a diagram that does not exist', async () => {
+    const { service } = await boot('alpha');
+    const agent = await session(service.url);
+    await agent.json('create_diagram', { project: 'alpha', dsl: DSL });
+    const before = await sameSession(agent);
+    expect(before.bindings).toHaveLength(1);
+    const refused = await agent.call('connect_diagram', { project: 'alpha', diagram: 'ghost' });
+    expect(refused.isError).toBe(true);
+    expect(await sameSession(agent)).toEqual(before);
+  });
+
+  it('keeps its session and connections when a request fails in transit and the service is still up', async () => {
+    const { service } = await boot('alpha');
+    const state = { breakOps: false };
+    const relay = createServer((request, response) => {
+      if (state.breakOps && request.url?.endsWith('/ops')) { request.socket.destroy(); return; }
+      const chunks: Buffer[] = [];
+      request.on('data', (chunk: Buffer) => chunks.push(chunk));
+      request.on('end', () => {
+        const abort = new AbortController();
+        response.on('close', () => abort.abort());
+        const body = Buffer.concat(chunks);
+        void fetch(`${service.url}${request.url}`, {
+          method: request.method, signal: abort.signal,
+          headers: body.length ? { 'content-type': 'application/json' } : {},
+          ...(body.length ? { body } : {}),
+        }).then(async (upstream) => {
+          response.writeHead(upstream.status, { 'content-type': upstream.headers.get('content-type') ?? 'application/json' });
+          response.end(Buffer.from(await upstream.arrayBuffer()));
+        }, () => response.destroy());
+      });
+    });
+    await new Promise<void>((ready) => relay.listen(0, '127.0.0.1', ready));
+    try {
+      const agent = await session(`http://127.0.0.1:${(relay.address() as { port: number }).port}`);
+      await agent.json('create_diagram', { project: 'alpha', dsl: DSL });
+      const before = await sameSession(agent);
+      state.breakOps = true;
+      expect((await agent.call('list_pages', {})).isError).toBe(true);
+      state.breakOps = false;
+      expect(await sameSession(agent)).toEqual(before);
+      expect(JSON.stringify(await agent.json('list_pages', {}))).toContain('pages');
+    } finally {
+      relay.closeAllConnections();
+      await new Promise<void>((done) => relay.close(() => done()));
+    }
+  });
+});
+
 describe('which diagram a drawing tool lands on', () => {
   it('uses the only connection; with two it refuses and lists them; with none it refuses and changes nothing (AC-7, D5)', async () => {
     const { service, config } = await boot('alpha');
@@ -201,7 +256,7 @@ describe('which diagram a drawing tool lands on', () => {
     expect(files).toHaveLength(2);
     const none = await agent.call('update_diagram', { frameId: 'f', dsl: DSL });
     expect(none.isError).toBe(true);
-    expect(none.text).toMatch(/No editor is paired/);
+    expect(none.text).toMatch(/No editor is paired[\s\S]*connect_diagram[\s\S]*create_diagram with a project/);
     expect(await readdir(folder)).toEqual(files);
     expect((await agent.json('whoami')).service.bindings).toEqual([]);
     const named = await agent.call('update_diagram', { diagram: second.diagram, frameId: 'f', dsl: DSL });

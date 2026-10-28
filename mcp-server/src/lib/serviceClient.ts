@@ -171,11 +171,15 @@ export class ServiceClient {
       try {
         reply = await this.request(method, target, body);
       } catch (error) {
-        if (attempt > 0) throw error;
+        // The same service, still up, answered badly or not in time: the session and what it holds are intact, and the
+        // request may already have run, so it is neither forgotten nor sent again.
+        const health = await this.health();
+        if (attempt > 0 || (health.state === 'up' && health.pid === this.servicePid)) throw error;
         this.forget();
         continue;
       }
-      if (reply.status === 404 && typeof path !== 'string' && attempt === 0) {
+      // Only "no such session" means the service restarted; a 404 for a missing project or diagram is the caller's to read.
+      if (reply.status === 404 && typeof path !== 'string' && attempt === 0 && /^Unknown session/.test((reply.json as { error?: string } | undefined)?.error ?? '')) {
         this.forget();
         continue;
       }
