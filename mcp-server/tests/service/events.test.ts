@@ -1,11 +1,10 @@
+import { copyFile } from 'node:fs/promises';
 import { request } from 'node:http';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { BridgeThreadEvent } from '../../src/lib/agent.js';
-import { createEvents } from '../../src/service/events.js';
-import { createSessions } from '../../src/service/sessions.js';
 import { createStore } from '../../src/service/store.js';
 import { tempConfig } from './helpers.js';
-import { bind, boot, call, closeServicesAfterEach, newDiagram, openStream, register } from './sessionHelpers.js';
+import { bind, boot, call, closeServicesAfterEach, newDiagram, openStream, register, serveWith } from './sessionHelpers.js';
 
 closeServicesAfterEach();
 
@@ -111,18 +110,23 @@ describe('POST …/comments and GET /sessions/:id/events', () => {
     expect((await call(service, 'GET', `/sessions/${holder.sessionId}/events?wait=0`)).status).toBe(204);
   });
 
-  it('forgets the queue of a released session', async () => {
+  it('gives a released session\'s queued comments to nobody', async () => {
     const config = await tempConfig('alpha');
     const store = createStore(config);
-    const sessions = createSessions();
-    const events = createEvents(store, sessions);
-    const { sessionId } = sessions.register({ client: 'Claude Code', cwd: '/x/hyper', pid: 1 });
-    events.push(sessionId, 'alpha', threadEvent('d1') as unknown as BridgeThreadEvent);
-    sessions.release(sessionId);
-    // wait 0 never touches the request.
-    expect(await events.poll(sessionId, 0, undefined as never)).toBeNull();
-    events.close();
-    sessions.close();
+    const { id } = await store.create('alpha', 'Flow');
+    const live = await serveWith(config, store);
+    try {
+      const old = (await call(live, 'POST', '/sessions', { client: 'Claude Code', cwd: '/x/hyper', pid: 1 })).json.sessionId;
+      await bind(live, old, id);
+      await call(live, 'POST', `/projects/alpha/diagrams/${id}/comments`, threadEvent(id));
+      live.sessions.release(old);
+      expect((await call(live, 'GET', `/sessions/${old}/events?wait=0`)).status).toBe(404);
+      const next = (await call(live, 'POST', '/sessions', { client: 'Codex', cwd: '/y/o', pid: 2 })).json.sessionId;
+      expect((await bind(live, next, id)).status).toBe(200);
+      expect((await call(live, 'GET', `/sessions/${next}/events?wait=0`)).status).toBe(204);
+    } finally {
+      await live.close();
+    }
   });
 });
 
@@ -159,17 +163,21 @@ describe('queued events across projects', () => {
   it('drops only the disconnected project\'s events when two projects share a diagram id', async () => {
     const config = await tempConfig('alpha', 'beta');
     const store = createStore(config);
-    const sessions = createSessions();
-    const events = createEvents(store, sessions);
-    const { sessionId } = sessions.register({ client: 'Claude Code', cwd: '/x/hyper', pid: 1 });
-    sessions.bind(sessionId, 'alpha', 'x');
-    sessions.bind(sessionId, 'beta', 'x');
-    events.push(sessionId, 'alpha', threadEvent('x', 'for alpha') as unknown as BridgeThreadEvent);
-    events.push(sessionId, 'beta', threadEvent('x', 'for beta') as unknown as BridgeThreadEvent);
-    sessions.disconnect('alpha', 'x');
-    const left = await events.poll(sessionId, 0, undefined as never);
-    expect(left?.map((event) => event.body)).toEqual(['for beta']);
-    events.close();
-    sessions.close();
+    const { id } = await store.create('alpha', 'Flow');
+    // A copied file: the same diagram id in a second project.
+    await copyFile(join(config.projects[0]!.path, 'flow.openflow.json'), join(config.projects[1]!.path, 'flow.openflow.json'));
+    const live = await serveWith(config, store);
+    try {
+      const sid = (await call(live, 'POST', '/sessions', { client: 'Claude Code', cwd: '/x/hyper', pid: 1 })).json.sessionId;
+      for (const project of ['alpha', 'beta']) {
+        expect((await call(live, 'POST', `/sessions/${sid}/bindings`, { project, id })).status).toBe(200);
+        expect((await call(live, 'POST', `/projects/${project}/diagrams/${id}/comments`, threadEvent(id, `for ${project}`))).status).toBe(202);
+      }
+      expect((await call(live, 'DELETE', `/projects/alpha/diagrams/${id}/holder`)).status).toBe(204);
+      const got = await call(live, 'GET', `/sessions/${sid}/events?wait=0`);
+      expect(got.json.events.map((event: { body: string }) => event.body)).toEqual(['for beta']);
+    } finally {
+      await live.close();
+    }
   });
 });
