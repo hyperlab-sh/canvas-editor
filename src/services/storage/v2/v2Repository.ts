@@ -93,6 +93,8 @@ export interface V2DocumentSummary {
   /** Lowercase page names and box labels, one per line, for Home's search: made once per list, from documents the list reads anyway. */
   readonly searchText: string;
   readonly archivedAt?: string;
+  /** The service project a diagram lives in; absent for a document in this browser. */
+  readonly project?: string;
 }
 
 type OpenedRecord =
