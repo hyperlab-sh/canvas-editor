@@ -186,6 +186,8 @@ describe('the app', () => {
     });
     expect(raw).toBe('<html>app</html>');
     expect((await call(service, 'GET', '/%2e%2e/secret.txt')).text).toBe('<html>app</html>');
+    // URL parsing keeps an encoded slash, so only normalising the decoded path stops this one.
+    expect((await call(service, 'GET', '/..%2fsecret.txt')).text).toBe('<html>app</html>');
   });
 
   it('answers 503 naming the path looked at when the app is missing', async () => {
