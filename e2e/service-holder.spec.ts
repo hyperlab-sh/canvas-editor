@@ -117,12 +117,18 @@ test('a Live comment goes to the holder, and with none says so once', async ({ p
   const id = await newDiagram('holder-live');
   await openTab(page, id, { liveComments: true });
   await drawShape(page, 'r', 500, 360);
+  const refused = () => page.waitForResponse((r) => r.url().endsWith('/comments') && r.status() === 409);
+  // Each live POST is awaited before asserting, so a second toast from any path would already be on screen.
+  let answered = refused();
   await comment(page, { x: 520, y: 380 }, 'Nobody home');
+  await answered;
+  answered = refused();
+  await comment(page, { x: 560, y: 420 }, 'Still nobody');
+  await answered;
   await expect(page.getByText('No session holds this diagram')).toHaveCount(1);
-  await expect(page.getByTestId('v2-threads-send')).toHaveText('Send 1 comment to agent');
+  await expect(page.getByTestId('v2-threads-send')).toHaveText('Send 2 comments to agent');
 
   const { sessionId } = await hold(id);
-  await page.getByRole('button', { name: 'Dismiss' }).first().click().catch(() => undefined);
   await comment(page, { x: 540, y: 400 }, 'Now live');
   expect(await parked(sessionId)).toEqual(['Now live']);
 });

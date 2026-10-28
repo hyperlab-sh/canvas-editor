@@ -14,7 +14,7 @@ export class NoHolderError extends Error {}
 
 export type ThreadDelivery = 'sent' | 'no-holder' | 'failed';
 
-/** Pushes a new human comment to the paired agent session; never throws, and says whether nobody holds the diagram. */
+/** Pushes a new human comment to the paired agent session; never throws, and says whether it was sent, nobody holds the diagram, or it failed. */
 export async function deliverThreadEvent(event: BridgeThreadEvent): Promise<ThreadDelivery> {
   if (!send) return 'failed';
   try {
@@ -23,9 +23,4 @@ export async function deliverThreadEvent(event: BridgeThreadEvent): Promise<Thre
   } catch (error) {
     return error instanceof NoHolderError ? 'no-holder' : 'failed';
   }
-}
-
-/** Pushes a new human comment to the paired agent session; resolves false (never throws) when not connected or refused. */
-export async function postThreadEvent(event: BridgeThreadEvent): Promise<boolean> {
-  return (await deliverThreadEvent(event)) === 'sent';
 }
