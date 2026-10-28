@@ -3,13 +3,13 @@
 Contributors start from [CONTRIBUTING.md](CONTRIBUTING.md) and open an issue to propose
 work; the rules below apply to every change. The plan lives in an untracked `docs/`
 folder — it is the maintainer's working copy, not part of the repository.
-[STATE.md](STATE.md) says what is done and what is next; maintainers read it first, then
+`STATUS.md` (in the hyper space root, outside the repo) says what is done and what is next; maintainers read it first, then
 the phase file for the slice they are taking. Anything under `docs/archive/` (the
 frozen v2 specs included) is history — never instructions.
 
 ## How to work here
 
-1. Take the next unclaimed slice in `STATE.md`; write your name + date next to it.
+1. Take the next unclaimed slice in `STATUS.md`; write your name + date next to it.
    Work on `v2` directly — no slice branches. Several agents share this checkout:
    never `git checkout`, `git add -A`, stash or reset; stage only the paths you touched.
 2. Read the code the slice touches end to end before editing (callers, consumers).
@@ -24,7 +24,7 @@ frozen v2 specs included) is history — never instructions.
 6. Integrations (AI providers, files, bridge) test each failure message against the
    real condition — a closed port, a server without CORS — not a `fetch` stub that throws.
 7. Fix forward. The app must boot after every merge. Delete dead code on sight.
-8. Update `STATE.md` (≤40 lines) when you finish. Rationale goes in the PR, not in
+8. Update `STATUS.md` (≤40 lines) when you finish. Rationale goes in the PR, not in
    new documents.
 
 ## Before a release
