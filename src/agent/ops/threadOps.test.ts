@@ -177,6 +177,17 @@ describe('comment ops, live', () => {
     expect((listed.output as { threads: unknown[] }).threads).toHaveLength(1);
   });
 
+  it('start_thread reports the number the thread got, not the one it expected', async () => {
+    const host = await live({});
+    // The op resolves against an empty document (it expects #1), but by the time its change lands someone
+    // in the editor has started #1: the change applies to that document and the output says #2.
+    const withOne = (await file(host.document(), 'start_thread', { point: { x: 0, y: 0 }, body: 'first' })).document;
+    const late = (): LiveAgentSession => ({ ...host.session(), threadChange: (change) => host.threadChange(() => change(withOne)) });
+    const result = await runLiveAgentOp(late, 'start_thread', { point: { x: 1, y: 1 }, body: 'second' });
+    expect((result.output as { number: number }).number).toBe(2);
+    expect(pageThreads(host.document().pages[0]!).map(({ number }) => number)).toEqual([1, 2]);
+  });
+
   it('a read-only document refuses comment writes but lists comments', async () => {
     const host = await live({ readOnly: true });
     for (const [name, input] of [['start_thread', { point: { x: 0, y: 0 }, body: 'x' }], ['reply_to_thread', { threadId: 't', body: 'x' }], ['resolve_thread', { threadId: 't' }]] as const) {

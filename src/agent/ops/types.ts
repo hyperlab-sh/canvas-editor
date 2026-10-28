@@ -106,6 +106,11 @@ export interface OpOutcome<Output> {
   readonly command: DocumentCommand | null;
   readonly threads?: (document: SceneDocumentV1) => SceneDocumentV1;
   readonly output: Output;
+  /**
+   * With `threads`: the output read off the document the change was applied to, which in live mode can
+   * differ from the one the op resolved against (a thread number given out in between).
+   */
+  readonly report?: (applied: SceneDocumentV1) => Output;
 }
 
 export interface AgentOp<Input = unknown, Output = unknown> {

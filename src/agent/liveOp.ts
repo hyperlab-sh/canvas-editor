@@ -109,8 +109,11 @@ export async function runLiveAgentOp(current: () => LiveAgentSession, name: stri
     stopIfAborted(signal);
     const now = current();
     if (now.readOnly || !now.threadChange) throw new Error(READ_ONLY_REFUSAL);
-    now.threadChange(outcome.threads);
-    return { output: outcome.output, command: null };
+    // The change runs against the editor's document as it is then, so the output is read off that one.
+    const { threads, report } = outcome;
+    let applied: SceneDocumentV1 | null = null;
+    now.threadChange((document) => (applied = threads(document)));
+    return { output: report && applied ? report(applied) : outcome.output, command: null };
   }
   if (!outcome.command) return { output: outcome.output, command: null };
   stopIfAborted(signal);

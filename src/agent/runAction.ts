@@ -36,10 +36,10 @@ export async function runAgentOp(
   rawInput: unknown,
   context: OpContext
 ): Promise<RunOpResult> {
-  const { command, threads, output } = await resolveAgentOpCommand(op, rawInput, context);
+  const { command, threads, output, report } = await resolveAgentOpCommand(op, rawInput, context);
   if (threads) {
     const next = threads(context.document);
-    return { document: next, changed: next !== context.document, output };
+    return { document: next, changed: next !== context.document, output: report ? report(next) : output };
   }
   if (!command) return { document: context.document, changed: false, output };
   return { document: applyDocumentCommand(context.document, command).document, changed: true, output };

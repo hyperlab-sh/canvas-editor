@@ -103,10 +103,12 @@ export const startThread = defineOp({
     const comment = { ...stamp(), author: author(context), body: text };
     const pageId = page.id;
     const at = pin!;
+    const output = (number: number) => ({ threadId, number, commentId: comment.id, pageId, nodeId: nodeId ?? null, point: at });
     return {
       command: null,
       threads: (document) => addThread(document, { pageId, threadId, nodeId: nodeId ?? null, point: at, comment }),
-      output: { threadId, number: nextThreadNumber(context.document), commentId: comment.id, pageId, nodeId: nodeId ?? null, point: at },
+      output: output(nextThreadNumber(context.document)),
+      report: (applied) => output(findThread(applied, threadId)?.thread.number ?? nextThreadNumber(context.document)),
     };
   },
 });
