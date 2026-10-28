@@ -97,6 +97,8 @@ export interface BridgeHealth {
   readonly lastSeenMs: number | null;
   /** Servers after 0.2.4: the `POST /call` protocol other local servers share this one's canvas through. */
   readonly share?: number;
+  /** Servers after 0.2.4: the session owning this port can receive comments (a channel). */
+  readonly channel?: boolean;
 }
 
 export interface DslLintReport {

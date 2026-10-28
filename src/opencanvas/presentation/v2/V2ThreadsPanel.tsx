@@ -31,8 +31,8 @@ interface Props {
   readonly onMarkUnread: (threadId: string) => void;
   readonly onCopyLink: (threadId: string) => void;
   readonly onDelete: (threadId: string) => void;
-  /** Live comments: each new comment is sent to the connected agent. */
-  readonly live: { readonly on: boolean; readonly available: boolean; readonly onChange: (on: boolean) => void };
+  /** Live comments: each new comment is sent to the connected agent; `why` says what stops it when `available` is false. */
+  readonly live: { readonly on: boolean; readonly available: boolean; readonly why?: string | null; readonly onChange: (on: boolean) => void };
   /** People's comments in the listed threads not yet sent to the agent; the button sends them. */
   readonly unsentCount: number;
   readonly onSendToAgent: () => void;
@@ -126,7 +126,7 @@ export function V2ThreadsPanel(props: Props): React.JSX.Element {
         autoFocus={props.focusOnOpen} data-testid="v2-threads-panel"
         tools={(
           <div className="ofk-threads-live">
-            <V2LiveCommentsToggle compact on={props.live.on} available={props.live.available} onChange={props.live.onChange} />
+            <V2LiveCommentsToggle compact on={props.live.on} available={props.live.available} why={props.live.why} onChange={props.live.onChange} />
             <Tooltip content="Automatically send new comments to your agent">
               <IconButton variant="quiet" label="About live comments" icon={<Icon icon={IconHelp} />} />
             </Tooltip>
@@ -152,7 +152,7 @@ export function V2ThreadsPanel(props: Props): React.JSX.Element {
         </div>
         <div className="ofk-threads-send">
           <Button variant="secondary" disabled={props.unsentCount === 0 || !props.live.available} onClick={props.onSendToAgent}
-            data-testid="v2-threads-send">
+            data-testid="v2-threads-send" title={props.live.available ? undefined : props.live.why ?? undefined}>
             Send {props.unsentCount} {props.unsentCount === 1 ? 'comment' : 'comments'} to agent
           </Button>
         </div>

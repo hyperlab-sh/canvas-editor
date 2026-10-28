@@ -100,6 +100,34 @@ describe('useV2AgentBridge', () => {
     unmount();
   });
 
+  it('learns from the hello whether the session hears comments, and from a poll when that changes', async () => {
+    let hello = '{"ok":true,"protocol":1,"channel":true}';
+    let notice: string | null = null;
+    vi.stubGlobal('fetch', vi.fn((url: string, init?: RequestInit) => {
+      const { pathname } = new URL(url);
+      if (pathname === '/hello') return Promise.resolve(new Response(hello, { status: 200 }));
+      if (pathname === '/next' && notice !== null) { const body = notice; notice = null; return Promise.resolve(new Response(body, { status: 200 })); }
+      return parkedNext(url, init) ?? Promise.resolve(new Response('{"ok":true}', { status: 200 }));
+    }));
+    const { result, unmount } = renderHook(() => useV2AgentBridge(options));
+    await waitFor(() => expect(result.current).toMatchObject({ status: 'connected', channel: true }));
+    unmount();
+
+    // The client declared its channel after the editor's hello: the next poll says so instead of a request.
+    hello = '{"ok":true,"protocol":1,"channel":false}';
+    notice = '{"channel":true}';
+    const late = renderHook(() => useV2AgentBridge(options));
+    await waitFor(() => expect(late.result.current).toMatchObject({ status: 'connected', channel: true }));
+    late.unmount();
+
+    // An older server says nothing about it: no channel.
+    hello = '{"ok":true,"protocol":1}';
+    const old = renderHook(() => useV2AgentBridge(options));
+    await waitFor(() => expect(old.result.current.status).toBe('connected'));
+    expect(old.result.current.channel).toBe(false);
+    old.unmount();
+  });
+
   it('nothing listening is waiting, not an error, and a retry never flickers back to connecting', async () => {
     let hellos = 0;
     vi.stubGlobal('fetch', vi.fn((url: string) => {

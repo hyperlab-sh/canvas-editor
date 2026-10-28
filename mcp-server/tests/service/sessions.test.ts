@@ -60,7 +60,7 @@ describe('sessions', () => {
     expect((await bind(service, session.sessionId, b.id)).status).toBe(200);
     const listing = (await call(service, 'GET', '/projects')).json;
     const holders = listing[0].diagrams.map((d: { holder: unknown }) => d.holder);
-    expect(holders).toEqual([{ label: session.label }, { label: session.label }]);
+    expect(holders).toEqual([{ label: session.label, channel: false }, { label: session.label, channel: false }]);
   });
 
   it('answers 404 for an unknown diagram and an unknown session', async () => {
@@ -75,7 +75,7 @@ describe('sessions', () => {
     const { id } = await newDiagram(service);
     const session = await register(service);
     await bind(service, session.sessionId, id);
-    expect((await call(service, 'GET', `/projects/alpha/diagrams/${id}`)).json.holder).toEqual({ label: session.label });
+    expect((await call(service, 'GET', `/projects/alpha/diagrams/${id}`)).json.holder).toEqual({ label: session.label, channel: false });
     const unbound = await call(service, 'DELETE', `/sessions/${session.sessionId}/bindings/alpha/${id}`);
     expect(unbound.status).toBe(204);
     expect((await call(service, 'GET', `/projects/alpha/diagrams/${id}`)).json.holder).toBeNull();
@@ -91,7 +91,7 @@ describe('sessions', () => {
     const other = await register(service, 'Codex', '/y/o', 2);
     await bind(service, holder.sessionId, id);
     await call(service, 'DELETE', `/sessions/${other.sessionId}/bindings/alpha/${id}`);
-    expect((await call(service, 'GET', `/projects/alpha/diagrams/${id}`)).json.holder).toEqual({ label: holder.label });
+    expect((await call(service, 'GET', `/projects/alpha/diagrams/${id}`)).json.holder).toEqual({ label: holder.label, channel: false });
   });
 
   it('releases the bindings of a session whose poll is not renewed (AC-6)', async () => {
@@ -114,7 +114,7 @@ describe('sessions', () => {
     // The poll outlives the ttl several times over; it returns 204 on its own timeout.
     const poll = await call(service, 'GET', `/sessions/${session.sessionId}/events?wait=1`);
     expect(poll.status).toBe(204);
-    expect((await call(service, 'GET', `/projects/alpha/diagrams/${id}`)).json.holder).toEqual({ label: session.label });
+    expect((await call(service, 'GET', `/projects/alpha/diagrams/${id}`)).json.holder).toEqual({ label: session.label, channel: false });
   });
 
   it('answers 404 "Register again" when the session is swept while the bind awaits the diagram', async () => {

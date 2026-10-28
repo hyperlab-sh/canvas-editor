@@ -33,10 +33,10 @@ export function createEvents(store: Store, sessions: Sessions): Events {
   };
 
   const stopStore = store.changed((project, id, revision) => send(project, id, 'revision', { project, id, revision }));
-  const stopSessions = sessions.onHolder((project, id, label) => {
-    send(project, id, 'holder', { project, id, label });
+  const stopSessions = sessions.onHolder((project, id, holder) => {
+    send(project, id, 'holder', { project, id, label: holder?.label ?? null, channel: holder?.channel ?? false });
     // Comments queued while the diagram was held are not for whoever connects next, nor for the session that lost it.
-    if (label === null) {
+    if (holder === null) {
       for (const [sessionId, queued] of queues) {
         const kept = queued.filter((entry) => !(entry.project === project && entry.event.documentId === id));
         if (kept.length) queues.set(sessionId, kept);

@@ -170,8 +170,8 @@ describe('createServiceRepository', () => {
       type: 'thread', documentId: '', pageId: 'p', threadId: 't', threadNumber: 1, commentId: 'm', nodeId: null, nodeLabel: null,
       kind: 'new_thread', author: 'Ana', body: 'hi',
     } as const;
-    const holdBy = async (id: string) => {
-      const { sessionId } = await (await fetch(`${service.url}/sessions`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ client: 'Claude Code', cwd: root, pid: process.pid }) })).json() as { sessionId: string };
+    const holdBy = async (id: string, channel?: boolean) => {
+      const { sessionId } = await (await fetch(`${service.url}/sessions`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ client: 'Claude Code', cwd: root, pid: process.pid, ...(channel === undefined ? {} : { channel }) }) })).json() as { sessionId: string };
       await fetch(`${service.url}/sessions/${sessionId}/bindings`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ project: 'alpha', id }) });
       return sessionId;
     };
@@ -190,9 +190,16 @@ describe('createServiceRepository', () => {
       const { id } = await post('/projects/alpha/diagrams', { name: 'Flow' });
       const repository = createServiceRepository('alpha', service.url);
       await holdBy(id);
-      expect((await repository.fetchCurrent(id)).holder).toMatch(/^Claude Code · /);
+      expect((await repository.fetchCurrent(id)).holder).toEqual({ label: expect.stringMatching(/^Claude Code · /), channel: false });
       await repository.disconnect(id);
       expect((await repository.fetchCurrent(id)).holder).toBeNull();
+    });
+
+    it('says whether the holder hears comments', async () => {
+      const { id } = await post('/projects/alpha/diagrams', { name: 'Flow' });
+      const repository = createServiceRepository('alpha', service.url);
+      await holdBy(id, true);
+      expect((await repository.fetchCurrent(id)).holder).toMatchObject({ channel: true });
     });
 
     it('a comment for another diagram is refused loudly, not read as "nobody holds it"', async () => {

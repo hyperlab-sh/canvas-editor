@@ -354,7 +354,7 @@ export function V2EditorPage({ shared, repository }: { readonly shared?: V2Share
   const agents = useV2EditorAgents({
     id, session, load, repo, map, panels, camera, code, preferences, updatePreferences, proposal, compileDraft, page, viewPage, pageRef, hostRef,
     selectionRef, selectedConnectorIdsRef, selectionNodeIds: selection.nodeIds, applySelection, applyConnectorSelection, pinnable, openDrawingRef,
-    showDrawing, setActivePageId, writable, landingDirection, toastZoomedToRead, setAnnouncement, pushToast, onService,
+    showDrawing, setActivePageId, writable, landingDirection, toastZoomedToRead, setAnnouncement, pushToast, onService, serviceHolder: serviceSync.holder,
   });
 
   const input = useV2EditorInput({
@@ -434,7 +434,7 @@ export function V2EditorPage({ shared, repository }: { readonly shared?: V2Share
               architectureActions={architectureActions} map={map} repo={repo} repoSource={repoSource} repoPanel={repoPanel} repoReadable={repoReadable}
               repoDrawing={repoDrawing} backTo={backTo} backToMap={backToMap} pinRef={pinRef} pinnable={pinnable} shared={shared}
               exportPanel={exportPanel} commit={commit} leaveStart={leaveStart} setTool={setTool} pickShape={pickShape} pickConnector={pickConnector}
-              gestureApiRef={gestureApiRef} input={input} fitAll={fitAll} {...(onService ? { holder: { label: serviceSync.holder, onDisconnect: () => { void serviceSync.disconnect(); } } } : {})} />
+              gestureApiRef={gestureApiRef} input={input} fitAll={fitAll} {...(onService ? { holder: { label: serviceSync.holder?.label ?? null, onDisconnect: () => { void serviceSync.disconnect(); } } } : {})} />
             <V2EditorCanvas
               comments={<V2CommentsHost session={session} page={page} sectionRef={sectionRef} hostRef={hostRef} cameraRef={camera.cameraRef} tool={tool}
                 readOnly={docReadOnly} hidden={map.active} preferences={preferences}

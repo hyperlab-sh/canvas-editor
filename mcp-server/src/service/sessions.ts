@@ -14,6 +14,8 @@ export interface RegisterInput {
   readonly client: string;
   readonly cwd: string;
   readonly pid: number;
+  /** The session's model hears the comments queued for it (a Claude Code channel). Default false. */
+  readonly channel?: boolean;
 }
 
 export interface Session {
@@ -22,6 +24,7 @@ export interface Session {
   readonly client: string;
   readonly cwd: string;
   readonly pid: number;
+  readonly channel: boolean;
   lastSeen: number;
   /** Open long-polls; a parked poll is alive however long it has waited. */
   parked: number;
@@ -35,7 +38,13 @@ export type BindResult =
 
 export type ReleaseListener = (sessionId: string) => void;
 
-export type HolderListener = (project: string, id: string, label: string | null) => void;
+/** Who holds the diagram now, as the tabs see it: the label and whether comments reach that session; null once released. */
+export interface HolderInfo {
+  readonly label: string;
+  readonly channel: boolean;
+}
+
+export type HolderListener = (project: string, id: string, holder: HolderInfo | null) => void;
 
 export interface Sessions {
   register(input: RegisterInput): { sessionId: string; label: string };
@@ -71,12 +80,12 @@ export function createSessions(timing: SessionTiming = {}): Sessions {
   const listeners = new Set<HolderListener>();
   const releaseListeners = new Set<ReleaseListener>();
 
-  const announce = (key: string, label: string | null): void => {
+  const announce = (key: string, holder: HolderInfo | null): void => {
     const [project, id] = splitKey(key);
     for (const listener of listeners) {
       // A failing subscriber must not undo a binding that already changed.
       try {
-        listener(project, id, label);
+        listener(project, id, holder);
       } catch (error) {
         console.error(`service sessions: holder listener failed for ${key}:`, error);
       }
@@ -115,13 +124,13 @@ export function createSessions(timing: SessionTiming = {}): Sessions {
   sweeper.unref();
 
   return {
-    register: ({ client, cwd, pid }) => {
+    register: ({ client, cwd, pid, channel = false }) => {
       const base = `${client} · ${basename(cwd) || cwd}`;
       // Two live sessions with one label are told apart by their process id.
       const taken = [...sessions.values()].some((session) => session.label === base);
       const label = taken ? `${base} (${pid})` : base;
       const id = randomUUID();
-      sessions.set(id, { id, label, client, cwd, pid, lastSeen: Date.now(), parked: 0, bindings: new Set() });
+      sessions.set(id, { id, label, client, cwd, pid, channel, lastSeen: Date.now(), parked: 0, bindings: new Set() });
       return { sessionId: id, label };
     },
 
@@ -137,7 +146,7 @@ export function createSessions(timing: SessionTiming = {}): Sessions {
       if (heldBy === undefined) {
         holders.set(key, sessionId);
         session.bindings.add(key);
-        announce(key, session.label);
+        announce(key, { label: session.label, channel: session.channel });
       }
       return { status: 'ok' };
     },

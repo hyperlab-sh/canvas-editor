@@ -36,7 +36,7 @@ async function fakeBridge({ tabAware, token = '' }: { tabAware: boolean; token?:
     const tab = url.searchParams.get('tab') ?? '(none)';
     if (request.method === 'OPTIONS') { reply(response, 204); return; }
     if (token && url.searchParams.get('token') !== token) { reply(response, 401, { error: 'Missing or wrong x-openflowkit-token.' }); return; }
-    if (url.pathname === '/hello') { latest = tab; request.resume(); request.on('end', () => reply(response, 200, { ok: true, protocol: 1 })); return; }
+    if (url.pathname === '/hello') { latest = tab; request.resume(); request.on('end', () => reply(response, 200, { ok: true, protocol: 1, channel: true })); return; }
     if (url.pathname === '/result') {
       let body = '';
       request.on('data', (chunk) => { body += String(chunk); });

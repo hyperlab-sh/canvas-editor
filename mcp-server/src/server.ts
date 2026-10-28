@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { registerViewer } from './lib/card.js';
+import { clientHasChannel, registerViewer } from './lib/card.js';
 import { MCP_SERVER_NAME, MCP_SERVER_VERSION } from './lib/version.js';
 import { CONNECT_URL, LiveBridge } from './lib/bridge.js';
 import { DocumentStore } from './lib/documentStore.js';
@@ -74,9 +74,13 @@ export function createServerWithDeps(options: ServerOptions = {}): CreatedServer
     void server.server.notification({ method: 'notifications/claude/channel', params: { content: event.body, meta } } as never).catch(() => undefined);
   };
   (bridge as Partial<LiveBridge>).onEvent?.(forward);
+  // The editor disables Live comments when they would reach nobody: the bridge and the service tell it whether this session listens.
+  const channel = (): boolean => clientHasChannel(server.server.getClientCapabilities());
+  (bridge as Partial<LiveBridge>).channelFrom?.(channel);
   // Only the stdio entry point builds a service client (index.ts); a server made without one has no service tools.
   const service = options.service;
   service?.onEvent(forward);
+  service?.channelFrom(channel);
   const deps: OpToolDeps = { store, bridge, ...(service ? { service } : {}) };
 
   registerValidateDsl(server);

@@ -44,9 +44,9 @@ async function newDiagram(name: string): Promise<string> {
   return (await api<{ id: string }>('POST', '/projects/demo/diagrams', { name })).json.id;
 }
 
-/** A session the way the MCP server registers one, bound to the diagram. */
-async function hold(id: string): Promise<{ sessionId: string; label: string }> {
-  const { sessionId, label } = (await api<{ sessionId: string; label: string }>('POST', '/sessions', { client: 'Claude Code', cwd: scratch, pid: process.pid })).json;
+/** A session the way the MCP server registers one (with a channel, so comments reach it), bound to the diagram. */
+async function hold(id: string, channel = true): Promise<{ sessionId: string; label: string }> {
+  const { sessionId, label } = (await api<{ sessionId: string; label: string }>('POST', '/sessions', { client: 'Claude Code', cwd: scratch, pid: process.pid, channel })).json;
   expect((await api('POST', `/sessions/${sessionId}/bindings`, { project: 'demo', id })).status).toBe(200);
   return { sessionId, label };
 }
@@ -106,29 +106,38 @@ test('Send to agent reaches the holder; with none it says so and keeps the count
 
   await page.getByTestId('v2-holder').getByRole('button', { name: 'Disconnect' }).click();
   await expect(page.getByTestId('v2-holder')).toHaveCount(0, { timeout: 2000 });
+  // With no session holding the diagram there is nobody to send to: the button waits, enabled again with the next holder.
   await comment(page, { x: 540, y: 400 }, 'Anyone there?');
   await expect(send).toHaveText('Send 1 comment to agent');
+  await expect(send).toBeDisabled();
+  await expect(send).toHaveAttribute('title', /Connect an agent first/);
+  const { sessionId: next } = await hold(id);
+  await expect(send).toBeEnabled();
   await send.click();
-  await expect(page.getByText('No session holds this diagram')).toBeVisible();
-  await expect(send).toHaveText('Send 1 comment to agent');
+  expect(await parked(next)).toEqual(['Anyone there?']);
 });
 
-test('a Live comment goes to the holder, and with none says so once', async ({ page }) => {
+test('a Live comment goes to the holder; with none, or a holder that cannot hear it, the switch is off and says why', async ({ page }) => {
   const id = await newDiagram('holder-live');
   await openTab(page, id, { liveComments: true });
   await drawShape(page, 'r', 500, 360);
-  const refused = () => page.waitForResponse((r) => r.url().endsWith('/comments') && r.status() === 409);
-  // Each live POST is awaited before asserting, so a second toast from any path would already be on screen.
-  let answered = refused();
+  const live = page.getByTestId('v2-threads-panel').locator('.ofk-comment-live');
+  // Nobody holds the diagram: nothing is posted, and the switch says what to do.
   await comment(page, { x: 520, y: 380 }, 'Nobody home');
-  await answered;
-  answered = refused();
-  await comment(page, { x: 560, y: 420 }, 'Still nobody');
-  await answered;
-  await expect(page.getByText('No session holds this diagram')).toHaveCount(1);
-  await expect(page.getByTestId('v2-threads-send')).toHaveText('Send 2 comments to agent');
+  await expect(live.getByRole('switch', { name: 'Live comments' })).toBeDisabled();
+  await expect(live).toHaveAttribute('title', /Connect an agent first/);
+  await expect(page.getByTestId('v2-threads-send')).toHaveText('Send 1 comment to agent');
+
+  // A session that registered without a channel would never see the comment: still off, with the reason.
+  await hold(id, false);
+  await expect(page.getByTestId('v2-holder')).toBeVisible();
+  await expect(live.getByRole('switch', { name: 'Live comments' })).toBeDisabled();
+  await expect(live).toHaveAttribute('title', /cannot receive comments/);
+  await page.getByTestId('v2-holder').getByRole('button', { name: 'Disconnect' }).click();
+  await expect(page.getByTestId('v2-holder')).toHaveCount(0, { timeout: 2000 });
 
   const { sessionId } = await hold(id);
+  await expect(live.getByRole('switch', { name: 'Live comments' })).toBeChecked();
   await comment(page, { x: 540, y: 400 }, 'Now live');
   expect(await parked(sessionId)).toEqual(['Now live']);
 });

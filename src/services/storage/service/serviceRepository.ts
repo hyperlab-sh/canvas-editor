@@ -55,8 +55,9 @@ export function createServiceRepository(project: string, origin: string = SERVIC
     fetchCurrent: async (id) => {
       const response = await send(diagramUrl(id));
       if (!response.ok) throw await failure(response, 'reload');
-      const { document, revision, holder } = await response.json() as { document: SceneDocumentV1; revision: number; holder?: { label: string } | null };
-      return { document, revision, holder: holder?.label ?? null };
+      const { document, revision, holder } = await response.json() as { document: SceneDocumentV1; revision: number; holder?: { label: string; channel?: boolean } | null };
+      // A service before 0.2.5 names the holder without saying whether it hears comments: no channel.
+      return { document, revision, holder: holder ? { label: holder.label, channel: holder.channel === true } : null };
     },
     loadDocument: async (id): Promise<LoadV2DocumentResult> => {
       const response = await send(diagramUrl(id));

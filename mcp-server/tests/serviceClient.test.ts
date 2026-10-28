@@ -269,7 +269,7 @@ describe('which diagram a drawing tool lands on', () => {
     const one = await agent.json('create_diagram', { project: 'alpha', dsl: DSL });
     const two = await agent.json('create_diagram', { project: 'beta', dsl: DSL });
     const listed = await agent.json('list_diagrams');
-    const label = { label: `claude-code · ${NAME}` };
+    const label = { label: `claude-code · ${NAME}`, channel: false };
     expect(listed.projects).toEqual([
       { name: 'alpha', path: expect.any(String), diagrams: [expect.objectContaining({ id: one.diagram, holder: label })] },
       { name: 'beta', path: expect.any(String), diagrams: [expect.objectContaining({ id: two.diagram, holder: label })] },
@@ -294,7 +294,7 @@ describe('which diagram a drawing tool lands on', () => {
     const listed = await agent.json('list_diagrams');
     expect(listed.projects).toEqual([
       { name: 'alpha', path: expect.any(String), diagrams: [] },
-      { name: 'beta', path: expect.any(String), diagrams: [expect.objectContaining({ id: made.diagram, holder: { label: `claude-code · ${NAME}` } })] },
+      { name: 'beta', path: expect.any(String), diagrams: [expect.objectContaining({ id: made.diagram, holder: { label: `claude-code · ${NAME}`, channel: false } })] },
     ]);
   });
 
@@ -382,6 +382,17 @@ describe('the restart sentence (AC-5)', () => {
     const withIt = await listening.call('create_diagram', { project: 'alpha', dsl: DSL });
     expect(withIt.texts).not.toContain(NO_CHANNEL_NOTE);
     expect(JSON.parse(withIt.text)).toMatchObject({ project: 'alpha' });
+  });
+
+  it('registers the channel with the service, so the tabs holding the diagram see it', async () => {
+    const { service } = await boot('alpha');
+    const quiet = await session(service.url);
+    const muted = await quiet.json('create_diagram', { project: 'alpha', dsl: DSL });
+    const listening = await session(service.url, { name: 'Other', channel: true });
+    const heard = await listening.json('create_diagram', { project: 'alpha', dsl: DSL });
+    const read = async (id: string) => ((await (await fetch(`${service.url}/projects/alpha/diagrams/${id}`)).json()) as { holder: unknown }).holder;
+    expect(await read(muted.diagram)).toMatchObject({ channel: false });
+    expect(await read(heard.diagram)).toMatchObject({ channel: true });
   });
 });
 

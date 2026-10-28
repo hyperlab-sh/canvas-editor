@@ -2,10 +2,16 @@ import type { SceneDocumentV1 } from '@/opencanvas/domain/document/types';
 import type { BridgeThreadEvent } from '@/agent/bridge/protocol';
 import type { V2DocumentRepository } from './v2Repository';
 
+/** The agent session holding a diagram: its label, and whether the comments sent to it reach its model (a Claude Code channel). */
+export interface ServiceHolder {
+  readonly label: string;
+  readonly channel: boolean;
+}
+
 /** What the editor's live sync needs beyond storage: the service's current copy, its event stream, and re-pairing revisions. */
 export interface ServiceRepository extends V2DocumentRepository {
   /** The service's copy now, and who holds the diagram. Does not change what this repository expects on the next save. */
-  readonly fetchCurrent: (id: string) => Promise<{ readonly document: SceneDocumentV1; readonly revision: number; readonly holder: string | null }>;
+  readonly fetchCurrent: (id: string) => Promise<{ readonly document: SceneDocumentV1; readonly revision: number; readonly holder: ServiceHolder | null }>;
   /** The service revision this repository last loaded or saved for the diagram. */
   readonly serviceRevision: (id: string) => number | undefined;
   /** The editor adopted the service's copy at `service` as its own revision `editor`: the next save expects it. */
