@@ -90,6 +90,23 @@ export function updateSessionThreads(
   return { document, revision: session.revision + 1, history: { ...session.history, present: document } };
 }
 
+/**
+ * An incoming copy of the document (another tab or the agent saved it) as one undo step: undo brings back
+ * what this tab had. Threads stay as they are here; the revision moves forward like any commit.
+ */
+export function replaceSessionDocument(
+  session: DocumentSession,
+  document: SceneDocumentV1,
+  label: string,
+  expectedRevision: number
+): DocumentSession {
+  const command: DocumentCommand = {
+    kind: 'replace-document', id: `replace-document:${session.revision}`, label,
+    before: session.document, after: document,
+  };
+  return commitSessionCommand(session, command, expectedRevision);
+}
+
 export function undoSessionCommand(
   session: DocumentSession,
   expectedRevision: number

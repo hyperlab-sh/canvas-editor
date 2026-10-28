@@ -65,6 +65,16 @@ export function useV2Autosave(options: V2AutosaveOptions) {
   }
   useEffect(() => { storedRef.current = baseRevision; }, [documentId, baseRevision]);
 
+  /**
+   * The service path took the service's copy as save `revision` (a replace the editor already numbered): it is saved,
+   * the next save expects `revision`, and a conflict that stopped saving is over.
+   */
+  const adopt = useCallback((revision: number) => {
+    storedRef.current = revision;
+    setSavedRevision(revision);
+    setOutcome(null);
+  }, []);
+
   const retry = useCallback(() => setRetryCount((count) => count + 1), []);
 
   const saveRevision = baseRevision + revision;
@@ -139,5 +149,5 @@ export function useV2Autosave(options: V2AutosaveOptions) {
         : outcome?.state === 'saved'
           ? outcome
           : { state: 'clean' };
-  return { status, retry };
+  return { status, retry, adopt };
 }

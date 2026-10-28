@@ -8,6 +8,7 @@ import {
   createDocumentSession,
   forgetSessionHistory,
   redoSessionCommand,
+  replaceSessionDocument,
   StaleSessionRevisionError,
   undoSessionCommand,
   updateSessionThreads,
@@ -77,6 +78,11 @@ export function useDocumentSession(callbacks: DocumentSessionCallbacks) {
       advance((current) => updateSessionThreads(current, change, current.revision)),
     [advance]
   );
+  // Returns the revision the session is at afterwards (so a caller can pair it with a stored revision), or null when nothing is open.
+  const replaceDocument = useCallback((document: SceneDocumentV1, label: string): number | null => {
+    advance((current) => replaceSessionDocument(current, document, label, current.revision));
+    return sessionRef.current?.revision ?? null;
+  }, [advance]);
   const forgetHistory = useCallback(() => advance(forgetSessionHistory), [advance]);
   const undo = useCallback(
     () =>
@@ -105,6 +111,7 @@ export function useDocumentSession(callbacks: DocumentSessionCallbacks) {
     commit,
     amendNewNode,
     updateThreads,
+    replaceDocument,
     forgetHistory,
     undo,
     redo,

@@ -24,7 +24,9 @@ import { isEditableTarget } from './pointerOperations';
 import { useV2Appearance } from './useV2Appearance';
 import { useV2Architecture } from './useV2Architecture';
 import { useV2ArchitectureActions } from './useV2ArchitectureActions';
+import { isServiceRepository } from '../../../services/storage/service/serviceRepository';
 import { useV2Autosave } from './useV2Autosave';
+import { useServiceSync } from './useServiceSync';
 import { useV2Camera } from './useV2Camera';
 import { useV2CodeWorkspace } from './useV2CodeWorkspace';
 import { useV2Compilers } from './useV2Compilers';
@@ -258,16 +260,18 @@ export function V2EditorPage({ shared, repository }: { readonly shared?: V2Share
   useV2StartIntent({
     startIntent, pathname: location.pathname, shared, load, page, session, repo, code, commit, openWorkspace, setActivePageId, pushToast,
   });
-
-  const { status: saveStatus, retry: retrySave } = useV2Autosave({
+  const serviceConflictRef = useRef<(() => void) | null>(null); // on the service a 409 takes its copy and saving goes on
+  const { status: saveStatus, retry: retrySave, adopt: adoptSaved } = useV2Autosave({
     repository,
     documentId: id ?? null,
     document: session.document,
     revision: session.revision,
     baseRevision: load.baseRevision,
-    onConflict: () => setAnnouncement('Another tab saved first. Reload to continue.'),
+    onConflict: () => serviceConflictRef.current ? serviceConflictRef.current() : setAnnouncement('Another tab saved first. Reload to continue.'),
     onSaved: (saved) => { if (id) scheduleV2Thumbnail(repository, id, withMapScene(saved)); },
   });
+  const serviceSync = useServiceSync({ repository: onService && isServiceRepository(repository) ? repository : null, id, load, session, adoptSaved, pushToast });
+  serviceConflictRef.current = onService ? serviceSync.onConflict : null;
 
   const proposal = useV2Proposal({
     document: session.document, revision: session.revision, pageId: page?.id ?? null,

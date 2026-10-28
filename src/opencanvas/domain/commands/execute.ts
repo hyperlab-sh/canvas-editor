@@ -15,6 +15,7 @@ import type {
   RemovePageCommand,
   RemoveNodeCommand,
   SetConnectorCommand,
+  ReplaceDocumentCommand,
   SetDocumentNameCommand,
   SetLayerCommand,
   SetPageCommand,
@@ -54,6 +55,10 @@ function applySetDocumentName(
     document: { ...document, name: command.after },
     inverse: { ...command, before: command.after, after: command.before },
   };
+}
+
+function applyReplaceDocument(command: ReplaceDocumentCommand): AppliedDocumentCommand {
+  return { document: command.after, inverse: { ...command, before: command.after, after: command.before } };
 }
 
 function requireIndex(index: number, length: number, allowEnd: boolean): void {
@@ -321,6 +326,8 @@ function applyUnchecked(
   switch (command.kind) {
     case 'set-document-name':
       return applySetDocumentName(document, command);
+    case 'replace-document':
+      return applyReplaceDocument(command);
     case 'set-node':
       return applySetNode(document, command);
     case 'set-layer':

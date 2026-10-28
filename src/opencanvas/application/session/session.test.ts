@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DocumentCommand } from '../../domain/commands/types';
+import { addThread } from '../../domain/threads/threads';
 import { createTestDocument, createTestNode } from '../../testing/builders/documentBuilder';
 import {
   StaleSessionRevisionError,
@@ -7,6 +8,7 @@ import {
   createDocumentSession,
   forgetSessionHistory,
   redoSessionCommand,
+  replaceSessionDocument,
   undoSessionCommand,
 } from './session';
 
@@ -94,5 +96,44 @@ describe('revisioned document session', () => {
     const edited = commitSessionCommand(session(), renameCommand(), 0);
     const both = commitSessionCommand(edited, renameCommand('Renamed', 'Again'), edited.revision);
     expect(forgetSessionHistory(both)).toBe(both);
+  });
+
+  describe('replaceSessionDocument', () => {
+    const incoming = () => createTestDocument({ nodes: [createTestNode('node-1'), createTestNode('node-2')] });
+
+    it('is one undo step: undo restores the previous document, redo re-applies, the revision moves forward each time', () => {
+      const initial = session();
+      const replaced = replaceSessionDocument(initial, incoming(), 'Updated from the service', 0);
+      expect(replaced.revision).toBe(1);
+      expect(replaced.document.pages[0].nodes.map((node) => node.id)).toEqual(['node-1', 'node-2']);
+      expect(replaced.history.past).toHaveLength(1);
+
+      const undone = undoSessionCommand(replaced, 1);
+      expect(undone.revision).toBe(2);
+      expect(undone.document).toEqual(initial.document);
+
+      const redone = redoSessionCommand(undone, 2);
+      expect(redone.revision).toBe(3);
+      expect(redone.document).toEqual(replaced.document);
+    });
+
+    it('carries the threads this tab has across the replace, undo and redo', () => {
+      const withThread = addThread(session().document, {
+        pageId: 'page-1', threadId: 't1', nodeId: null, point: { x: 10, y: 10 },
+        comment: { id: 'c1', author: { kind: 'human', name: 'Ann' } as never, body: 'look here', createdAt: '2026-01-01T00:00:00.000Z' },
+      });
+      const start = createDocumentSession(withThread);
+      const threadIds = (document: typeof withThread) => (document.pages[0].threads ?? []).map((thread) => thread.id);
+
+      const replaced = replaceSessionDocument(start, incoming(), 'Updated from the service', 0);
+      expect(threadIds(replaced.document)).toEqual(['t1']);
+      const undone = undoSessionCommand(replaced, 1);
+      expect(threadIds(undone.document)).toEqual(['t1']);
+      expect(threadIds(redoSessionCommand(undone, 2).document)).toEqual(['t1']);
+    });
+
+    it('rejects a stale expected revision', () => {
+      expect(() => replaceSessionDocument(session(), incoming(), 'x', 5)).toThrow(StaleSessionRevisionError);
+    });
   });
 });
