@@ -156,6 +156,20 @@ async function mcpPage(): Promise<string> {
     + `- **File** — \`openflow_open\` a \`.openflow.json\` path and the same ops run headlessly on\nthat document, with \`openflow_save\` writing it back. There is no canvas here, so PNG/GIF/\nMP4/WebM export and \`screenshot\` ask you to connect the live editor; SVG, animated SVG,\nJSON and PDF (a print-ready HTML page) export work.\n\n`
     + `If no editor is paired, pass \`documentId\` (from \`openflow_open\`) to target a file-mode\ndocument; without it, tools use the paired editor or, in file mode, the document opened or
 created last. Page-scoped ops take a \`pageId\` from \`list_pages\`.\n\n`
+    + `## The local service\n\n`
+    + `With the [local service](/self-hosting/#the-local-service) running, diagrams are \`.openflow.json\` files in named projects, each with a link, and each is held by at most one agent session. The service is a third mode beside live and file. It is used when a call names a \`project\` or a \`diagram\`, or when the session already holds a diagram; otherwise live and file mode behave as above.\n\n`
+    + `- **It starts itself.** If nothing answers at \`http://127.0.0.1:43120\` (set \`OPENFLOWKIT_SERVICE_URL\` for another address), the first service call starts \`openflowkit serve\` detached and waits up to 10 s for it. It outlives the MCP server, and a second MCP server attaches to it. Projects live in the service's config file: [where, and how to add one](/self-hosting/#projects).\n`
+    + `- **\`list_diagrams\`** with no diagram connected lists the projects and their diagrams, with who holds each.\n`
+    + `- **\`create_diagram\`** takes \`project\` (optional when the service has exactly one) and \`diagramName\` (default "Untitled diagram"). It writes \`<project folder>/<slug of the name>.openflow.json\`, connects this session to it, and the result carries \`url\`, the diagram's link. With several projects and none named it refuses and lists them.\n`
+    + `- **\`connect_diagram\`** (\`project\`, \`diagram\`) binds the session to an existing diagram; **\`disconnect_diagram\`** releases it. Connecting a diagram another session holds fails with that session's label. One session can hold several diagrams: pass \`diagram\` (the id) to the drawing tool that should act on one. A session that holds none does nothing to any diagram. When the MCP server goes away, its diagrams are released within 10 s.\n`
+    + `- **\`channel\`** in \`server_info\` and \`whoami\` says whether the session can receive comments left on the canvas. It is true when the client declares the \`claude/channel\` capability, or when the MCP server's environment has \`OPENFLOWKIT_CHANNEL=1\`. Set that variable when you start a session with channels enabled; the plugin's MCP config does not set it. When it is false, the first drawing result in service mode ends with: "This session cannot receive comments from the canvas. Restart it with channels enabled."\n\n`
+    + `### A first diagram\n\n`
+    + `1. Start the agent session with channels enabled (with \`OPENFLOWKIT_CHANNEL=1\` in its environment if the client does not declare them), and say "diagram it".\n`
+    + `2. The session makes sure the service runs, starting it if not. If the session has no channel, it tells you to restart it with channels on.\n`
+    + `3. It creates a diagram in the project you name (or the only one) and answers with its link, \`http://127.0.0.1:<port>/#/p/<project>/<diagram id>\`. It is now connected to that diagram and draws on it.\n`
+    + `4. Open the link in any browser on the machine. Edits you make by hand are written to the file, and what the agent draws appears in every open tab.\n`
+    + `5. Comments you leave on the canvas with live comments on reach only the session connected to that diagram.\n`
+    + `6. A second session on the same machine attaches to the same service. Asked for a diagram the first holds, it is refused with the first session's label; a free diagram it connects to.\n\n`
     + `## Document and server tools\n\n`
     + `| Tool | What it does |\n| --- | --- |\n`
     + tools.map((name) => {
@@ -174,6 +188,8 @@ created last. Page-scoped ops take a \`pageId\` from \`list_pages\`.\n\n`
         whoami: 'Which mode the server is in, and which documents it holds',
         server_info: 'Server name, version and capabilities',
         render_diagram: 'Hosted endpoint only (`https://mcp.openflowkit.com/mcp`, or self-host with `npm run start:http`): draw DSL or Mermaid inline in the chat, with an editor link',
+        connect_diagram: 'Service mode: connect this session to an existing diagram in a project, so drawing tools act on it and its canvas comments reach the session. Refused, with the holder\'s label, when another session holds it',
+        disconnect_diagram: 'Service mode: release a diagram this session holds. With no arguments, releases the only one it holds',
         get_syntax: 'The DSL grammar, whole or one family (unknown families are rejected); also listed as an op below',
       };
       return `| \`${name}\` | ${descriptions[name] ?? 'See the tool description in your client'} |`;
@@ -187,7 +203,7 @@ created last. Page-scoped ops take a \`pageId\` from \`list_pages\`.\n\n`
     + `- **Local by default.** This server runs on your machine over stdio and calls no outside service. The hosted endpoint for chat apps (\`https://mcp.openflowkit.com/mcp\`) is separate, draws cards in the chat only and stores nothing.\n`
     + `- **No account or key.** Your MCP client's model is the only AI involved.\n`
     + `- **No raster in file mode.** PNG, GIF, MP4 and WebM need the live editor's canvas.\n`
-    + `- **One tab at a time.** One editor tab pairs with the bridge. Several agent sessions can share it, but this is not multi-person collaboration.\n`;
+    + `- **One tab at a time in live mode.** One editor tab pairs with the bridge. Several agent sessions can share it, but this is not multi-person collaboration.\n`;
 }
 
 async function main(): Promise<void> {
