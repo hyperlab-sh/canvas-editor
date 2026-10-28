@@ -97,9 +97,9 @@ async function serveApp(context: RouteContext): Promise<RouteReply> {
   } catch {
     return send(index, false);
   }
+  // The request path is rooted, so normalising it first cannot leave the app folder (`/../x` becomes `/x`).
   const file = join(appDir, relative);
-  // `..` segments are normalised away above, but a path that still leaves the app folder gets the app, not the file.
-  if (file !== appDir && file.startsWith(appDir + sep) && (await stat(file).catch(() => null))?.isFile()) {
+  if ((await stat(file).catch(() => null))?.isFile()) {
     return send(file, relative.startsWith(`${sep}assets${sep}`));
   }
   return send(index, false);
