@@ -231,7 +231,8 @@ export function buildRoutes(): Route[] {
       method: 'GET', path: '/sessions/:sid/events',
       handle: async (context) => {
         const sid = sessionOf(context);
-        const wait = Number(context.url.searchParams.get('wait') ?? MAX_WAIT_S);
+        // HEAD answers at once; it must not park.
+        const wait = context.request.method === 'HEAD' ? 0 : Number(context.url.searchParams.get('wait') ?? MAX_WAIT_S);
         const events = await context.deps.events.poll(sid, Number.isFinite(wait) ? wait : MAX_WAIT_S, context.request);
         return events ? { status: 200, json: { events } } : { status: 204 };
       },
@@ -244,6 +245,7 @@ export function buildRoutes(): Route[] {
         // Reading proves the diagram exists (404) before anything holds it.
         const { document } = await context.deps.store.read(project, id);
         const bound = context.deps.sessions.bind(sid, project, id);
+        if (bound.status === 'gone') throw new HttpError(404, `Unknown session ${sid}. Register again.`);
         if (bound.status === 'held') return { status: 409, json: { error: `${project}/${id} is connected to ${bound.holder}.`, holder: bound.holder } };
         return { status: 200, json: { diagram: { project, id, title: document.name } } };
       },
@@ -324,8 +326,14 @@ async function readBody(request: IncomingMessage): Promise<unknown> {
 export function createHandler(deps: ServiceDeps, routes: readonly Route[] = buildRoutes()) {
   const compiled = [...routes, appRoute].map((route) => ({ route, ...compile(route.path) }));
 
-  const send = (response: ServerResponse, reply: RouteReply): void => {
-    if (reply.stream) return reply.stream(response);
+  const send = (response: ServerResponse, reply: RouteReply, head = false): void => {
+    if (reply.stream) {
+      if (head) {
+        response.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-store', ...APP_HEADERS });
+        return void response.end();
+      }
+      return reply.stream(response);
+    }
     if (reply.status === 204) {
       response.writeHead(204, { 'cache-control': 'no-store', ...APP_HEADERS });
       return void response.end();
@@ -381,7 +389,7 @@ export function createHandler(deps: ServiceDeps, routes: readonly Route[] = buil
           return fail(response, 400, 'The path is not valid.');
         }
         let body: Promise<unknown> | undefined;
-        return send(response, await route.handle({ request, url, param: (name) => params.get(name) ?? '', deps, body: () => (body ??= readBody(request)) }));
+        return send(response, await route.handle({ request, url, param: (name) => params.get(name) ?? '', deps, body: () => (body ??= readBody(request)) }), request.method === 'HEAD');
       }
       return fail(response, pathMatched ? 405 : 404, pathMatched ? `${method} is not allowed on ${url.pathname}.` : `No route for ${url.pathname}.`);
     } catch (error) {

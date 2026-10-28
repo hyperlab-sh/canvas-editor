@@ -340,7 +340,8 @@ describe('request failures', () => {
     // A store whose every write finds a newer revision: the rename must give up, not overwrite.
     const sessions = createSessions();
     const store = { ...real, write: async (p: string, i: string) => ({ status: 'stale' as const, revision: 9, document: (await real.read(p, i)).document }) };
-    const server = createServer(createHandler({ config, store, sessions, events: createEvents(store, sessions), appDir: '/nonexistent', port: () => 0 }));
+    const events = createEvents(store, sessions);
+    const server = createServer(createHandler({ config, store, sessions, events, appDir: '/nonexistent', port: () => 0 }));
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
     try {
       const { port } = server.address() as { port: number };
@@ -348,6 +349,8 @@ describe('request failures', () => {
       expect(res.status).toBe(409);
       expect(await res.json()).toEqual({ error: 'The diagram kept changing; try the rename again.' });
     } finally {
+      sessions.close();
+      events.close();
       await new Promise((resolve) => { server.close(resolve); server.closeAllConnections(); });
     }
   });

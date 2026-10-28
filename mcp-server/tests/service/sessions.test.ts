@@ -113,4 +113,16 @@ describe('sessions', () => {
     expect(poll.status).toBe(204);
     expect((await call(service, 'GET', `/projects/alpha/diagrams/${id}`)).json.holder).toEqual({ label: session.label });
   });
+
+  it('answers 404 "Register again" when the session is swept while the bind awaits the diagram', async () => {
+    const { service } = await boot({ ttlMs: 1, sweepMs: 5 });
+    const { id } = await newDiagram(service);
+    const session = await register(service);
+    // The ttl is shorter than the round trip, so the session expires around the bind.
+    await vi.waitFor(async () => {
+      const reply = await bind(service, session.sessionId, id);
+      expect(reply.status).toBe(404);
+      expect(reply.json.error).toBe(`Unknown session ${session.sessionId}. Register again.`);
+    }, { timeout: 3000, interval: 10 });
+  });
 });

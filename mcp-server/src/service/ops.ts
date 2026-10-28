@@ -27,15 +27,18 @@ export async function runOp(sessions: Sessions, store: Store, sessionId: string,
   if (!session) return { status: 404, ok: false, error: `Unknown session ${sessionId}. Register again.` };
   sessions.touch(sessionId);
   const { project, id } = request;
-  const holder = sessions.holderOf(project, id);
-  if (holder?.id !== sessionId) {
+  const notHeld = (): OpOutcome | null => {
+    const holder = sessions.holderOf(project, id);
+    if (holder?.id === sessionId) return null;
     return {
       status: 409, ok: false, holder: holder?.label ?? null,
       error: holder
         ? `${project}/${id} is connected to ${holder.label}. Ask the user to disconnect it first.`
         : `This session is not connected to ${project}/${id}. Connect it first.`,
     };
-  }
+  };
+  const refused = notHeld();
+  if (refused) return refused;
   const op = findAgentOp(request.op);
   if (!op) return { status: 400, ok: false, error: `Unknown op "${request.op}".` };
   const capabilities = await loadFileCapabilities();
@@ -49,6 +52,9 @@ export async function runOp(sessions: Sessions, store: Store, sessionId: string,
       return { status: 400, ok: false, error: error instanceof Error ? error.message : String(error) };
     }
     if (!result.changed) return { status: 200, ok: true, output: result.output };
+    // A Disconnect that arrived while the op ran must not let its write land.
+    const lost = notHeld();
+    if (lost) return lost;
     const written = await store.write(project, id, result.document, current.revision);
     if (written.status === 'ok') return { status: 200, ok: true, output: result.output };
   }

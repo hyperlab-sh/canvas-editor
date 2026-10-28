@@ -30,7 +30,21 @@ export function createEvents(store: Store, sessions: Sessions): Events {
   };
 
   const stopStore = store.changed((project, id, revision) => send(project, id, 'revision', { project, id, revision }));
-  const stopSessions = sessions.onHolder((project, id, label) => send(project, id, 'holder', { project, id, label }));
+  const stopSessions = sessions.onHolder((project, id, label) => {
+    send(project, id, 'holder', { project, id, label });
+    // Comments queued while the diagram was held are not for whoever connects next, nor for the session that lost it.
+    if (label === null) {
+      for (const [sessionId, queued] of queues) {
+        const kept = queued.filter((event) => event.documentId !== id);
+        if (kept.length) queues.set(sessionId, kept);
+        else queues.delete(sessionId);
+      }
+    }
+  });
+  const stopRelease = sessions.onRelease((sessionId) => {
+    queues.delete(sessionId);
+    waiters.get(sessionId)?.wake();
+  });
 
   const drain = (sessionId: string): BridgeThreadEvent[] | null => {
     const queued = queues.get(sessionId);
@@ -90,6 +104,7 @@ export function createEvents(store: Store, sessions: Sessions): Events {
     close: () => {
       stopStore();
       stopSessions();
+      stopRelease();
       for (const waiter of [...waiters.values()]) waiter.wake();
       for (const group of tabs.values()) for (const response of group) response.end();
       tabs.clear();

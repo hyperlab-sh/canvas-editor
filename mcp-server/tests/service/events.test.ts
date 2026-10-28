@@ -1,4 +1,10 @@
+import { request } from 'node:http';
 import { describe, expect, it } from 'vitest';
+import type { BridgeThreadEvent } from '../../src/lib/agent.js';
+import { createEvents } from '../../src/service/events.js';
+import { createSessions } from '../../src/service/sessions.js';
+import { createStore } from '../../src/service/store.js';
+import { tempConfig } from './helpers.js';
 import { bind, boot, call, closeServicesAfterEach, newDiagram, openStream, register } from './sessionHelpers.js';
 
 closeServicesAfterEach();
@@ -92,5 +98,46 @@ describe('POST …/comments and GET /sessions/:id/events', () => {
   it('answers 404 to a poll from an unknown session', async () => {
     const { service } = await boot();
     expect((await call(service, 'GET', '/sessions/ghost/events?wait=0')).status).toBe(404);
+  });
+
+  it('drops events queued for a diagram when it is disconnected', async () => {
+    const { service } = await boot();
+    const { id } = await newDiagram(service);
+    const holder = await register(service);
+    await bind(service, holder.sessionId, id);
+    await call(service, 'POST', `/projects/alpha/diagrams/${id}/comments`, threadEvent(id));
+    await call(service, 'DELETE', `/projects/alpha/diagrams/${id}/holder`);
+    await bind(service, holder.sessionId, id);
+    expect((await call(service, 'GET', `/sessions/${holder.sessionId}/events?wait=0`)).status).toBe(204);
+  });
+
+  it('forgets the queue of a released session', async () => {
+    const config = await tempConfig('alpha');
+    const store = createStore(config);
+    const sessions = createSessions();
+    const events = createEvents(store, sessions);
+    const { sessionId } = sessions.register({ client: 'Claude Code', cwd: '/x/hyper', pid: 1 });
+    events.push(sessionId, threadEvent('d1') as unknown as BridgeThreadEvent);
+    sessions.release(sessionId);
+    // wait 0 never touches the request.
+    expect(await events.poll(sessionId, 0, undefined as never)).toBeNull();
+    events.close();
+    sessions.close();
+  });
+});
+
+describe('HEAD', () => {
+  const head = (port: number, path: string) => new Promise<number>((resolve, reject) => {
+    const req = request({ host: '127.0.0.1', port, path, method: 'HEAD' }, (res) => { res.resume(); res.on('end', () => resolve(res.statusCode ?? 0)); });
+    req.on('error', reject);
+    req.end();
+  });
+
+  it('answers at once on the tab stream and the session poll instead of parking', async () => {
+    const { service } = await boot();
+    const { id } = await newDiagram(service);
+    const session = await register(service);
+    expect(await head(service.port, `/events?project=alpha&id=${id}`)).toBe(200);
+    expect(await head(service.port, `/sessions/${session.sessionId}/events?wait=25`)).toBe(204);
   });
 });
