@@ -8,12 +8,13 @@ import type { useDocumentSession } from '../../application/session/useDocumentSe
 import type { useV2MapMode } from './map/useV2MapMode';
 import type { ToastItem } from '../design-system';
 import type { OpenThreadRequest } from './V2Comments';
+import { postThreadEvent } from '../../../agent/bridge/threadEvent';
 import type { useV2Camera } from './useV2Camera';
 import type { useV2Panels } from './useV2Panels';
 import type { V2Tool } from './v2ToolCatalog';
 import type { useV2Preferences } from './useV2Preferences';
 import {
-  isUnread, lastActivity, openThreadTotal, selectThreads, threadLinkText, threadParam, unreadIds, withRead, withUnread, collectThreads,
+  isUnread, lastActivity, openThreadTotal, selectThreads, threadLinkText, threadParam, unreadIds, unsentEvents, withRead, withSent, withUnread, collectThreads,
 } from './v2ThreadsView';
 
 interface ThreadsInput {
@@ -61,11 +62,34 @@ export function useV2Threads(input: ThreadsInput) {
   const seq = useRef(0);
   const filters = useMemo(() => ({ showResolved: preferences.threadsShowResolved, unansweredOnly: preferences.threadsUnansweredOnly }), [preferences.threadsShowResolved, preferences.threadsUnansweredOnly]);
   const reads = preferences.threadReads;
-  const latest = useRef({ reads, document, updatePreferences });
+  const sent = preferences.threadSent;
+  const latest = useRef({ reads, sent, document, updatePreferences });
   const revealPin = useRef(camera.revealPin);
-  useEffect(() => { latest.current = { reads, document, updatePreferences }; revealPin.current = camera.revealPin; });
+  useEffect(() => { latest.current = { reads, sent, document, updatePreferences }; revealPin.current = camera.revealPin; });
 
   const entries = useMemo(() => (document ? selectThreads(document, query, filters) : []), [document, query, filters]);
+  // The people's comments in the listed threads that the agent has not been sent yet.
+  const unsent = useMemo(() => (document ? unsentEvents(document, entries, sent) : []), [document, entries, sent]);
+  const unsentRef = useRef(unsent);
+  useEffect(() => { unsentRef.current = unsent; });
+  const markSent = useCallback((documentId: string, commentIds: readonly string[]) => {
+    const { sent: current, updatePreferences: update } = latest.current;
+    update({ threadSent: withSent(current, documentId, commentIds) });
+  }, []);
+  /** Sends the unsent comments in order; stops at the first one the agent does not take, so the rest stay counted. */
+  const sendToAgent = useCallback(async () => {
+    const batch = unsentRef.current;
+    const delivered: string[] = [];
+    for (const event of batch) {
+      if (!(await postThreadEvent(event))) break;
+      delivered.push(event.commentId);
+    }
+    if (batch[0] && delivered.length > 0) markSent(batch[0].documentId, delivered);
+    const noun = (count: number) => `${count} ${count === 1 ? 'comment' : 'comments'}`;
+    pushToast(delivered.length === batch.length
+      ? { id: 'threads-sent', tone: 'success', title: `Sent ${noun(batch.length)} to the agent` }
+      : { id: 'threads-sent', tone: 'danger', title: 'Couldn’t reach the agent', description: `${noun(batch.length - delivered.length)} not sent. Check the agent connection.` });
+  }, [markSent, pushToast]);
   const total = useMemo(() => (document ? collectThreads(document).length : 0), [document]);
   const openCount = useMemo(() => (document ? openThreadTotal(document) : 0), [document]);
   const unread = useMemo(() => (document ? unreadIds(document, reads) : new Set<string>()), [document, reads]);
@@ -171,7 +195,7 @@ export function useV2Threads(input: ThreadsInput) {
   }, [updatePreferences]);
 
   return {
-    query, setQuery, filters, setFilters, entries, total, openCount, unread,
+    query, setQuery, filters, setFilters, entries, total, openCount, unread, unsentCount: unsent.length, sendToAgent, markSent,
     openThreadId, onOpenThreadChange: setOpenThreadId, request,
     quiet, toggleFromRail, select, markRead, markUnread, toggleResolved, remove, copyLink,
   };

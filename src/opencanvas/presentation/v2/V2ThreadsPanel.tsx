@@ -33,6 +33,9 @@ interface Props {
   readonly onDelete: (threadId: string) => void;
   /** Live comments: each new comment is sent to the connected agent. */
   readonly live: { readonly on: boolean; readonly available: boolean; readonly onChange: (on: boolean) => void };
+  /** People's comments in the listed threads not yet sent to the agent; the button sends them. */
+  readonly unsentCount: number;
+  readonly onSendToAgent: () => void;
   readonly onClose: () => void;
 }
 
@@ -146,6 +149,12 @@ export function V2ThreadsPanel(props: Props): React.JSX.Element {
             <MenuItem checked={filters.showResolved} keepOpen onSelect={() => props.onFilters({ showResolved: !filters.showResolved })}>Show resolved</MenuItem>
             <MenuItem checked={filters.unansweredOnly} keepOpen onSelect={() => props.onFilters({ unansweredOnly: !filters.unansweredOnly })}>Unanswered only</MenuItem>
           </Menu>
+        </div>
+        <div className="ofk-threads-send">
+          <Button variant="secondary" disabled={props.unsentCount === 0 || !props.live.available} onClick={props.onSendToAgent}
+            data-testid="v2-threads-send">
+            Send {props.unsentCount} {props.unsentCount === 1 ? 'comment' : 'comments'} to agent
+          </Button>
         </div>
         {entries.length === 0 ? (
           <div className="ofk-threads-empty" data-testid="v2-threads-empty">

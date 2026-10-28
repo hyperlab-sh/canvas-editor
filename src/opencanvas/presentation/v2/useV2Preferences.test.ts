@@ -57,7 +57,7 @@ describe('threads panel preferences', () => {
   const store = (value: unknown) => localStorage.setItem('openflowkit-v2-preferences', JSON.stringify(value));
 
   it('default to resolved hidden, unanswered-only off and nothing read', () => {
-    expect(readPreferences()).toMatchObject({ threadsShowResolved: false, threadsUnansweredOnly: false, threadReads: {} });
+    expect(readPreferences()).toMatchObject({ threadsShowResolved: false, threadsUnansweredOnly: false, threadReads: {}, threadSent: [] });
   });
 
   it('keep only a literal true for the toggles', () => {

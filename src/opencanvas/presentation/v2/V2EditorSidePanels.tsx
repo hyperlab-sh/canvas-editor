@@ -94,6 +94,7 @@ export function V2EditorSidePanels(p: SidePanelsProps): React.JSX.Element {
           query={p.threads.query} onQuery={p.threads.setQuery} filters={p.threads.filters} onFilters={p.threads.setFilters}
           readOnly={docReadOnly} focusOnOpen={!p.threads.quiet}
           live={{ on: preferences.liveComments, available: agentBridge.status === 'connected', onChange: (liveComments) => updatePreferences({ liveComments }) }}
+          unsentCount={p.threads.unsentCount} onSendToAgent={p.threads.sendToAgent}
           onSelect={(threadId) => { p.threads.select(threadId); }} onToggleResolved={p.threads.toggleResolved}
           onMarkRead={p.threads.markRead} onMarkUnread={p.threads.markUnread} onCopyLink={p.threads.copyLink} onDelete={p.threads.remove}
           onClose={() => { panels.closeWorkspace(); p.focusCanvas(); }} />

@@ -2,6 +2,7 @@
 // and the text a copied link carries. No React, no storage: the hooks own those.
 import type { SceneComment, SceneDocumentV1, SceneThread, ScenePage } from '../../domain/document/types';
 import { pageThreads } from '../../domain/threads/threads';
+import type { BridgeThreadEvent } from '../../../agent/bridge/protocol';
 import { HUMAN_AUTHOR_NAME } from './v2CommentsView';
 
 export interface ThreadEntry {
@@ -123,6 +124,37 @@ export function parseReads(value: unknown): ThreadReads {
   const entries = Object.entries(value).filter((entry): entry is [string, string] =>
     typeof entry[1] === 'string' && (entry[1] === UNREAD || !Number.isNaN(Date.parse(entry[1]))));
   return capReads(Object.fromEntries(entries));
+}
+
+// ---- Sent to the agent, per browser. Nothing here is in the document.
+
+const MAX_SENT = 2000;
+
+export const sentKey = (documentId: string, commentId: string): string => `${documentId}:${commentId}`;
+
+/** Stored keys of comments already sent, keeping only strings. */
+export function parseSent(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((key): key is string => typeof key === 'string').slice(-MAX_SENT) : [];
+}
+
+/** `sent` plus these comments; the oldest keys go first so the store never grows without bound. */
+export function withSent(sent: readonly string[], documentId: string, commentIds: readonly string[]): string[] {
+  const known = new Set(sent);
+  const added = commentIds.map((id) => sentKey(documentId, id)).filter((key) => !known.has(key));
+  return added.length === 0 ? [...sent] : [...sent, ...added].slice(-MAX_SENT);
+}
+
+/** One event per person's comment in these threads that has not been sent yet, in the order the agent should read them. */
+export function unsentEvents(document: SceneDocumentV1, entries: readonly ThreadEntry[], sent: readonly string[]): BridgeThreadEvent[] {
+  const known = new Set(sent);
+  return entries.flatMap(({ thread, pageId }) => {
+    const page = document.pages.find((candidate) => candidate.id === pageId);
+    return thread.comments.flatMap((comment, index) => (comment.author.kind !== 'human' || known.has(sentKey(document.id, comment.id)) ? [] : [{
+      type: 'thread' as const, documentId: document.id, pageId, threadId: thread.id, threadNumber: thread.number, commentId: comment.id,
+      nodeId: thread.anchor.nodeId, nodeLabel: nodeLabelText(page, thread.anchor.nodeId),
+      kind: index === 0 ? 'new_thread' as const : 'reply' as const, author: comment.author.name, body: comment.body,
+    }]));
+  });
 }
 
 // ---- Links

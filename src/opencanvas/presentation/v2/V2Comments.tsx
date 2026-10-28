@@ -318,16 +318,18 @@ export function V2Comments(props: Props): React.JSX.Element | null {
 }
 
 type HostInput = Omit<Props, 'document' | 'liveComments' | 'onLiveMessage' | 'updateThreads' | 'cameraRef'> & {
+  /** A live comment reached the agent: it no longer counts as unsent in the Threads panel. */
+  readonly onSent: (documentId: string, commentId: string) => void;
   readonly session: { readonly document: SceneDocumentV1 | null; readonly updateThreads: Props['updateThreads'] };
   readonly cameraRef: RefObject<CanvasCamera>;
   readonly preferences: { readonly liveComments: boolean };
 };
 
 /** V2Comments wired to the editor's session, preferences and the agent bridge's comment poster. */
-export function V2CommentsHost({ session, preferences, ...rest }: HostInput): React.JSX.Element | null {
+export function V2CommentsHost({ session, preferences, onSent, ...rest }: HostInput): React.JSX.Element | null {
   return (
     <V2Comments {...rest} document={session.document} updateThreads={session.updateThreads}
       liveComments={preferences.liveComments}
-      onLiveMessage={(event) => { void postThreadEvent(event); }} />
+      onLiveMessage={(event) => { void postThreadEvent(event).then((ok) => { if (ok) onSent(event.documentId, event.commentId); }); }} />
   );
 }

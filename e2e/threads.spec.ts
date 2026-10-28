@@ -417,6 +417,24 @@ test('live comments: the switch is in the Threads panel header with a hint, not 
   await page.keyboard.press('Escape');
 });
 
+test('the Send button sits on its own line under the search and filter, counts the listed comments, and waits for an agent', async ({ page }) => {
+  await open(page);
+  await openPanel(page);
+  const send = panel(page).getByRole('button', { name: /^Send \d+ comments? to agent$/ });
+  await expect(send).toHaveText('Send 3 comments to agent'); // #1, #2 and #4: the resolved thread is not listed
+  await expect(send).toBeDisabled(); // no agent connected
+  const bar = await panel(page).getByRole('button', { name: 'Filter threads' }).boundingBox();
+  const box = await send.boundingBox();
+  expect(box!.y).toBeGreaterThanOrEqual(bar!.y + bar!.height);
+  await panel(page).getByRole('button', { name: 'Filter threads' }).click();
+  await page.getByRole('menuitemcheckbox', { name: 'Show resolved' }).click();
+  await expect(send).toHaveText('Send 4 comments to agent');
+  await page.keyboard.press('Escape');
+  await panel(page).getByRole('searchbox', { name: 'Search threads' }).fill('retry');
+  await expect(send).toHaveText('Send 1 comment to agent');
+  await shot(page, 'threads-send');
+});
+
 test('a click away from a box with text shakes it once instead of closing it; typing starts the count over', async ({ page }) => {
   await open(page);
   await page.getByTestId('v2-canvas').focus();

@@ -437,6 +437,7 @@ export function V2EditorPage({ shared }: { readonly shared?: V2SharedView } = {}
             <V2EditorCanvas
               comments={<V2CommentsHost session={session} page={page} sectionRef={sectionRef} hostRef={hostRef} cameraRef={camera.cameraRef} tool={tool}
                 readOnly={docReadOnly} hidden={map.active} preferences={preferences}
+                onSent={(documentId, commentId) => threads.markSent(documentId, [commentId])}
                 request={threads.request} onOpenThreadChange={threads.onOpenThreadChange} unread={threads.unread}
                 bridgeConnected={agents.agentBridge.status === 'connected'} />}
               agentCursor={<AgentCursor ref={agents.presence.cursorRef} name={agents.agentShown} working={agents.agentBridge.activity?.doing === 'drawing'} data-testid="v2-agent-cursor" />}

@@ -3,7 +3,7 @@ import type { SceneComment, SceneDocumentV1, SceneThread } from '../../domain/do
 import { createTestDocument, createTestNode } from '../../testing/builders/documentBuilder';
 import {
   UNREAD, collectThreads, isOwnComment, isUnanswered, isUnread, lastActivity, matchesQuery, nodeLabelText, openThreadTotal, parseReads,
-  readKey, replyCount, selectThreads, threadLinkText, threadParam, threadUrl, unreadIds, withRead, withUnread, type ThreadFilters,
+  readKey, replyCount, selectThreads, sentKey, parseSent, threadLinkText, threadParam, threadUrl, unreadIds, unsentEvents, withRead, withSent, withUnread, type ThreadFilters,
 } from './v2ThreadsView';
 
 const me = { kind: 'human' as const, name: 'User' };
@@ -279,5 +279,43 @@ describe('links', () => {
     expect(threadParam('?thread=')).toBeNull();
     expect(threadParam('?thread=%20')).toBeNull();
     expect(threadParam('')).toBeNull();
+  });
+});
+
+describe('sent to the agent', () => {
+  it('builds one event per person\'s comment, skipping the agent\'s', () => {
+    const doc = fixture();
+    const events = unsentEvents(doc, selectThreads(doc, '', filters()), []);
+    expect(events.map((event) => [event.threadId, event.kind, event.author, event.body]).sort()).toEqual([
+      ['a', 'new_thread', 'User', 'Why a queue?'],
+      ['b', 'new_thread', 'Ana', 'Rename this'],
+      ['d', 'new_thread', 'User', 'Unanswered on page two'],
+    ]);
+    expect(events.every((event) => event.documentId === doc.id)).toBe(true);
+  });
+
+  it('marks a person\'s reply as a reply, and counts only the listed threads', () => {
+    const doc = fixture();
+    const first = doc.pages[0]!;
+    const replied = { ...doc, pages: [{ ...first, threads: [thread('r', 9, [comment(ana, 'Q', 0), comment(bot, 'A', 1), comment(ana, 'More', 2)])] }] };
+    const events = unsentEvents(replied, collectThreads(replied), []);
+    expect(events.map((event) => event.kind)).toEqual(['new_thread', 'reply']);
+    expect(unsentEvents(doc, selectThreads(doc, 'Rename', filters()), [])).toHaveLength(1);
+    expect(unsentEvents(doc, [], [])).toEqual([]);
+  });
+
+  it('leaves out comments already sent and names the node a thread is pinned to', () => {
+    const doc = fixture();
+    const pinned = { ...doc, pages: [{ ...doc.pages[0]!, threads: [thread('p', 7, [comment(me, 'Hi', 0)], { anchor: { nodeId: 'n1', offset: null, point: { x: 0, y: 0 } } })] }] };
+    const [event] = unsentEvents(pinned, collectThreads(pinned), []);
+    expect(event).toMatchObject({ nodeId: 'n1', nodeLabel: 'Session updateComments', threadNumber: 7 });
+    expect(unsentEvents(pinned, collectThreads(pinned), [sentKey(pinned.id, event!.commentId)])).toEqual([]);
+  });
+
+  it('remembers sent keys without duplicates, and drops malformed or surplus ones', () => {
+    expect(withSent(['d:a'], 'd', ['a', 'b'])).toEqual(['d:a', 'd:b']);
+    expect(withSent([], 'd', Array.from({ length: 2100 }, (_, i) => `c${i}`))).toHaveLength(2000);
+    expect(parseSent(['d:a', 3, null, 'd:b'])).toEqual(['d:a', 'd:b']);
+    expect(parseSent({})).toEqual([]);
   });
 });
