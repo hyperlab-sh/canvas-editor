@@ -1,8 +1,9 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom';
 import { lastDocumentId, mintV2Id } from '@/opencanvas/presentation/v2/v2Document';
 import { V2ErrorBoundary } from '@/opencanvas/presentation/v2/V2ErrorBoundary';
 import { BrandLoader } from '@/opencanvas/presentation/v2/BrandLoader';
+import { createServiceRepository } from '@/services/storage/service/serviceRepository';
 
 const loadEditor = () => import('@/opencanvas/presentation/v2/V2EditorPage');
 const HomePage = lazy(async () => {
@@ -63,7 +64,10 @@ function HomeDocument({ then = '' }: { readonly then?: string }): React.JSX.Elem
 
 /** One editor per document: switching /d/A → /d/B (back, forward) unmounts A's editor, which saves A's pending edit as A. */
 function EditorRoute(): React.JSX.Element {
-  return <EditorPage key={useParams().id} />;
+  const { project, id } = useParams();
+  // /d/ keeps documents in this browser; /p/ keeps them in the local service's project.
+  const repository = useMemo(() => project === undefined ? undefined : createServiceRepository(project), [project]);
+  return <EditorPage key={project === undefined ? id : `${project}/${id}`} {...(repository ? { repository } : {})} />;
 }
 
 function LegacyV2Redirect(): React.JSX.Element {
@@ -83,6 +87,7 @@ export default function App(): React.JSX.Element {
             {LEGACY_HOME_PATHS.map((path) => <Route key={path} path={path} element={<Navigate to="/home" replace />} />)}
             {LEGACY_DOCS_PATHS.map((path) => <Route key={path} path={path} element={<DocsSiteRedirect />} />)}
             <Route path="/d/:id" element={<EditorRoute />} />
+            <Route path="/p/:project/:id" element={<EditorRoute />} />
             <Route path="/s/:id/:key?" element={<SharedPage />} />
             <Route path="/from/github/*" element={<FromGithubPage />} />
             <Route path="/map/github/*" element={<MapRoute />} />

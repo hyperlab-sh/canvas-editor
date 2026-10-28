@@ -18,15 +18,17 @@ interface EditorLoadInput {
   readonly session: ReturnType<typeof useDocumentSession>;
   readonly repository: ReturnType<typeof createV2Repository>;
   readonly pushToast: (toast: ToastItem) => void;
+  /** Kept by the local service: a link that finds nothing is not found, never a new document, and is not the one `/` reopens. */
+  readonly onService?: boolean;
 }
 
 /** Opens the document (stored, new, a repo's map or a shared one) and remembers it as the one `/` lands on. */
-export function useV2EditorLoad({ id, lastOpen, fixed, startIntent, repo, repoReadable, session, repository, pushToast }: EditorLoadInput) {
+export function useV2EditorLoad({ id, lastOpen, fixed, startIntent, repo, repoReadable, session, repository, pushToast, onService = false }: EditorLoadInput) {
   const load = useV2DocumentLoad({
     documentId: id,
     initialize: repo.initialize,
     saveBorn: repoReadable,
-    createIfMissing: !id || startIntent !== null || mayCreateDocument(id, lastOpen),
+    createIfMissing: !onService && (!id || startIntent !== null || mayCreateDocument(id, lastOpen)),
     repository,
     fixed,
     openDocument: session.openDocument,
@@ -35,6 +37,6 @@ export function useV2EditorLoad({ id, lastOpen, fixed, startIntent, repo, repoRe
       ...(id ? { action: { label: 'Download the damaged copy', onClick: () => downloadRawRecords(id, 'damaged-copy') } } : {}) }),
   });
   // Only a document that opened becomes the one `/` lands on: never a link that was not found.
-  useEffect(() => { if (id && load.phase === 'ready' && (repo.source === null || repoReadable)) rememberLastDocument(id); }, [id, load.phase, repo.source, repoReadable]);
+  useEffect(() => { if (id && !onService && load.phase === 'ready' && (repo.source === null || repoReadable)) rememberLastDocument(id); }, [id, onService, load.phase, repo.source, repoReadable]);
   return load;
 }

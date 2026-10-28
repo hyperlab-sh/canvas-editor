@@ -57,6 +57,8 @@ interface EditorAgentsInput {
   readonly toastZoomedToRead: () => void;
   readonly setAnnouncement: (message: string) => void;
   readonly pushToast: (toast: ToastItem) => void;
+  /** On a service diagram the service is the agent path: the tab bridge stays off. */
+  readonly onService: boolean;
 }
 
 /** Local agent pairing and the in-page assistant: the MCP bridge, WebMCP, the cursor, and how an agent's change reaches the map's drawing. */
@@ -64,7 +66,7 @@ export function useV2EditorAgents(input: EditorAgentsInput) {
   const {
     id, session, load, repo, map, panels, camera, code, preferences, updatePreferences, proposal, compileDraft, page, viewPage, pageRef, hostRef,
     selectionRef, selectedConnectorIdsRef, selectionNodeIds, applySelection, applyConnectorSelection, pinnable, openDrawingRef, showDrawing,
-    setActivePageId, writable, landingDirection, toastZoomedToRead, setAnnouncement, pushToast,
+    setActivePageId, writable, landingDirection, toastZoomedToRead, setAnnouncement, pushToast, onService,
   } = input;
   const { openWorkspace } = panels;
   // Local agent pairing: the ops run here, against this session, through the
@@ -140,7 +142,7 @@ export function useV2EditorAgents(input: EditorAgentsInput) {
   };
   const agentBridge = useV2AgentBridge({
     ...agentSession,
-    enabled: preferences.agentBridgeEnabled,
+    enabled: preferences.agentBridgeEnabled && !onService,
     port: preferences.bridgePort,
     token: preferences.bridgeToken,
     revision: session.revision,
