@@ -1,5 +1,6 @@
 import type { SceneDocumentV1, ScenePage } from '../document/types';
 import { validateSceneDocumentV1 } from '../document/validation';
+import { withFreeThreadNumbers } from '../threads/threads';
 import { areStructurallyEqual } from './equality';
 import type {
   AppliedDocumentCommand,
@@ -169,10 +170,12 @@ function applyInsertPage(
     throw new DocumentCommandError(`Page "${command.page.id}" already exists.`);
   }
   const pages = [...document.pages];
-  pages.splice(command.index, 0, command.page);
+  // A page coming back (undo of its removal) may hold thread numbers given out again since it went.
+  const page = withFreeThreadNumbers(document, command.page);
+  pages.splice(command.index, 0, page);
   return {
     document: { ...document, pages },
-    inverse: { ...command, kind: 'remove-page' },
+    inverse: { ...command, kind: 'remove-page', page },
   };
 }
 

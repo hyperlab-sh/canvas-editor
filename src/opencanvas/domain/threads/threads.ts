@@ -88,6 +88,29 @@ export function carryThreads(next: SceneDocumentV1, current: SceneDocumentV1): S
   return changed ? { ...next, pages } : next;
 }
 
+/**
+ * `page` as it can join `document`: a thread whose number a thread already in the document has gets the
+ * next free one. Numbers are unique across the document, and a page brought back by undoing its removal
+ * can carry a number given out again since. Returns `page` itself when nothing clashes.
+ */
+export function withFreeThreadNumbers(document: SceneDocumentV1, page: ScenePage): ScenePage {
+  const taken = new Set<number>();
+  for (const other of document.pages) for (const thread of pageThreads(other)) taken.add(thread.number);
+  if (!page.threads?.some((thread) => taken.has(thread.number))) return page;
+  let highest = nextThreadNumber(document) - 1;
+  const threads = page.threads.map((thread) => {
+    if (!taken.has(thread.number)) {
+      taken.add(thread.number);
+      highest = Math.max(highest, thread.number);
+      return thread;
+    }
+    highest += 1;
+    taken.add(highest);
+    return { ...thread, number: highest };
+  });
+  return { ...page, threads };
+}
+
 /** `document` with `update` applied to one page's threads. An empty result drops the key. */
 export function updatePageThreads(
   document: SceneDocumentV1,

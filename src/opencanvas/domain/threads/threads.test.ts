@@ -17,6 +17,7 @@ import {
   removeComment,
   removeThread,
   setThreadResolved,
+  withFreeThreadNumbers,
 } from './threads';
 
 const human = { kind: 'human' as const, name: 'Ada' };
@@ -208,6 +209,37 @@ describe('comments and history', () => {
     expect(findThread(session.document, 't1')).toBeUndefined();
     session = undoSessionCommand(session, session.revision);
     expect(findThread(session.document, 't1')!.thread.comments).toHaveLength(2);
+  });
+
+  it('undoing a page delete renumbers its threads past the numbers given out since', () => {
+    // Page 1 holds #1 and #2; page 2 is empty. Delete page 1, start #1 and #2 on page 2, undo the delete.
+    let session = createDocumentSession(withThread(withThread(createTestDocument({ nodes: [a] })), 't2', null, { x: 1, y: 1 }));
+    const second = { ...page(session.document), id: 'page-2', threads: undefined };
+    session = commitSessionCommand(session, { kind: 'insert-page', id: 'add', label: 'Add', index: 1, page: second }, session.revision);
+    session = commitSessionCommand(session, { kind: 'remove-page', id: 'rm', label: 'Delete', index: 0, page: page(session.document) }, session.revision);
+    expect(nextThreadNumber(session.document)).toBe(1);
+    const startOn2 = (document: SceneDocumentV1, threadId: string) =>
+      addThread(document, { pageId: 'page-2', threadId, nodeId: null, point: { x: 0, y: 0 }, comment: { id: `${threadId}-m`, author: human, body: 'x', createdAt: at } });
+    session = updateSessionThreads(session, (document) => startOn2(startOn2(document, 'n1'), 'n2'), session.revision);
+    session = undoSessionCommand(session, session.revision);
+    const byId = Object.fromEntries(session.document.pages.flatMap((candidate) => (candidate.threads ?? []).map((thread) => [thread.id, thread.number])));
+    expect(byId).toEqual({ t1: 3, t2: 4, n1: 1, n2: 2 });
+    expect(validateSceneDocumentV1(session.document).success).toBe(true);
+    // Redo takes the page away again; undo brings it back with the numbers it has now.
+    session = redoSessionCommand(session, session.revision);
+    session = undoSessionCommand(session, session.revision);
+    expect(validateSceneDocumentV1(session.document).success).toBe(true);
+    expect(nextThreadNumber(session.document)).toBe(5);
+  });
+
+  it('a page joining a document keeps the thread numbers that are still free', () => {
+    const document = withThread(withThread(createTestDocument({ nodes: [a] })), 't2', null, { x: 1, y: 1 });
+    const incoming = page(document);
+    expect(withFreeThreadNumbers({ ...document, pages: [] }, incoming)).toBe(incoming);
+    // #2 is taken on the other page; #1 is not: only #2 moves, past the highest number anywhere.
+    const other = { ...incoming, id: 'other', threads: [{ ...incoming.threads![1]!, id: 'o2' }, { ...incoming.threads![0]!, id: 'o7', number: 7 }] };
+    const joined = withFreeThreadNumbers({ ...document, pages: [other] }, incoming);
+    expect(joined.threads!.map(({ id, number }) => [id, number])).toEqual([['t1', 1], ['t2', 8]]);
   });
 
   it('carryThreads returns the same document when nothing changes', () => {
