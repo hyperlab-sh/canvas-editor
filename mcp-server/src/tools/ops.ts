@@ -19,7 +19,7 @@ import { NOT_PAIRED, type LiveBridge } from '../lib/bridge.js';
 import { loadFileCapabilities } from '../lib/fileCapabilities.js';
 import { svgBeside, tryWriteSvgBeside } from '../lib/svgBeside.js';
 import { toolError } from '../lib/errors.js';
-import { clientShowsApps, diagramCard, VIEWER_TOOL_META, type Card } from '../lib/card.js';
+import { clientHasChannel, clientShowsApps, diagramCard, VIEWER_TOOL_META, type Card } from '../lib/card.js';
 import { DEFAULT_APP_ORIGIN, openUrl } from '../lib/openLink.js';
 
 export interface OpToolDeps {
@@ -272,6 +272,7 @@ export function registerDocumentTools(server: McpServer, deps: DocumentToolDeps)
       server: `${health.name} ${health.version}`,
       cloud: 'none — everything is local',
       bridge,
+      channel: clientHasChannel(server.server.getClientCapabilities()),
       mode: health.connected ? 'live-editor' : 'file',
       editor: health.connected
         ? { documentId: health.documentId, name: health.documentName, pageId: health.pageId, pages: health.pages, lastSeenMs: health.lastSeenMs }
