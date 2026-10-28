@@ -1,11 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { runOp } from '../../src/service/ops.js';
-import { createSessions } from '../../src/service/sessions.js';
+import { createSessions, type Sessions } from '../../src/service/sessions.js';
 import { createStore, type Store } from '../../src/service/store.js';
 import { tempConfig } from './helpers.js';
-import { bind, boot, call, closeServicesAfterEach, newDiagram, openStream, register } from './sessionHelpers.js';
+import { bind, boot, call, closeServicesAfterEach, newDiagram, openStream, register, serveWith } from './sessionHelpers.js';
 
 closeServicesAfterEach();
 
@@ -100,17 +99,28 @@ describe('POST /sessions/:id/ops', () => {
     expect(reply.status).toBe(409);
   });
 
-  it('redoes an op on the newer document when a tab saved first, keeping both edits', async () => {
+  /** A service over `store` with one diagram and a registered, bound session; runs `act`, then closes. */
+  async function withBoundSession(wrap: (real: Store, sessions: Sessions, sessionId: string) => Store, act: (ctx: { url: string; sessionId: string; id: string; real: Store }) => Promise<void>): Promise<void> {
     const config = await tempConfig('alpha');
     const real = createStore(config);
     const { id } = await real.create('alpha', 'Flow');
     const sessions = createSessions();
-    const { sessionId } = sessions.register({ client: 'Claude Code', cwd: '/x/hyper', pid: 1 });
-    sessions.bind(sessionId, 'alpha', id);
+    const live = await serveWith(config, { ...real, ...wrap(real, sessions, '') }, sessions);
+    try {
+      const { sessionId } = (await call(live, 'POST', '/sessions', { client: 'Claude Code', cwd: '/x/hyper', pid: 1 })).json;
+      expect((await bind(live, sessionId, id)).status).toBe(200);
+      await act({ url: live.url, sessionId, id, real });
+    } finally {
+      await live.close();
+    }
+  }
+
+  const drawVia = (url: string, sessionId: string, id: string) => call({ url }, 'POST', `/sessions/${sessionId}/ops`, { ...DRAW, id });
+
+  it('redoes an op on the newer document when a tab saved first, keeping both edits', async () => {
     // The tab's save lands between the op's read and its write, once.
     let raced = false;
-    const store: Store = {
-      ...real,
+    await withBoundSession((real) => ({
       write: async (project, doc, document, expected) => {
         if (!raced) {
           raced = true;
@@ -119,51 +129,49 @@ describe('POST /sessions/:id/ops', () => {
         }
         return real.write(project, doc, document, expected);
       },
-    };
-    const outcome = await runOp(sessions, store, sessionId, { project: 'alpha', id, op: 'create_diagram', input: { dsl: 'flowchart\n  A -> B\n' } });
-    sessions.close();
-    expect(outcome).toMatchObject({ ok: true });
-    const { document } = await real.read('alpha', id);
-    expect(document.name).toBe('Renamed by tab');
-    expect(JSON.stringify(document)).toContain('"A"');
+    }), async ({ url, sessionId, id, real }) => {
+      const reply = await drawVia(url, sessionId, id);
+      expect(reply.status).toBe(200);
+      expect(reply.json).toMatchObject({ ok: true });
+      const { document } = await real.read('alpha', id);
+      expect(document.name).toBe('Renamed by tab');
+      expect(JSON.stringify(document)).toContain('"A"');
+    });
   });
 
   it('gives up with 409 and leaves the file when every write is stale', async () => {
-    const config = await tempConfig('alpha');
-    const real = createStore(config);
-    const { id } = await real.create('alpha', 'Flow');
-    const sessions = createSessions();
-    const { sessionId } = sessions.register({ client: 'Claude Code', cwd: '/x/hyper', pid: 1 });
-    sessions.bind(sessionId, 'alpha', id);
     let writes = 0;
-    const store: Store = {
-      ...real,
+    await withBoundSession((real) => ({
       write: async (project, doc) => {
         writes += 1;
         return { status: 'stale', revision: 9, document: (await real.read(project, doc)).document };
       },
-    };
-    const before = await real.read('alpha', id);
-    const outcome = await runOp(sessions, store, sessionId, { project: 'alpha', id, op: 'create_diagram', input: { dsl: 'flowchart\n  A -> B\n' } });
-    sessions.close();
-    expect(outcome).toMatchObject({ status: 409, ok: false, error: 'The diagram kept changing under the op; try it again.' });
-    expect(writes).toBe(3);
-    expect((await real.read('alpha', id)).document).toEqual(before.document);
+    }), async ({ url, sessionId, id, real }) => {
+      const before = await real.read('alpha', id);
+      const reply = await drawVia(url, sessionId, id);
+      expect(reply.status).toBe(409);
+      expect(reply.json).toEqual({ ok: false, error: 'The diagram kept changing under the op; try it again.' });
+      expect(writes).toBe(3);
+      expect((await real.read('alpha', id)).document).toEqual(before.document);
+    });
   });
 
   it('does not write when the diagram is disconnected while the op runs', async () => {
-    const config = await tempConfig('alpha');
-    const real = createStore(config);
-    const { id } = await real.create('alpha', 'Flow');
-    const sessions = createSessions();
-    const { sessionId } = sessions.register({ client: 'Claude Code', cwd: '/x/hyper', pid: 1 });
-    sessions.bind(sessionId, 'alpha', id);
     // The app's Disconnect arrives while the op is reading the document.
-    const store: Store = { ...real, read: async (project, doc) => { const read = await real.read(project, doc); sessions.disconnect(project, doc); return read; } };
-    const before = await real.read('alpha', id);
-    const outcome = await runOp(sessions, store, sessionId, { project: 'alpha', id, op: 'create_diagram', input: { dsl: 'flowchart\n  A -> B\n' } });
-    sessions.close();
-    expect(outcome).toMatchObject({ status: 409, ok: false, holder: null });
-    expect((await real.read('alpha', id)).document).toEqual(before.document);
+    let armed = false;
+    await withBoundSession((real, sessions) => ({
+      read: async (project, doc) => {
+        const read = await real.read(project, doc);
+        if (armed) sessions.disconnect(project, doc);
+        return read;
+      },
+    }), async ({ url, sessionId, id, real }) => {
+      const before = await real.read('alpha', id);
+      armed = true;
+      const reply = await drawVia(url, sessionId, id);
+      expect(reply.status).toBe(409);
+      expect(reply.json).toMatchObject({ ok: false, holder: null });
+      expect((await real.read('alpha', id)).document).toEqual(before.document);
+    });
   });
 });

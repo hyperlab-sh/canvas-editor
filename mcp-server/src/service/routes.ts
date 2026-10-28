@@ -231,8 +231,12 @@ export function buildRoutes(): Route[] {
       method: 'GET', path: '/sessions/:sid/events',
       handle: async (context) => {
         const sid = sessionOf(context);
-        // HEAD answers at once; it must not park.
-        const wait = context.request.method === 'HEAD' ? 0 : Number(context.url.searchParams.get('wait') ?? MAX_WAIT_S);
+        // HEAD answers at once and takes nothing: it has no body to carry the events in.
+        if (context.request.method === 'HEAD') {
+          context.deps.sessions.touch(sid);
+          return { status: context.deps.events.pending(sid) ? 200 : 204 };
+        }
+        const wait = Number(context.url.searchParams.get('wait') ?? MAX_WAIT_S);
         const events = await context.deps.events.poll(sid, Number.isFinite(wait) ? wait : MAX_WAIT_S, context.request);
         return events ? { status: 200, json: { events } } : { status: 204 };
       },
@@ -283,7 +287,7 @@ export function buildRoutes(): Route[] {
         if (event.documentId !== context.param('id')) throw new HttpError(400, `The event is for document "${event.documentId}", not "${context.param('id')}".`);
         const holder = context.deps.sessions.holderOf(context.param('p'), context.param('id'));
         if (!holder) return { status: 409, json: { error: 'No session holds this diagram' } };
-        context.deps.events.push(holder.id, event);
+        context.deps.events.push(holder.id, context.param('p'), event);
         return { status: 202 };
       },
     },

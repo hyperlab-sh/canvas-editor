@@ -142,4 +142,22 @@ describe('sessions', () => {
       await new Promise((resolve) => { server.close(resolve); server.closeAllConnections(); });
     }
   });
+
+  it('keeps sweeping when a release listener throws', async () => {
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const sessions = createSessions({ ttlMs: 30, sweepMs: 10 });
+    sessions.onRelease(() => { throw new Error('listener failed'); });
+    const first = sessions.register({ client: 'a', cwd: '/x/a', pid: 1 });
+    const second = sessions.register({ client: 'b', cwd: '/x/b', pid: 2 });
+    try {
+      await vi.waitFor(() => {
+        expect(sessions.get(first.sessionId)).toBeUndefined();
+        expect(sessions.get(second.sessionId)).toBeUndefined();
+      }, { timeout: 3000, interval: 10 });
+      expect(quiet).toHaveBeenCalled();
+    } finally {
+      sessions.close();
+      quiet.mockRestore();
+    }
+  });
 });

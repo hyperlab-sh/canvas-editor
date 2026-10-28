@@ -96,7 +96,14 @@ export function createSessions(timing: SessionTiming = {}): Sessions {
     if (!session) return;
     for (const key of [...session.bindings]) free(key);
     sessions.delete(sessionId);
-    for (const listener of releaseListeners) listener(sessionId);
+    for (const listener of releaseListeners) {
+      // A failing subscriber must not stop the sweep of the sessions after this one.
+      try {
+        listener(sessionId);
+      } catch (error) {
+        console.error(`service sessions: release listener failed for ${sessionId}:`, error);
+      }
+    }
   };
 
   const sweeper = setInterval(() => {

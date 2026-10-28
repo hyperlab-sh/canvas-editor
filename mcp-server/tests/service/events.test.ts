@@ -117,7 +117,7 @@ describe('POST …/comments and GET /sessions/:id/events', () => {
     const sessions = createSessions();
     const events = createEvents(store, sessions);
     const { sessionId } = sessions.register({ client: 'Claude Code', cwd: '/x/hyper', pid: 1 });
-    events.push(sessionId, threadEvent('d1') as unknown as BridgeThreadEvent);
+    events.push(sessionId, 'alpha', threadEvent('d1') as unknown as BridgeThreadEvent);
     sessions.release(sessionId);
     // wait 0 never touches the request.
     expect(await events.poll(sessionId, 0, undefined as never)).toBeNull();
@@ -126,12 +126,13 @@ describe('POST …/comments and GET /sessions/:id/events', () => {
   });
 });
 
+const head = (port: number, path: string) => new Promise<number>((resolve, reject) => {
+  const req = request({ host: '127.0.0.1', port, path, method: 'HEAD' }, (res) => { res.resume(); res.on('end', () => resolve(res.statusCode ?? 0)); });
+  req.on('error', reject);
+  req.end();
+});
+
 describe('HEAD', () => {
-  const head = (port: number, path: string) => new Promise<number>((resolve, reject) => {
-    const req = request({ host: '127.0.0.1', port, path, method: 'HEAD' }, (res) => { res.resume(); res.on('end', () => resolve(res.statusCode ?? 0)); });
-    req.on('error', reject);
-    req.end();
-  });
 
   it('answers at once on the tab stream and the session poll instead of parking', async () => {
     const { service } = await boot();
@@ -139,5 +140,36 @@ describe('HEAD', () => {
     const session = await register(service);
     expect(await head(service.port, `/events?project=alpha&id=${id}`)).toBe(200);
     expect(await head(service.port, `/sessions/${session.sessionId}/events?wait=25`)).toBe(204);
+  });
+
+  it('does not take queued events: HEAD reports them and a later GET still delivers them', async () => {
+    const { service } = await boot();
+    const { id } = await newDiagram(service);
+    const holder = await register(service);
+    await bind(service, holder.sessionId, id);
+    await call(service, 'POST', `/projects/alpha/diagrams/${id}/comments`, threadEvent(id));
+    expect(await head(service.port, `/sessions/${holder.sessionId}/events?wait=25`)).toBe(200);
+    const got = await call(service, 'GET', `/sessions/${holder.sessionId}/events?wait=0`);
+    expect(got.json).toEqual({ events: [threadEvent(id)] });
+    expect(await head(service.port, `/sessions/${holder.sessionId}/events`)).toBe(204);
+  });
+});
+
+describe('queued events across projects', () => {
+  it('drops only the disconnected project\'s events when two projects share a diagram id', async () => {
+    const config = await tempConfig('alpha', 'beta');
+    const store = createStore(config);
+    const sessions = createSessions();
+    const events = createEvents(store, sessions);
+    const { sessionId } = sessions.register({ client: 'Claude Code', cwd: '/x/hyper', pid: 1 });
+    sessions.bind(sessionId, 'alpha', 'x');
+    sessions.bind(sessionId, 'beta', 'x');
+    events.push(sessionId, 'alpha', threadEvent('x', 'for alpha') as unknown as BridgeThreadEvent);
+    events.push(sessionId, 'beta', threadEvent('x', 'for beta') as unknown as BridgeThreadEvent);
+    sessions.disconnect('alpha', 'x');
+    const left = await events.poll(sessionId, 0, undefined as never);
+    expect(left?.map((event) => event.body)).toEqual(['for beta']);
+    events.close();
+    sessions.close();
   });
 });

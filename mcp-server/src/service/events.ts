@@ -10,7 +10,9 @@ export interface Events {
   /** Opens the SSE stream of one diagram on `response`: `revision` and `holder` events until the tab goes away. */
   subscribe(project: string, id: string, response: ServerResponse): void;
   /** Queues a thread event for the session; a parked poll gets it at once. */
-  push(sessionId: string, event: BridgeThreadEvent): void;
+  push(sessionId: string, project: string, event: BridgeThreadEvent): void;
+  /** True when thread events are queued for the session; takes none of them. */
+  pending(sessionId: string): boolean;
   /** Takes the session's queued events, parking up to `waitS` seconds when there are none. Null when none arrived. */
   poll(sessionId: string, waitS: number, request: IncomingMessage): Promise<BridgeThreadEvent[] | null>;
   close(): void;
@@ -22,7 +24,8 @@ interface Waiter {
 
 export function createEvents(store: Store, sessions: Sessions): Events {
   const tabs = new Map<string, Set<ServerResponse>>();
-  const queues = new Map<string, BridgeThreadEvent[]>();
+  // The project is kept because diagram ids come from file contents, so two projects can share one.
+  const queues = new Map<string, { project: string; event: BridgeThreadEvent }[]>();
   const waiters = new Map<string, Waiter>();
 
   const send = (project: string, id: string, event: string, data: unknown): void => {
@@ -35,7 +38,7 @@ export function createEvents(store: Store, sessions: Sessions): Events {
     // Comments queued while the diagram was held are not for whoever connects next, nor for the session that lost it.
     if (label === null) {
       for (const [sessionId, queued] of queues) {
-        const kept = queued.filter((event) => event.documentId !== id);
+        const kept = queued.filter((entry) => !(entry.project === project && entry.event.documentId === id));
         if (kept.length) queues.set(sessionId, kept);
         else queues.delete(sessionId);
       }
@@ -50,7 +53,7 @@ export function createEvents(store: Store, sessions: Sessions): Events {
     const queued = queues.get(sessionId);
     if (!queued?.length) return null;
     queues.delete(sessionId);
-    return queued;
+    return queued.map((entry) => entry.event);
   };
 
   return {
@@ -72,10 +75,12 @@ export function createEvents(store: Store, sessions: Sessions): Events {
       });
     },
 
-    push: (sessionId, event) => {
-      queues.set(sessionId, [...(queues.get(sessionId) ?? []), event]);
+    push: (sessionId, project, event) => {
+      queues.set(sessionId, [...(queues.get(sessionId) ?? []), { project, event }]);
       waiters.get(sessionId)?.wake();
     },
+
+    pending: (sessionId) => (queues.get(sessionId)?.length ?? 0) > 0,
 
     poll: async (sessionId, waitS, request) => {
       sessions.touch(sessionId);
