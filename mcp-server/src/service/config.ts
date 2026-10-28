@@ -41,8 +41,8 @@ async function writeDefault(file: string): Promise<void> {
   }
 }
 
-export async function loadConfig(): Promise<ServiceConfig> {
-  const file = configPath();
+export async function loadConfig(path?: string): Promise<ServiceConfig> {
+  const file = path ?? configPath();
   let text: string;
   try {
     text = await readFile(file, 'utf8');

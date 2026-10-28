@@ -57,6 +57,7 @@ ${OP_USAGE}
   openflowkit build <dir> [--out dist]
   openflowkit map <dir> [--depth overview|detailed|everything] [--html out.html]
   openflowkit mcp
+  openflowkit serve [--port N] [--config path] [--app dir]
 
 Commands:
 ${OP_COMMANDS}
@@ -65,6 +66,7 @@ ${OP_COMMANDS}
   build     compile architecture.ofk into a self-contained static site
   map       print what a repository is made of: parts, files, lines, imports, the folders that import each other
   mcp       run the MCP server (stdio) for Claude Code, Cursor and other agents
+  serve     run the local diagram service: projects as folders, a link per diagram, the app
 
 Options:
   --out <path>    discover: write the DSL here (default: stdout); build: output dir (default: dist)
@@ -76,6 +78,9 @@ Options:
   --html <path>   map: also write one self-contained, offline HTML page of the map
   --name <name>   discover: system name (default: directory name)
   --max-files <n> discover/drift: cap on files scanned (default: 2000)
+  --port <n>      serve: port (default: the config's, 43120)
+  --config <path> serve: service config file (default: ~/.config/openflowkit/service.json)
+  --app <dir>     serve: the built app to serve (default: OPENFLOWKIT_APP_DIR, else <repo>/dist)
   --help          this text; <command> --help for one command's
   --version       the version
 
@@ -350,6 +355,7 @@ export async function main(argv: readonly string[], io: CliIo): Promise<number> 
   if (command === 'map') return runMap(rest, io);
   // The server starts when its module loads and keeps the process alive on stdio.
   if (command === 'mcp') { await import('./index.js'); return 0; }
+  if (command === 'serve') return (await import('./service/serve.js')).runServe(rest, io);
   const handled = await runRegistryCommand(command, rest, io, USAGE);
   if (handled !== null) return handled;
   io.err(`openflowkit: unknown command "${command}"\n\n${USAGE}`);
