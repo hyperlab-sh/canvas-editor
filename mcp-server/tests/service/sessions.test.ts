@@ -1,4 +1,10 @@
+import { createServer } from 'node:http';
 import { describe, expect, it, vi } from 'vitest';
+import { createEvents } from '../../src/service/events.js';
+import { createHandler } from '../../src/service/routes.js';
+import { createSessions } from '../../src/service/sessions.js';
+import { createStore } from '../../src/service/store.js';
+import { tempConfig } from './helpers.js';
 import { bind, boot, call, closeServicesAfterEach, newDiagram, register } from './sessionHelpers.js';
 
 closeServicesAfterEach();
@@ -115,14 +121,25 @@ describe('sessions', () => {
   });
 
   it('answers 404 "Register again" when the session is swept while the bind awaits the diagram', async () => {
-    const { service } = await boot({ ttlMs: 1, sweepMs: 5 });
-    const { id } = await newDiagram(service);
-    const session = await register(service);
-    // The ttl is shorter than the round trip, so the session expires around the bind.
-    await vi.waitFor(async () => {
-      const reply = await bind(service, session.sessionId, id);
-      expect(reply.status).toBe(404);
-      expect(reply.json.error).toBe(`Unknown session ${session.sessionId}. Register again.`);
-    }, { timeout: 3000, interval: 10 });
+    const config = await tempConfig('alpha');
+    const real = createStore(config);
+    const { id } = await real.create('alpha', 'Flow');
+    const sessions = createSessions();
+    const events = createEvents(real, sessions);
+    const { sessionId } = sessions.register({ client: 'Claude Code', cwd: '/x/hyper', pid: 1 });
+    // The sweeper drops the session during the diagram read, after the route checked it.
+    const store = { ...real, read: async (project: string, doc: string) => { const read = await real.read(project, doc); sessions.release(sessionId); return read; } };
+    const server = createServer(createHandler({ config, store, sessions, events, appDir: '/nonexistent', port: () => 0 }));
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    try {
+      const { port } = server.address() as { port: number };
+      const res = await fetch(`http://127.0.0.1:${port}/sessions/${sessionId}/bindings`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ project: 'alpha', id }) });
+      expect(res.status).toBe(404);
+      expect(await res.json()).toEqual({ error: `Unknown session ${sessionId}. Register again.` });
+    } finally {
+      events.close();
+      sessions.close();
+      await new Promise((resolve) => { server.close(resolve); server.closeAllConnections(); });
+    }
   });
 });
