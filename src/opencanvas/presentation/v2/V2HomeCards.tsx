@@ -195,14 +195,15 @@ function useCardMenu() {
 }
 
 interface DiagramActions {
-  readonly starred: boolean;
-  readonly onStar: () => void;
   readonly onRename: () => void;
-  readonly onDuplicate: () => void;
-  readonly onArchive: () => void;
+  /** Star, duplicate and archive belong to diagrams in this browser; a service card leaves them out. */
+  readonly starred?: boolean;
+  readonly onStar?: () => void;
+  readonly onDuplicate?: () => void;
+  readonly onArchive?: () => void;
 }
 
-/** One of your diagrams: preview, name, when, pages, v1 tag; star, rename in place, duplicate, archive. */
+/** One of your diagrams (or a service project's, which opens under /p/): preview, name, when, pages, v1 tag; star, rename in place, duplicate, archive. */
 export function DiagramCard({ summary, thumbnail, appearance, rename, renameRef, actions, selection }: {
   readonly summary: V2DocumentSummary;
   readonly thumbnail: V2Thumbnail | null | undefined;
@@ -215,12 +216,15 @@ export function DiagramCard({ summary, thumbnail, appearance, rename, renameRef,
   } | null;
   readonly renameRef: RefObject<HTMLInputElement | null>;
   readonly actions: DiagramActions;
-  readonly selection: CardSelection;
+  /** Omitted for a service card: selection drives archive and delete, which it does not have. */
+  readonly selection?: CardSelection;
 }): React.JSX.Element {
   const when = savedWhen(summary.savedAt);
   const { menu, onContextMenu, onOpenChange } = useCardMenu();
+  const path = summary.project === undefined ? `/d/${summary.id}` : `/p/${encodeURIComponent(summary.project)}/${encodeURIComponent(summary.id)}`;
+  const { starred = false, onStar, onDuplicate, onArchive } = actions;
   return (
-    <HomeCard docId={summary.id} to={`/d/${summary.id}`} title={summary.name} selection={selection} onContextMenu={onContextMenu}
+    <HomeCard docId={summary.id} to={path} title={summary.name} selection={selection} onContextMenu={onContextMenu}
       preview={<DiagramPreview thumbnail={thumbnail} appearance={appearance} />}
       meta={<>
         <time dateTime={summary.savedAt} title={when.absolute}>{when.relative}</time>
@@ -235,20 +239,22 @@ export function DiagramCard({ summary, thumbnail, appearance, rename, renameRef,
             if (event.key === 'Escape') { event.preventDefault(); rename.onCancel(); }
           }} />
       ) : undefined}
-      star={<StarToggle name={summary.name} starred={actions.starred} onToggle={actions.onStar} />}
+      star={onStar ? <StarToggle name={summary.name} starred={starred} onToggle={onStar} /> : undefined}
       menu={
         <CardMenu name={summary.name} open={menu.open} at={menu.at} onOpenChange={onOpenChange}>
-          <MenuItem icon={<Icon icon={IconExternalLink} />} onSelect={() => window.open(`#/d/${summary.id}`, '_blank', 'noopener')}>
+          <MenuItem icon={<Icon icon={IconExternalLink} />} onSelect={() => window.open(`#${path}`, '_blank', 'noopener')}>
             Open in new tab
           </MenuItem>
           <MenuSeparator />
           <MenuItem icon={<Icon icon={IconPencil} />} shortcut="F2" onSelect={actions.onRename}>Rename</MenuItem>
-          <MenuItem icon={<Icon icon={IconCopy} />} onSelect={actions.onDuplicate}>Duplicate</MenuItem>
-          <MenuItem icon={<Icon icon={actions.starred ? IconStarFilled : IconStar} />} shortcut="S" onSelect={actions.onStar}>
-            {actions.starred ? 'Unstar' : 'Star'}
-          </MenuItem>
-          <MenuSeparator />
-          <MenuItem icon={<Icon icon={IconArchive} />} shortcut="Del" onSelect={actions.onArchive}>Archive</MenuItem>
+          {onDuplicate ? <MenuItem icon={<Icon icon={IconCopy} />} onSelect={onDuplicate}>Duplicate</MenuItem> : null}
+          {onStar ? (
+            <MenuItem icon={<Icon icon={starred ? IconStarFilled : IconStar} />} shortcut="S" onSelect={onStar}>
+              {starred ? 'Unstar' : 'Star'}
+            </MenuItem>
+          ) : null}
+          {onArchive ? <MenuSeparator /> : null}
+          {onArchive ? <MenuItem icon={<Icon icon={IconArchive} />} shortcut="Del" onSelect={onArchive}>Archive</MenuItem> : null}
         </CardMenu>
       } />
   );

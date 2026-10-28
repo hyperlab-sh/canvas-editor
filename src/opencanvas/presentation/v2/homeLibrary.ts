@@ -91,6 +91,16 @@ export function arrange(documents: readonly V2DocumentSummary[], { view, starred
   return sort === 'name' ? [...shown].sort((a, b) => byName.compare(a.name, b.name)) : shown;
 }
 
+/** Service diagrams by project, projects in name order; each keeps the order it came in. */
+export function groupByProject(documents: readonly V2DocumentSummary[]): readonly { readonly project: string; readonly documents: readonly V2DocumentSummary[] }[] {
+  const groups = new Map<string, V2DocumentSummary[]>();
+  for (const summary of documents) {
+    if (summary.project === undefined) continue;
+    groups.set(summary.project, [...(groups.get(summary.project) ?? []), summary]);
+  }
+  return [...groups].sort(([a], [b]) => byName.compare(a, b)).map(([project, grouped]) => ({ project, documents: grouped }));
+}
+
 /** "Payments" → "Payments copy", "Payments copy" → "Payments copy 2", … against the names already taken. */
 export function copyName(name: string, taken: readonly string[]): string {
   const base = `${name.replace(/ copy(?: \d+)?$/, '')} copy`;
