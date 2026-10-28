@@ -42,7 +42,7 @@ describe('loadConfig', () => {
     const file = await configWith({ port: 5000, projects: [{ name: 'a.b_c-1', path: dir }] });
     const before = await readFile(file, 'utf8');
     const config = await loadConfig();
-    expect(config).toEqual({ port: 5000, projects: [{ name: 'a.b_c-1', path: dir }], file });
+    expect(config).toEqual({ port: 5000, projects: [{ name: 'a.b_c-1', path: dir }] });
     expect(await readFile(file, 'utf8')).toBe(before);
   });
 
@@ -64,6 +64,16 @@ describe('loadConfig', () => {
     const missing = join(home, 'nope');
     await configWith({ port: 1, projects: [{ name: 'm', path: missing }] });
     await expect(loadConfig()).rejects.toThrow(`project "m" path ${missing} is not a directory`);
+  });
+
+  it('refuses two projects on the same folder naming both', async () => {
+    await configWith({ port: 1, projects: [{ name: 'a', path: home }, { name: 'b', path: home }] });
+    await expect(loadConfig()).rejects.toThrow(`project "b" path ${home} is already used by project "a"`);
+  });
+
+  it('refuses port 0 (the service needs a fixed port)', async () => {
+    await configWith({ port: 0, projects: [] });
+    await expect(loadConfig()).rejects.toThrow('"port" must be an integer from 1 to 65535');
   });
 
   it('refuses a relative path, a bad port, malformed JSON and a missing project list', async () => {

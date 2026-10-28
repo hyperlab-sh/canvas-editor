@@ -1,8 +1,8 @@
-import { mkdir, utimes, writeFile } from 'node:fs/promises';
+import { mkdir, rm, utimes, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { createAgentDocument } from '../../src/lib/agent.js';
-import { listDiagrams, resolveDiagram } from '../../src/service/projects.js';
+import { listDiagrams, resolve } from '../../src/service/projects.js';
 import { putFile, tempConfig } from './helpers.js';
 
 describe('listDiagrams', () => {
@@ -18,7 +18,7 @@ describe('listDiagrams', () => {
     await writeFile(join(path, 'broken.openflow.json'), '{nope');
     await utimes(join(path, 'first.openflow.json'), new Date('2024-01-02T03:04:05Z'), new Date('2024-01-02T03:04:05Z'));
     const [a, b] = await listDiagrams(config);
-    expect(a).toEqual({ name: 'a', path, diagrams: [{ id: doc.id, title: 'First', modifiedAt: '2024-01-02T03:04:05.000Z' }] });
+    expect(a).toEqual({ name: 'a', diagrams: [{ id: doc.id, title: 'First', modifiedAt: '2024-01-02T03:04:05.000Z' }] });
     expect(b.diagrams).toEqual([]);
   });
 
@@ -60,12 +60,39 @@ describe('listDiagrams', () => {
   });
 });
 
-describe('resolveDiagram', () => {
+describe('listing resilience', () => {
+  it('lists a project whose folder was removed as empty and keeps the others', async () => {
+    const config = await tempConfig('a', 'b');
+    await putFile(join(config.projects[1].path, 'x.openflow.json'), createAgentDocument('Kept'));
+    await rm(config.projects[0].path, { recursive: true });
+    const [a, b] = await listDiagrams(config);
+    expect(a.diagrams).toEqual([]);
+    expect(b.diagrams.map((d) => d.title)).toEqual(['Kept']);
+  });
+
+  it('drops a deleted file from the cache and lists a replacement of the same name afresh', async () => {
+    const config = await tempConfig('a');
+    const file = join(config.projects[0].path, 'd.openflow.json');
+    const doc = createAgentDocument('AAA');
+    await putFile(file, doc);
+    const when = new Date('2024-05-05T05:05:05Z');
+    await utimes(file, when, when);
+    await listDiagrams(config);
+    await rm(file);
+    expect((await listDiagrams(config))[0].diagrams).toEqual([]);
+    // Same size and mtime as the deleted file: only a pruned cache reads it again.
+    await putFile(file, { ...doc, name: 'BBB' });
+    await utimes(file, when, when);
+    expect((await listDiagrams(config))[0].diagrams[0].title).toBe('BBB');
+  });
+});
+
+describe('resolve', () => {
   it('maps (project, id) to its file', async () => {
     const config = await tempConfig('a');
     const doc = createAgentDocument('X');
     await putFile(join(config.projects[0].path, 'x.openflow.json'), doc);
-    expect(await resolveDiagram(config, 'a', doc.id)).toEqual({ project: 'a', id: doc.id, path: join(config.projects[0].path, 'x.openflow.json') });
+    expect(await resolve(config, 'a', doc.id)).toEqual({ project: 'a', id: doc.id, path: join(config.projects[0].path, 'x.openflow.json') });
   });
 
   it('refuses a duplicate id naming both files', async () => {
@@ -73,12 +100,12 @@ describe('resolveDiagram', () => {
     const doc = createAgentDocument('Dup');
     await putFile(join(config.projects[0].path, 'one.openflow.json'), doc);
     await putFile(join(config.projects[0].path, 'two.openflow.json'), doc);
-    await expect(resolveDiagram(config, 'a', doc.id)).rejects.toThrow(/one\.openflow\.json and two\.openflow\.json/);
+    await expect(resolve(config, 'a', doc.id)).rejects.toThrow(/one\.openflow\.json and two\.openflow\.json/);
   });
 
   it('refuses an unknown project and an unknown id', async () => {
     const config = await tempConfig('a');
-    await expect(resolveDiagram(config, 'zzz', 'x')).rejects.toThrow('Unknown project "zzz". Configured: a.');
-    await expect(resolveDiagram(config, 'a', 'x')).rejects.toThrow('No diagram "x" in project "a"');
+    await expect(resolve(config, 'zzz', 'x')).rejects.toThrow('Unknown project "zzz". Configured: a.');
+    await expect(resolve(config, 'a', 'x')).rejects.toThrow('No diagram "x" in project "a"');
   });
 });

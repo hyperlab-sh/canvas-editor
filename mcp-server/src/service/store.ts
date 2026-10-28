@@ -1,8 +1,9 @@
-import { readFile, stat, writeFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { link, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createAgentDocument, parseAgentDocument, type SceneDocumentV1 } from '../lib/agent.js';
 import type { ServiceConfig } from './config.js';
-import { DIAGRAM_SUFFIX, projectNamed, resolveDiagram } from './projects.js';
+import { DIAGRAM_SUFFIX, projectNamed, resolve } from './projects.js';
 
 export type ChangedListener = (project: string, id: string, revision: number) => void;
 
@@ -30,26 +31,52 @@ function serialize(document: SceneDocumentV1): string {
 
 /** The one module that writes project files. Revisions live in memory, seeded from mtime at first sight. */
 export function createStore(config: ServiceConfig): Store {
-  const revisions = new Map<string, number>();
+  const revisions = new Map<string, { revision: number; mtimeMs: number }>();
   const listeners = new Set<ChangedListener>();
   const queues = new Map<string, Promise<unknown>>();
 
   const emit = (project: string, id: string, revision: number): void => {
-    for (const listener of listeners) listener(project, id, revision);
+    for (const listener of listeners) {
+      // A failing subscriber must not fail a write that already succeeded.
+      try {
+        listener(project, id, revision);
+      } catch (error) {
+        console.error(`service store: changed listener failed for ${project}/${id}:`, error);
+      }
+    }
+  };
+
+  /** Temp file then rename: a crash or a concurrent listing never sees a half-written diagram. */
+  const replace = async (path: string, document: SceneDocumentV1): Promise<void> => {
+    const temp = `${path}.${process.pid}.tmp`;
+    await writeFile(temp, serialize(document), 'utf8');
+    await rename(temp, path);
   };
 
   /** One operation at a time per diagram, so compare and write cannot interleave. */
   const serial = <T>(key: string, run: () => Promise<T>): Promise<T> => {
     const next = (queues.get(key) ?? Promise.resolve()).then(run, run);
-    queues.set(key, next.catch(() => undefined));
+    const tail = next.catch(() => undefined);
+    queues.set(key, tail);
+    void tail.then(() => {
+      if (queues.get(key) === tail) queues.delete(key);
+    });
     return next;
   };
 
-  const revisionOf = async (key: string, path: string): Promise<number> => {
+  /** Current revision; a file changed outside the store (hand edit, CLI save) moves it forward and announces it. */
+  const revisionOf = async (project: string, id: string, path: string): Promise<number> => {
+    const key = `${project}/${id}`;
+    const { mtimeMs } = await stat(path);
     const known = revisions.get(key);
-    if (known !== undefined) return known;
-    const revision = Math.floor((await stat(path)).mtimeMs);
-    revisions.set(key, revision);
+    if (!known) {
+      revisions.set(key, { revision: Math.floor(mtimeMs), mtimeMs });
+      return Math.floor(mtimeMs);
+    }
+    if (known.mtimeMs === mtimeMs) return known.revision;
+    const revision = Math.max(known.revision + 1, Math.floor(mtimeMs));
+    revisions.set(key, { revision, mtimeMs });
+    emit(project, id, revision);
     return revision;
   };
 
@@ -57,19 +84,19 @@ export function createStore(config: ServiceConfig): Store {
 
   return {
     read: (project, id) => serial(`${project}/${id}`, async () => {
-      const { path } = await resolveDiagram(config, project, id);
-      return { document: await load(path), revision: await revisionOf(`${project}/${id}`, path) };
+      const { path } = await resolve(config, project, id);
+      return { document: await load(path), revision: await revisionOf(project, id, path) };
     }),
 
     write: (project, id, document, expectedRevision) => serial(`${project}/${id}`, async () => {
-      if (document.id !== id) throw new Error(`Document id "${document.id}" does not match diagram "${id}".`);
-      const key = `${project}/${id}`;
-      const { path } = await resolveDiagram(config, project, id);
-      const current = await revisionOf(key, path);
+      const valid = parseAgentDocument(document);
+      if (valid.id !== id) throw new Error(`Document id "${valid.id}" does not match diagram "${id}".`);
+      const { path } = await resolve(config, project, id);
+      const current = await revisionOf(project, id, path);
       if (current !== expectedRevision) return { status: 'stale', revision: current, document: await load(path) };
-      await writeFile(path, serialize(document), 'utf8');
+      await replace(path, valid);
       const revision = current + 1;
-      revisions.set(key, revision);
+      revisions.set(`${project}/${id}`, { revision, mtimeMs: (await stat(path)).mtimeMs });
       emit(project, id, revision);
       return { status: 'ok', revision };
     }),
@@ -80,13 +107,18 @@ export function createStore(config: ServiceConfig): Store {
       const slug = slugOf(name);
       for (let n = 1; ; n += 1) {
         const path = join(folder, `${n === 1 ? slug : `${slug}-${n}`}${DIAGRAM_SUFFIX}`);
+        // Written whole to a temp name, then linked into place: exclusive like 'wx', never half-written.
+        const temp = `${path}.${process.pid}.${randomUUID()}.tmp`;
+        await writeFile(temp, serialize(document), 'utf8');
         try {
-          await writeFile(path, serialize(document), { encoding: 'utf8', flag: 'wx' });
+          await link(temp, path);
         } catch (error) {
           if ((error as NodeJS.ErrnoException).code === 'EEXIST') continue;
           throw error;
+        } finally {
+          await unlink(temp);
         }
-        const revision = await revisionOf(`${project}/${document.id}`, path);
+        const revision = await revisionOf(project, document.id, path);
         emit(project, document.id, revision);
         return { id: document.id, project, revision, document };
       }

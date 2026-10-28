@@ -1,5 +1,5 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import type { ProjectConfig, ServiceConfig } from './config.js';
 
 export const DIAGRAM_SUFFIX = '.openflow.json';
@@ -12,7 +12,6 @@ export interface DiagramSummary {
 
 export interface ProjectListing {
   readonly name: string;
-  readonly path: string;
   readonly diagrams: readonly DiagramSummary[];
 }
 
@@ -52,6 +51,10 @@ async function headOf(path: string, mtimeMs: number, size: number): Promise<Cach
 
 async function scan(project: ProjectConfig): Promise<Entry[]> {
   const files = (await readdir(project.path)).filter((file) => file.endsWith(DIAGRAM_SUFFIX)).sort();
+  const live = new Set(files.map((file) => join(project.path, file)));
+  for (const path of cache.keys()) {
+    if (dirname(path) === project.path && !live.has(path)) cache.delete(path);
+  }
   const entries: Entry[] = [];
   for (const file of files) {
     const path = join(project.path, file);
@@ -74,16 +77,21 @@ export async function listDiagrams(config: ServiceConfig): Promise<ProjectListin
   return Promise.all(config.projects.map(async (project) => {
     const seen = new Set<string>();
     const diagrams: DiagramSummary[] = [];
-    for (const { id, title, modifiedAt } of await scan(project)) {
+    // A folder removed after the config loaded lists as empty; it must not hide the other projects.
+    const entries = await scan(project).catch((error: NodeJS.ErrnoException) => {
+      if (error.code === 'ENOENT') return [];
+      throw error;
+    });
+    for (const { id, title, modifiedAt } of entries) {
       if (seen.has(id)) continue;
       seen.add(id);
       diagrams.push({ id, title, modifiedAt });
     }
-    return { name: project.name, path: project.path, diagrams };
+    return { name: project.name, diagrams };
   }));
 }
 
-export async function resolveDiagram(config: ServiceConfig, projectName: string, id: string): Promise<ResolvedDiagram> {
+export async function resolve(config: ServiceConfig, projectName: string, id: string): Promise<ResolvedDiagram> {
   const project = projectNamed(config, projectName);
   const [first, second] = (await scan(project)).filter((entry) => entry.id === id);
   if (!first) throw new Error(`No diagram "${id}" in project "${projectName}".`);
