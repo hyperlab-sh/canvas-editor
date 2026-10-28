@@ -15,7 +15,7 @@ export async function tempConfig(...names: string[]): Promise<ServiceConfig> {
     await mkdir(path);
     projects.push({ name, path });
   }
-  return { port: 0, projects, file: join(root, 'service.json') };
+  return { port: 0, projects };
 }
 
 export async function putFile(path: string, value: unknown): Promise<void> {

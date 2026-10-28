@@ -2,7 +2,7 @@ import { mkdir, open, readFile, stat } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 
-export const DEFAULT_PORT = 43120;
+const DEFAULT_PORT = 43120;
 const PROJECT_NAME = /^[a-z0-9][a-z0-9._-]*$/;
 
 export interface ProjectConfig {
@@ -13,11 +13,9 @@ export interface ProjectConfig {
 export interface ServiceConfig {
   readonly port: number;
   readonly projects: readonly ProjectConfig[];
-  /** The file the config was read from. */
-  readonly file: string;
 }
 
-export function configPath(): string {
+function configPath(): string {
   return process.env.OPENFLOWKIT_SERVICE_CONFIG || join(homedir(), '.config', 'openflowkit', 'service.json');
 }
 
@@ -60,11 +58,12 @@ export async function loadConfig(): Promise<ServiceConfig> {
     throw new Error(`Service config ${file} is not valid JSON.`);
   }
   const { port, projects } = (raw ?? {}) as { port?: unknown; projects?: unknown };
-  if (typeof port !== 'number' || !Number.isInteger(port) || port < 0 || port > 65535) {
-    throw new Error(`Service config ${file}: "port" must be an integer from 0 to 65535.`);
+  if (typeof port !== 'number' || !Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error(`Service config ${file}: "port" must be an integer from 1 to 65535.`);
   }
   if (!Array.isArray(projects)) throw new Error(`Service config ${file}: "projects" must be a list of { name, path }.`);
   const seen = new Set<string>();
+  const paths = new Map<string, string>();
   const parsed: ProjectConfig[] = [];
   for (const entry of projects as { name?: unknown; path?: unknown }[]) {
     const name = entry?.name;
@@ -78,7 +77,10 @@ export async function loadConfig(): Promise<ServiceConfig> {
     }
     const path = resolve(entry.path);
     if (!(await isDirectory(path))) throw new Error(`Service config ${file}: project "${name}" path ${path} is not a directory.`);
+    const other = paths.get(path);
+    if (other) throw new Error(`Service config ${file}: project "${name}" path ${path} is already used by project "${other}".`);
+    paths.set(path, name);
     parsed.push({ name, path });
   }
-  return { port, projects: parsed, file };
+  return { port, projects: parsed };
 }

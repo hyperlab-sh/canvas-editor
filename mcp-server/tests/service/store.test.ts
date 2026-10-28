@@ -1,6 +1,6 @@
-import { readFile, readdir, writeFile } from 'node:fs/promises';
+import { readFile, readdir, utimes, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { createAgentDocument } from '../../src/lib/agent.js';
 import { DocumentStore } from '../../src/lib/documentStore.js';
 import { listDiagrams } from '../../src/service/projects.js';
@@ -18,7 +18,7 @@ async function seeded(name = 'Seed') {
 
 describe('store.write', () => {
   it('writes the same bytes as DocumentStore.save', async () => {
-    const { config, folder, doc, store } = await seeded();
+    const { folder, doc, store } = await seeded();
     const edited = { ...doc, name: 'Edited ✓', metadata: { k: [1, 2, { z: null }] } };
     const { revision } = await store.read('a', doc.id);
     expect(await store.write('a', doc.id, edited, revision)).toMatchObject({ status: 'ok' });
@@ -27,7 +27,6 @@ describe('store.write', () => {
     const legacyPath = join(folder, '..', 'legacy.json');
     await legacy.save(doc.id, legacyPath);
     expect(await readFile(join(folder, 'seed.openflow.json'), 'utf8')).toBe(await readFile(legacyPath, 'utf8'));
-    expect(config.projects).toHaveLength(1);
   });
 
   it('increments the revision, emits changed, and read returns the new document', async () => {
@@ -70,6 +69,54 @@ describe('store.write', () => {
     const before = await readFile(file, 'utf8');
     await expect(store.write('a', doc.id, { ...doc, id: 'other' }, 0)).rejects.toThrow('does not match diagram');
     expect(await readFile(file, 'utf8')).toBe(before);
+  });
+});
+
+describe('store.write hardening', () => {
+  it('rejects a non-document and leaves the file byte-unchanged', async () => {
+    const { doc, file, store } = await seeded();
+    const { revision } = await store.read('a', doc.id);
+    const before = await readFile(file, 'utf8');
+    await expect(store.write('a', doc.id, { ...doc, pages: 'x' } as never, revision)).rejects.toThrow();
+    expect(await readFile(file, 'utf8')).toBe(before);
+    expect((await store.read('a', doc.id)).revision).toBe(revision);
+  });
+
+  it('survives a throwing listener and still calls the next one', async () => {
+    const { doc, store } = await seeded();
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const calls: number[] = [];
+    store.changed(() => { throw new Error('boom'); });
+    store.changed((_p, _i, revision) => calls.push(revision));
+    const { revision } = await store.read('a', doc.id);
+    expect(await store.write('a', doc.id, { ...doc, name: 'X' }, revision)).toEqual({ status: 'ok', revision: revision + 1 });
+    expect(calls).toEqual([revision + 1]);
+    expect(quiet).toHaveBeenCalled();
+    quiet.mockRestore();
+  });
+
+  it('answers stale with the hand-edited document after the file changed on disk', async () => {
+    const { doc, file, store } = await seeded();
+    const { revision } = await store.read('a', doc.id);
+    const events: number[] = [];
+    store.changed((_p, _i, r) => events.push(r));
+    await putFile(file, { ...doc, name: 'Hand edit' });
+    const later = new Date(Date.now() + 60_000);
+    await utimes(file, later, later);
+    const result = await store.write('a', doc.id, { ...doc, name: 'Tab' }, revision);
+    expect(result.status).toBe('stale');
+    expect(result.status === 'stale' && result.document.name).toBe('Hand edit');
+    expect(result.revision).toBeGreaterThan(revision);
+    expect(events).toEqual([result.revision]);
+    expect(JSON.parse(await readFile(file, 'utf8')).name).toBe('Hand edit');
+  });
+
+  it('leaves no temp file behind', async () => {
+    const { doc, folder, store } = await seeded();
+    const { revision } = await store.read('a', doc.id);
+    await store.write('a', doc.id, { ...doc, name: 'Y' }, revision);
+    await store.create('a', 'Z');
+    expect((await readdir(folder)).filter((f) => f.endsWith('.tmp'))).toEqual([]);
   });
 });
 
@@ -121,6 +168,6 @@ describe('store.read', () => {
   it('refuses a file that is not a document', async () => {
     const config = await tempConfig('a');
     await writeFile(join(config.projects[0].path, 'bad.openflow.json'), JSON.stringify({ id: 'bad', name: 'x' }));
-    await expect(createStore(config).read('a', 'bad')).rejects.toThrow();
+    await expect(createStore(config).read('a', 'bad')).rejects.toThrow(/format|schemaVersion/);
   });
 });
