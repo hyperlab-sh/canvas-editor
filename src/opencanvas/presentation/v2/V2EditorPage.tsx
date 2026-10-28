@@ -434,13 +434,13 @@ export function V2EditorPage({ shared, repository }: { readonly shared?: V2Share
               architectureActions={architectureActions} map={map} repo={repo} repoSource={repoSource} repoPanel={repoPanel} repoReadable={repoReadable}
               repoDrawing={repoDrawing} backTo={backTo} backToMap={backToMap} pinRef={pinRef} pinnable={pinnable} shared={shared}
               exportPanel={exportPanel} commit={commit} leaveStart={leaveStart} setTool={setTool} pickShape={pickShape} pickConnector={pickConnector}
-              gestureApiRef={gestureApiRef} input={input} fitAll={fitAll} />
+              gestureApiRef={gestureApiRef} input={input} fitAll={fitAll} {...(onService ? { holder: { label: serviceSync.holder, onDisconnect: () => { void serviceSync.disconnect(); } } } : {})} />
             <V2EditorCanvas
               comments={<V2CommentsHost session={session} page={page} sectionRef={sectionRef} hostRef={hostRef} cameraRef={camera.cameraRef} tool={tool}
                 readOnly={docReadOnly} hidden={map.active} preferences={preferences}
                 onSent={(documentId, commentId) => threads.markSent(documentId, [commentId])}
                 request={threads.request} onOpenThreadChange={threads.onOpenThreadChange} unread={threads.unread}
-                bridgeConnected={agents.agentBridge.status === 'connected'} />}
+                bridgeConnected={agents.commentsReach} onNoHolder={threads.noHolder} />}
               agentCursor={<AgentCursor ref={agents.presence.cursorRef} name={agents.agentShown} working={agents.agentBridge.activity?.doing === 'drawing'} data-testid="v2-agent-cursor" />}
               page={page} viewPage={viewPage ?? page} hostRef={hostRef} sectionRef={sectionRef} pageRef={pageRef} selectionRef={selectionRef}
               selectedConnectorIdsRef={selectedConnectorIdsRef} toolRef={toolRef} spacePanRef={spacePanRef} toolConfigRef={toolConfigRef}

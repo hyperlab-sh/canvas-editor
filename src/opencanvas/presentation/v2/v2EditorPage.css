@@ -1580,3 +1580,5 @@
 }
 .ofk-comment-pin[data-dragging] { cursor: grabbing; transform: scale(1.1); transition: none; touch-action: none; }
 .ofk-comment-pin { touch-action: none; }
+.ofk-v2-holder { display: inline-flex; align-items: center; gap: 2px; min-width: 0; }
+.ofk-v2-holder-label { min-width: 0; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-inline: 6px; font-size: 13px; color: var(--ofk-secondary); }

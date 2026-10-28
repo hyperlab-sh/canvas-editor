@@ -9,13 +9,23 @@ export function setThreadEventSender(next: typeof send): void {
   send = next;
 }
 
-/** Pushes a new human comment to the paired agent session; resolves false (never throws) when not connected or refused. */
-export async function postThreadEvent(event: BridgeThreadEvent): Promise<boolean> {
-  if (!send) return false;
+/** A sender throws this when the service has no session holding the diagram, so the editor can say so. */
+export class NoHolderError extends Error {}
+
+export type ThreadDelivery = 'sent' | 'no-holder' | 'failed';
+
+/** Pushes a new human comment to the paired agent session; never throws, and says whether nobody holds the diagram. */
+export async function deliverThreadEvent(event: BridgeThreadEvent): Promise<ThreadDelivery> {
+  if (!send) return 'failed';
   try {
     await send(event);
-    return true;
-  } catch {
-    return false;
+    return 'sent';
+  } catch (error) {
+    return error instanceof NoHolderError ? 'no-holder' : 'failed';
   }
+}
+
+/** Pushes a new human comment to the paired agent session; resolves false (never throws) when not connected or refused. */
+export async function postThreadEvent(event: BridgeThreadEvent): Promise<boolean> {
+  return (await deliverThreadEvent(event)) === 'sent';
 }

@@ -165,4 +165,39 @@ describe('createServiceRepository', () => {
     await expect(repository.loadDocument('x')).rejects.toThrow(V2StorageUnavailableError);
     await expect(repository.listDocuments()).rejects.toThrow(/not reachable/);
   });
+  describe('comments and the holder', () => {
+    const EVENT = {
+      type: 'thread', documentId: '', pageId: 'p', threadId: 't', threadNumber: 1, commentId: 'm', nodeId: null, nodeLabel: null,
+      kind: 'new_thread', author: 'Ana', body: 'hi',
+    } as const;
+    const holdBy = async (id: string) => {
+      const { sessionId } = await (await fetch(`${service.url}/sessions`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ client: 'Claude Code', cwd: root, pid: process.pid }) })).json() as { sessionId: string };
+      await fetch(`${service.url}/sessions/${sessionId}/bindings`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ project: 'alpha', id }) });
+      return sessionId;
+    };
+
+    it('delivers a comment to the holder, and says false when nobody holds the diagram', async () => {
+      const { id } = await post('/projects/alpha/diagrams', { name: 'Flow' });
+      const repository = createServiceRepository('alpha', service.url);
+      expect(await repository.postComment(id, { ...EVENT, documentId: id })).toBe(false);
+      const sessionId = await holdBy(id);
+      expect(await repository.postComment(id, { ...EVENT, documentId: id })).toBe(true);
+      const parked = await (await fetch(`${service.url}/sessions/${sessionId}/events?wait=1`)).json() as { events: { commentId: string }[] };
+      expect(parked.events.map((event) => event.commentId)).toEqual(['m']);
+    });
+
+    it('disconnect releases the holder', async () => {
+      const { id } = await post('/projects/alpha/diagrams', { name: 'Flow' });
+      const repository = createServiceRepository('alpha', service.url);
+      await holdBy(id);
+      expect((await repository.fetchCurrent(id)).holder).toMatch(/^Claude Code · /);
+      await repository.disconnect(id);
+      expect((await repository.fetchCurrent(id)).holder).toBeNull();
+    });
+
+    it('a comment for another diagram is refused loudly, not read as "nobody holds it"', async () => {
+      const { id } = await post('/projects/alpha/diagrams', { name: 'Flow' });
+      await expect(createServiceRepository('alpha', service.url).postComment(id, { ...EVENT, documentId: 'other' })).rejects.toBeInstanceOf(V2StorageError);
+    });
+  });
 });

@@ -5,7 +5,7 @@ import {
 } from '../../domain/threads/threads';
 import type { Point2d } from '../../domain/geometry/types';
 import type { SceneThread, SceneDocumentV1, ScenePage } from '../../domain/document/types';
-import { postThreadEvent } from '../../../agent/bridge/threadEvent';
+import { deliverThreadEvent } from '../../../agent/bridge/threadEvent';
 import type { BridgeThreadEvent } from '../../../agent/bridge/protocol';
 import type { PixiRendererHost } from '../../infrastructure/pixi/PixiRendererHost';
 import { Avatar, CommentComposer, ThreadPopover } from './V2CommentsParts';
@@ -323,13 +323,14 @@ type HostInput = Omit<Props, 'document' | 'liveComments' | 'onLiveMessage' | 'up
   readonly session: { readonly document: SceneDocumentV1 | null; readonly updateThreads: Props['updateThreads'] };
   readonly cameraRef: RefObject<CanvasCamera>;
   readonly preferences: { readonly liveComments: boolean };
+  readonly onNoHolder: () => void;
 };
 
 /** V2Comments wired to the editor's session, preferences and the agent bridge's comment poster. */
-export function V2CommentsHost({ session, preferences, onSent, ...rest }: HostInput): React.JSX.Element | null {
+export function V2CommentsHost({ session, preferences, onSent, onNoHolder, ...rest }: HostInput): React.JSX.Element | null {
   return (
     <V2Comments {...rest} document={session.document} updateThreads={session.updateThreads}
       liveComments={preferences.liveComments}
-      onLiveMessage={(event) => { void postThreadEvent(event).then((ok) => { if (ok) onSent(event.documentId, event.commentId); }); }} />
+      onLiveMessage={(event) => { void deliverThreadEvent(event).then((outcome) => { if (outcome === 'sent') onSent(event.documentId, event.commentId); else if (outcome === 'no-holder') onNoHolder(); }); }} />
   );
 }

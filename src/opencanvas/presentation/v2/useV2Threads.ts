@@ -8,7 +8,7 @@ import type { useDocumentSession } from '../../application/session/useDocumentSe
 import type { useV2MapMode } from './map/useV2MapMode';
 import type { ToastItem } from '../design-system';
 import type { OpenThreadRequest } from './V2Comments';
-import { postThreadEvent } from '../../../agent/bridge/threadEvent';
+import { deliverThreadEvent } from '../../../agent/bridge/threadEvent';
 import type { useV2Camera } from './useV2Camera';
 import type { useV2Panels } from './useV2Panels';
 import type { V2Tool } from './v2ToolCatalog';
@@ -34,6 +34,9 @@ interface ThreadsInput {
   readonly pushToast: (toast: ToastItem) => void;
   readonly readOnly: boolean;
 }
+
+/** What a comment meets on a service diagram that no session holds. The same id, so a run of them is one toast. */
+export const noHolderToast: ToastItem = { id: 'threads-sent', tone: 'danger', title: 'No session holds this diagram' };
 
 /** Frames to wait after the panel opens: the free canvas is measured beside it, and must not be measured before it has its width. */
 const SETTLE_FRAMES = 2;
@@ -80,15 +83,19 @@ export function useV2Threads(input: ThreadsInput) {
   const sendToAgent = useCallback(async () => {
     const batch = unsentRef.current;
     const delivered: string[] = [];
+    let refusal: 'no-holder' | 'failed' = 'failed';
     for (const event of batch) {
-      if (!(await postThreadEvent(event))) break;
+      const outcome = await deliverThreadEvent(event);
+      if (outcome !== 'sent') { refusal = outcome; break; }
       delivered.push(event.commentId);
     }
     if (batch[0] && delivered.length > 0) markSent(batch[0].documentId, delivered);
     const noun = (count: number) => `${count} ${count === 1 ? 'comment' : 'comments'}`;
     pushToast(delivered.length === batch.length
       ? { id: 'threads-sent', tone: 'success', title: `Sent ${noun(batch.length)} to the agent` }
-      : { id: 'threads-sent', tone: 'danger', title: 'Couldn’t reach the agent', description: `${noun(batch.length - delivered.length)} not sent. Check the agent connection.` });
+      : refusal === 'no-holder'
+        ? { ...noHolderToast, description: `${noun(batch.length - delivered.length)} not sent.` }
+        : { id: 'threads-sent', tone: 'danger', title: 'Couldn’t reach the agent', description: `${noun(batch.length - delivered.length)} not sent. Check the agent connection.` });
   }, [markSent, pushToast]);
   const total = useMemo(() => (document ? collectThreads(document).length : 0), [document]);
   const openCount = useMemo(() => (document ? openThreadTotal(document) : 0), [document]);
@@ -195,7 +202,7 @@ export function useV2Threads(input: ThreadsInput) {
   }, [updatePreferences]);
 
   return {
-    query, setQuery, filters, setFilters, entries, total, openCount, unread, unsentCount: unsent.length, sendToAgent, markSent,
+    query, setQuery, filters, setFilters, entries, total, openCount, unread, unsentCount: unsent.length, sendToAgent, markSent, noHolder: () => pushToast(noHolderToast),
     openThreadId, onOpenThreadChange: setOpenThreadId, request,
     quiet, toggleFromRail, select, markRead, markUnread, toggleResolved, remove, copyLink,
   };
