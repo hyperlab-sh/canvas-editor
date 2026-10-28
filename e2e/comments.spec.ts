@@ -244,6 +244,23 @@ async function bridge() {
   };
 }
 
+test('on /d/ there is no holder badge, and Send to agent still reaches the bridge', async ({ page }) => {
+  const fake = await bridge();
+  try {
+    const { centre } = await start(page, { agentBridgeEnabled: true, bridgePort: fake.port, bridgeToken: '' });
+    await expect(page.locator('[data-bridge-status="connected"]').first()).toBeVisible({ timeout: 30_000 });
+    await comment(page, centre, 'Over the bridge');
+    const send = page.getByTestId('v2-threads-send');
+    await expect(send).toHaveText('Send 1 comment to agent');
+    await send.click();
+    await expect.poll(() => fake.events.length).toBe(1);
+    expect(fake.events[0]).toMatchObject({ kind: 'new_thread', body: 'Over the bridge' });
+    await expect(page.getByTestId('v2-holder')).toHaveCount(0);
+  } finally {
+    await fake.close();
+  }
+});
+
 test('live comments: each new human message is posted to the agent, and the agent answers in the thread', async ({ page }) => {
   const fake = await bridge();
   try {

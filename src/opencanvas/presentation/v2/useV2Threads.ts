@@ -36,7 +36,7 @@ interface ThreadsInput {
 }
 
 /** What a comment meets on a service diagram that no session holds. The same id, so a run of them is one toast. */
-export const noHolderToast: ToastItem = { id: 'threads-sent', tone: 'danger', title: 'No session holds this diagram' };
+const noHolderToast: ToastItem = { id: 'threads-sent', tone: 'danger', title: 'No session holds this diagram' };
 
 /** Frames to wait after the panel opens: the free canvas is measured beside it, and must not be measured before it has its width. */
 const SETTLE_FRAMES = 2;
