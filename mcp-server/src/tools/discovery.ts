@@ -2,6 +2,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { AGENT_OPS, FRAME_PRESETS, WIDGET_KINDS } from '../lib/agent.js';
 import { clientHasChannel } from '../lib/card.js';
 import { CONNECT_URL, type LiveBridge } from '../lib/bridge.js';
+import type { ServiceClient } from '../lib/serviceClient.js';
 import { MCP_SERVER_NAME, MCP_SERVER_VERSION } from '../lib/version.js';
 
 // Shape words an agent can write inside `[...]` attributes (grammar §5.1).
@@ -40,9 +41,11 @@ const STATIC_TOOLS = [
   'openflow_open',
   'openflow_save',
   'whoami',
+  'connect_diagram',
+  'disconnect_diagram',
 ];
 
-export function registerDiscoveryTools(server: McpServer, bridge: Pick<LiveBridge, 'status' | 'retryPort'>): void {
+export function registerDiscoveryTools(server: McpServer, bridge: Pick<LiveBridge, 'status' | 'retryPort'>, service?: Pick<ServiceClient, 'status'>): void {
   server.registerTool(
     'list_diagram_node_types',
     {
@@ -85,7 +88,8 @@ export function registerDiscoveryTools(server: McpServer, bridge: Pick<LiveBridg
                 localFirst: true,
                 bridge: bridge.status(),
                 channel: clientHasChannel(server.server.getClientCapabilities()),
-                modes: [`live-editor (the user pairs a tab at ${CONNECT_URL})`, 'file (.openflow.json)'],
+                ...(service ? { service: await service.status() } : {}),
+                modes: [`live-editor (the user pairs a tab at ${CONNECT_URL})`, 'file (.openflow.json)', ...(service ? ['service (diagrams in the projects of the local service)'] : [])],
                 tools: [...STATIC_TOOLS, ...AGENT_OPS.map(({ name }) => name)].sort(),
                 resources: [
                   'openflowkit://docs/grammar',
