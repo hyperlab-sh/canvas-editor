@@ -1,6 +1,7 @@
 import type { SceneDocumentV1 } from '@/opencanvas/domain/document/types';
 import { V2DocumentInvalidError, V2StorageError, V2StorageUnavailableError } from '../v2/v2Errors';
-import type { V2DocumentRecord, V2DocumentRepository, V2DocumentSummary, LoadV2DocumentResult } from '../v2/v2Repository';
+import type { ServiceRepository } from '../v2/serviceSync';
+import type { V2DocumentRecord, V2DocumentSummary, LoadV2DocumentResult } from '../v2/v2Repository';
 import { SERVICE_ORIGIN } from './origin';
 
 interface ServiceDiagram { readonly id: string; readonly title: string; readonly modifiedAt: string }
@@ -15,22 +16,6 @@ async function failure(response: Response, action: string): Promise<V2StorageErr
   const body = await response.json().catch(() => null) as { error?: unknown } | null;
   const detail = typeof body?.error === 'string' ? body.error : `it answered ${response.status}`;
   return new V2StorageError(`The local service could not ${action} the diagram: ${detail}`);
-}
-
-/** What the editor's live sync needs beyond storage: the service's current copy, its event stream, and re-pairing revisions. */
-export interface ServiceRepository extends V2DocumentRepository {
-  readonly project: string;
-  /** The service's copy now, and who holds the diagram. Does not change what this repository expects on the next save. */
-  readonly fetchCurrent: (id: string) => Promise<{ readonly document: SceneDocumentV1; readonly revision: number; readonly holder: string | null }>;
-  /** The service revision this repository last loaded or saved for the diagram. */
-  readonly serviceRevision: (id: string) => number | undefined;
-  /** The editor adopted the service's copy at `service` as its own revision `editor`: the next save expects it. */
-  readonly adopt: (id: string, editor: number, service: number) => void;
-  readonly eventsUrl: (id: string) => string;
-}
-
-export function isServiceRepository(repository: V2DocumentRepository): repository is ServiceRepository {
-  return 'eventsUrl' in repository;
 }
 
 /**

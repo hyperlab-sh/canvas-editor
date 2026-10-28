@@ -61,11 +61,14 @@ test('the tab bridge is off on a service diagram and on for a local one', async 
   await page.addInitScript((port) => {
     localStorage.setItem('openflowkit-v2-preferences', JSON.stringify({ agentBridgeEnabled: true, bridgePort: port, bridgeToken: '' }));
   }, deadPort);
+  const streamOpened = page.waitForRequest((request) => request.url().includes('/events?'));
   await page.goto(`${url}/#/p/demo/${diagramId}`);
   await expect(page.locator('[data-testid="v2-canvas"]')).toBeVisible();
   await expect.poll(() => drawn(page)).not.toBeNull();
-  // Everything the page started has settled, a bridge probe included.
-  await page.waitForLoadState('networkidle');
+  // The page has started everything it starts once the diagram is on screen and its event stream is open
+  // (that stream never ends, so the network never goes idle).
+  await streamOpened;
+  await page.waitForLoadState('load');
   expect(touched).toEqual([]);
 
   // The same preferences on a local document do reach for the bridge: the check above can fail.
