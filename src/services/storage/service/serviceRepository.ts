@@ -1,4 +1,3 @@
-import { migrateSceneDocument } from '@/opencanvas/domain/document/migration';
 import type { SceneDocumentV1 } from '@/opencanvas/domain/document/types';
 import { V2DocumentInvalidError, V2StorageError, V2StorageUnavailableError } from '../v2/v2Errors';
 import type { V2DocumentRecord, V2DocumentRepository, V2DocumentSummary, LoadV2DocumentResult } from '../v2/v2Repository';
@@ -45,19 +44,18 @@ export function createServiceRepository(project: string, origin: string = SERVIC
       if (!response.ok) throw await failure(response, 'open');
       const { document, revision } = await response.json() as { document: SceneDocumentV1; revision: number };
       known.set(id, { editor: revision, service: revision });
-      const migrated = migrateSceneDocument(document);
-      if (migrated.success !== false) return { status: 'ok', record: record(id, migrated.document, revision) };
-      if (migrated.reason === 'newer-schema') {
-        return { status: 'read-only', record: record(id, document, revision), preserved: migrated.preserved, schemaVersion: migrated.schemaVersion };
-      }
-      return { status: 'corrupt', issues: migrated.issues };
+      // The service parses every file before it answers, so what arrives is a current document.
+      return { status: 'ok', record: record(id, document, revision) };
     },
 
     saveDocument: async (id, document, revision, expectedRevision = revision - 1) => {
       const seen = known.get(id);
-      const expected = seen?.editor === expectedRevision ? seen.service : expectedRevision;
+      // The editor's count and the service's differ; with no pairing for this revision there is nothing safe to send.
+      if (!seen || seen.editor !== expectedRevision) {
+        throw new V2StorageError('Open the diagram again before saving it: this tab no longer knows which revision the service holds.');
+      }
       const response = await send(diagramUrl(id), {
-        method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ document, revision: expected }),
+        method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ document, revision: seen.service }),
       });
       if (response.status === 409) {
         const { revision: storedRevision } = await response.json() as { revision: number };

@@ -37,9 +37,10 @@ export function V2SharedPage(): React.JSX.Element {
     navigate(`/d/${copy.id}`);
     track('shared_copied');
   }, [document, navigate]);
+  const repository = useMemo(() => createV2Repository(window.indexedDB), []);
   const shared = useMemo(() => document ? { document, onEdit: edit } : undefined, [document, edit]);
 
-  if (shared) return <Suspense fallback={<BrandLoader screen label="Opening diagram" />}><Editor shared={shared} /></Suspense>;
+  if (shared) return <Suspense fallback={<BrandLoader screen label="Opening diagram" />}><Editor shared={shared} repository={repository} /></Suspense>;
   const home = (primary: boolean) => <Button variant={primary ? 'primary' : 'secondary'} onClick={() => navigate('/home')}>Back to home</Button>;
   return (
     <V2StateShell testId="v2-shared-state">
