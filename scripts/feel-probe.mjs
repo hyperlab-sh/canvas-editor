@@ -6,7 +6,7 @@
 //   3. zoom-anchor drift in px after 20 ctrlKey pinch steps at a fixed anchor,
 //   4. wheel deltaMode 0/1 pan response (observation for slice 1.2).
 // Prints a table, writes JSON to docs/evidence/feel/<timestamp>.json.
-// Targets live in STATE.md. A missed target is a finding, not a failure:
+// Targets live in STATUS.md. A missed target is a finding, not a failure:
 // this script always exits 0 unless the harness itself breaks.
 //
 // Usage: start the app (npm run dev -- --host 127.0.0.1 --port 4191),

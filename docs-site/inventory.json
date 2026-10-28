@@ -23,7 +23,7 @@
       "name": "Workspace rail",
       "status": "shipped",
       "evidence": "src/opencanvas/presentation/v2/V2Workspace.tsx",
-      "notes": "Four modes: AI assistant, Architecture model, Diagram as code, Connect agent. Inspect opens with Alt+I.",
+      "notes": "Five modes: AI assistant, Threads (with the open count), Architecture model, Diagram as code, Connect agent. Inspect opens with Alt+I.",
       "page": "quick-start"
     },
     {
@@ -981,7 +981,11 @@
         "screenshot",
         "fit_view",
         "get_document",
-        "list_pages"
+        "list_pages",
+        "list_threads",
+        "reply_to_thread",
+        "resolve_thread",
+        "start_thread"
       ]
     },
     {
@@ -1147,6 +1151,17 @@
         "Frame",
         "Sticky note",
         "Insert: media, charts, frames, wireframe"
+      ]
+    },
+    {
+      "id": "comments",
+      "name": "Comments for your agent",
+      "status": "shipped",
+      "evidence": "src/opencanvas/domain/threads/threads.ts",
+      "notes": "C pins a thread to a node or a point; the agent reads threads with list_threads (filter by threadId, or unanswered for the ones waiting on it) and answers with reply_to_thread, resolve_thread and start_thread. Not in undo, the DSL or exports; share links drop them. The Threads panel (C or the rail) lists every thread: search, Show resolved, Unanswered only, per-browser unread, Copy link and ?thread= deep links. Live comments push new comments to a Claude Code session started with the channel flag.",
+      "page": "connect-your-agent",
+      "shortcuts": [
+        "Comment"
       ]
     },
     {

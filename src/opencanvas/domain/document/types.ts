@@ -83,6 +83,43 @@ export interface SceneLayer {
   readonly locked: boolean;
 }
 
+export interface SceneCommentAuthor {
+  readonly kind: 'human' | 'agent';
+  readonly name: string;
+}
+
+export interface SceneComment {
+  readonly id: string;
+  readonly author: SceneCommentAuthor;
+  /** Plain text, at most COMMENT_BODY_MAX characters. */
+  readonly body: string;
+  readonly createdAt: string;
+  readonly editedAt?: string;
+}
+
+/**
+ * Where a thread is pinned. `point` is the pin tip in page coordinates; with a `nodeId` it follows the node
+ * (`offset` from the node's world origin) and keeps the node's last position when the node is gone.
+ */
+export interface SceneThreadAnchor {
+  readonly nodeId: string | null;
+  readonly offset: Point2d | null;
+  readonly point: Point2d;
+}
+
+/** A discussion pinned on a page. Never part of undo history, the DSL or exports. */
+export interface SceneThread {
+  readonly id: string;
+  /** Positive, unique within the document: the "#3" people say aloud. */
+  readonly number: number;
+  readonly anchor: SceneThreadAnchor;
+  readonly resolved: boolean;
+  /** At least one; the first opens the thread. */
+  readonly comments: readonly SceneComment[];
+}
+
+export const COMMENT_BODY_MAX = 4000;
+
 export interface ScenePage {
   readonly id: string;
   readonly name: string;
@@ -92,6 +129,7 @@ export interface ScenePage {
   readonly connectors: readonly SceneConnector[];
   readonly metadata: JsonObject;
   readonly extensions: JsonObject;
+  readonly threads?: readonly SceneThread[];
 }
 
 export interface SceneDocumentV1 {

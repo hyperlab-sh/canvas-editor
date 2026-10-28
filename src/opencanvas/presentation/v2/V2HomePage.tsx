@@ -5,6 +5,7 @@ import type { HomeNotice } from './V2LegacyRoutes';
 import { Button, EmptyState, ErrorState, Icon, SystemRoot, ToastRegion, withToast, type ToastItem } from '../design-system';
 import { CommandPalette } from '../design-system/CommandPalette';
 import { createV2Repository, type V2DocumentSummary, type V2Thumbnail } from '../../../services/storage/v2/v2Repository';
+import { listServiceDocuments } from '../../../services/storage/service/serviceRepository';
 import { describeStorageFailure } from '../../../services/storage/v2/v2Errors';
 import { plainImportFailure } from '../../domain/document/legacyWorkspace';
 import { readV1ImportMarker, runV1Import } from '../../../services/storage/v2/v1Import';
@@ -22,6 +23,8 @@ import { arrange, copyName, gridStep, parseView, selectRange, toggleId, useHomeS
 import { SORTS, STARTS, VIEWS, plural, typing, viewLink } from './homeConfig';
 import { buildHomeCommands } from './homeCommands';
 import { downloadAllDiagrams, importHomeFiles, type HomeTransfer } from './homeTransfer';
+import { renameLocalDiagram, renameServiceCard } from './homeActions';
+import { HomeProjects } from './V2HomeProjects';
 import { V2HomeSidebar } from './V2HomeSidebar';
 import { V2HomeHeader } from './V2HomeHeader';
 import { HomeDeleteDialog, HomeDropOverlay, HomeKeysDialog, HomeSelectionBar } from './V2HomeOverlays';
@@ -41,6 +44,8 @@ export function V2HomePage(): React.JSX.Element {
   const view = parseView(params.get('view'));
   const repository = useMemo(() => createV2Repository(window.indexedDB), []);
   const [documents, setDocuments] = useState<readonly V2DocumentSummary[] | null>(null);
+  // Diagrams kept by the local service, when one answers; null otherwise and Home shows nothing of it.
+  const [serviceDocuments, setServiceDocuments] = useState<readonly V2DocumentSummary[] | null>(null);
   const [archive, setArchive] = useState<readonly V2DocumentSummary[] | null>(null);
   const [thumbnails, setThumbnails] = useState<ReadonlyMap<string, V2Thumbnail | null>>(new Map());
   const [thumbnailsListed, setThumbnailsListed] = useState(false);
@@ -69,7 +74,7 @@ export function V2HomePage(): React.JSX.Element {
   useEffect(() => {
     if (location.state) navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
   }, [location.state, location.pathname, location.search, navigate]);
-  const [renaming, setRenaming] = useState<{ id: string; draft: string } | null>(null);
+  const [renaming, setRenaming] = useState<{ id: string; draft: string; project?: string } | null>(null);
   /** Deleting for good always asks first. */
   const [deleting, setDeleting] = useState<readonly V2DocumentSummary[] | null>(null);
   const [query, setQuery] = useState('');
@@ -93,6 +98,8 @@ export function V2HomePage(): React.JSX.Element {
     repository.listDocuments().then((listed) => { setListError(null); setDocuments(listed); },
       (error: unknown) => setListError(describeStorageFailure(error)));
     repository.listArchive().then(setArchive, () => setArchive([]));
+    // No service, or one that answers badly, is not an error: there is just no Projects section.
+    listServiceDocuments().then(setServiceDocuments, () => setServiceDocuments(null));
     // A preview that fails to load is a placeholder, never an error.
     repository.listThumbnails().then((listed) => { setThumbnails(listed); setThumbnailsListed(true); }, () => undefined);
   }, [repository]);
@@ -136,6 +143,10 @@ export function V2HomePage(): React.JSX.Element {
     if (view === 'archive') return archive ? arrange(archive, { view: 'recents', starred: [], query, sort: 'edited' }) : null;
     return documents ? arrange(documents, { view, starred: home.starred, query, sort: home.sort }) : null;
   }, [view, archive, documents, home.starred, home.sort, query]);
+  const serviceShown = useMemo(() => {
+    const matching = view === 'recents' && serviceDocuments ? arrange(serviceDocuments, { view, starred: [], query, sort: home.sort }) : [];
+    return matching.length ? matching : null;
+  }, [view, serviceDocuments, query, home.sort]);
   const shownIds = useMemo(() => (shown ?? []).map(({ id }) => id), [shown]);
   const byId = useMemo(() => new Map([...(documents ?? []), ...(archive ?? [])].map((summary) => [summary.id, summary])), [documents, archive]);
   const starredDocs = (documents ?? []).filter(({ id }) => home.starred.includes(id));
@@ -151,28 +162,23 @@ export function V2HomePage(): React.JSX.Element {
 
   async function commitRename(): Promise<void> {
     if (!renaming || renameCancelled.current) return;
-    const { id, draft } = renaming;
+    const { id, draft, project } = renaming;
     const name = draft.trim();
     setRenaming(null);
     try {
-      const loaded = await repository.loadDocument(id);
-      if (loaded.status !== 'ok') {
-        setProblem('This diagram can only be renamed after it opens cleanly. Open it first.');
-      } else if (name && loaded.record.document.name !== name) {
-        const saved = await repository.saveDocument(id, { ...loaded.record.document, name }, loaded.record.revision + 1);
-        if (saved.status !== 'saved') setProblem('That diagram changed in another tab. Reload and try again.');
-      }
+      const problem = project === undefined ? await renameLocalDiagram(repository, id, name) : await renameServiceCard(serviceDocuments, project, id, name);
+      if (problem) setProblem(problem);
     } catch (error) {
       fail(error);
     }
     refresh();
     focusAfter(id);
   }
-  const startRename = (id: string) => {
-    const summary = byId.get(id);
+  const startRename = (id: string, project?: string) => {
+    const summary = project === undefined ? byId.get(id) : serviceShown?.find((other) => other.id === id && other.project === project);
     if (!summary || view === 'archive') return;
     renameCancelled.current = false;
-    setRenaming({ id, draft: summary.name });
+    setRenaming({ id, draft: summary.name, project });
   };
 
   async function duplicate(summary: V2DocumentSummary): Promise<void> {
@@ -294,7 +300,7 @@ export function V2HomePage(): React.JSX.Element {
   });
 
   /** Arrows walk the cards; Space selects, F2 renames, S stars, Delete archives — on the focused card or the selection. */
-  const onGridKey = (event: ReactKeyboardEvent<HTMLUListElement>) => {
+  const onGridKey = (event: ReactKeyboardEvent<HTMLUListElement>, project?: string) => {
     const target = event.target as HTMLElement;
     if (!target.classList.contains('ofk-home-card-hit') || event.metaKey || event.ctrlKey || event.altKey) return;
     const hits = [...event.currentTarget.querySelectorAll<HTMLElement>('.ofk-home-card-hit')];
@@ -306,13 +312,17 @@ export function V2HomePage(): React.JSX.Element {
     if (next !== null) {
       event.preventDefault();
       hits[next]!.focus();
-      if (event.shiftKey && id && hits[next]!.dataset.docId) {
+      if (project === undefined && event.shiftKey && id && hits[next]!.dataset.docId) {
         anchor.current ??= id;
         setSelected(selectRange(shownIds, anchor.current, hits[next]!.dataset.docId!));
       }
       return;
     }
     if (!id) return;
+    if (project !== undefined) { // a service card can be renamed, nothing else
+      if (event.key === 'F2') { event.preventDefault(); startRename(id, project); }
+      return;
+    }
     if (event.key === ' ') { event.preventDefault(); select(id, event.shiftKey); }
     else if (event.key === 'F2') { event.preventDefault(); startRename(id); }
     else if ((event.key === 's' || event.key === 'S') && view !== 'archive') { event.preventDefault(); toggleStars(targets(id)); }
@@ -324,6 +334,11 @@ export function V2HomePage(): React.JSX.Element {
     }
   };
 
+  const serviceSection = serviceShown && (
+    <HomeProjects documents={serviceShown} layout={home.layout} appearance={appearance} renameRef={renameRef} renaming={renaming}
+      onGridKey={onGridKey} onStartRename={startRename} onDraft={setRenaming} onCommit={() => void commitRename()}
+      onCancel={(id) => { renameCancelled.current = true; setRenaming(null); focusAfter(id); }} />
+  );
   const needle = query.trim().toLowerCase();
   const templates = STARTER_TEMPLATES.filter(({ title }) => !needle || title.toLowerCase().includes(needle));
   const firstRun = view === 'recents' && documents !== null && documents.length === 0;
@@ -363,7 +378,7 @@ export function V2HomePage(): React.JSX.Element {
       {templates.length ? templateGrid : noMatch}
     </>;
   } else if (firstRun) {
-    content = <HomeFirstRun repoField={repoField} templateGrid={templateGrid} onStart={create} />;
+    content = <><HomeFirstRun repoField={repoField} templateGrid={templateGrid} onStart={create} />{serviceSection}</>;
   } else {
     const empty = view === 'starred' && documents && starredDocs.length === 0
       ? <EmptyState icon={<Icon icon={IconStar} />} title="Nothing starred yet."
@@ -414,6 +429,7 @@ export function V2HomePage(): React.JSX.Element {
           )) : [0, 1, 2, 3].map((index) => <SkeletonCard key={index} />)}
         </ul>
       ))}
+      {serviceSection}
     </>;
   }
 

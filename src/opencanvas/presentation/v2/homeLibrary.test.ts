@@ -1,9 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import type { V2DocumentSummary } from '../../../services/storage/v2/v2Repository';
-import { arrange, copyName, gridStep, importKind, parseView, readHomeState, selectRange, toggleId } from './homeLibrary';
+import { arrange, copyName, gridStep, groupByProject, importKind, parseView, readHomeState, selectRange, toggleId } from './homeLibrary';
 
 const doc = (id: string, name: string): V2DocumentSummary => ({ id, name, savedAt: '', pageCount: 1, pageIds: [], searchText: '' });
 const docs = [doc('a', 'Payments'), doc('b', 'auth flow'), doc('c', 'Diagram 10'), doc('d', 'Diagram 9')];
+
+describe('groupByProject', () => {
+  const inProject = (project: string, id: string): V2DocumentSummary => ({ ...doc(id, id), project });
+  it('groups service diagrams by project in name order, keeping each project\'s order, and skips local ones', () => {
+    const grouped = groupByProject([inProject('hyper', 'h1'), doc('local', 'Local'), inProject('Alpha', 'a1'), inProject('hyper', 'h2')]);
+    expect(grouped.map(({ project }) => project)).toEqual(['Alpha', 'hyper']);
+    expect(grouped[1]!.documents.map(({ id }) => id)).toEqual(['h1', 'h2']);
+    expect(groupByProject([doc('x', 'X')])).toEqual([]);
+  });
+});
 
 describe('homeLibrary', () => {
   it('reads stored state defensively', () => {

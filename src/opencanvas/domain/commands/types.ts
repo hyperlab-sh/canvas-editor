@@ -16,6 +16,15 @@ export interface SetDocumentNameCommand {
   readonly after: string;
 }
 
+/** A whole document in place of this one (an incoming copy from the service); threads are not part of the step: replaceSessionDocument sets them from the incoming copy (takeThreads). */
+export interface ReplaceDocumentCommand {
+  readonly kind: 'replace-document';
+  readonly id: string;
+  readonly label: string;
+  readonly before: SceneDocumentV1;
+  readonly after: SceneDocumentV1;
+}
+
 export interface SetNodeCommand extends CommandBase {
   readonly kind: 'set-node';
   readonly before: SceneNode;
@@ -110,6 +119,7 @@ export interface BatchDocumentCommand {
 
 export type DocumentCommand =
   | SetDocumentNameCommand
+  | ReplaceDocumentCommand
   | SetNodeCommand
   | SetLayerCommand
   | InsertLayerCommand

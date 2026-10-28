@@ -52,6 +52,28 @@ export interface BridgeHealth {
   readonly lastSeenMs: number | null;
 }
 
+/**
+ * A comment a person typed in the editor, pushed to the agent's session (`POST /event`, live comments only).
+ * Delivered to the session that owns the bridge port; best effort, never acknowledged.
+ */
+export interface BridgeThreadEvent {
+  readonly type: 'thread';
+  readonly documentId: string;
+  readonly pageId: string;
+  readonly threadId: string;
+  /** The thread's number in the document ("#3"). */
+  readonly threadNumber: number;
+  readonly commentId: string;
+  /** The node the thread is pinned to; null for a pin on the page. */
+  readonly nodeId: string | null;
+  /** That node's label; null when unpinned, unlabelled or deleted. */
+  readonly nodeLabel: string | null;
+  readonly kind: 'new_thread' | 'reply';
+  /** Display name of the person. */
+  readonly author: string;
+  readonly body: string;
+}
+
 export const bridgeTokenHeader = 'x-openflowkit-token';
 
 /** Browsers only: a present Origin must be the app or a local dev server. */
@@ -73,11 +95,12 @@ export interface BridgeUrls {
   readonly hello: string;
   readonly next: string;
   readonly result: string;
+  readonly event: string;
 }
 
 export function bridgeUrls(port: number, host = '127.0.0.1'): BridgeUrls {
   const base = `http://${host}:${port}`;
-  return { base, health: `${base}/health`, hello: `${base}/hello`, next: `${base}/next`, result: `${base}/result` };
+  return { base, health: `${base}/health`, hello: `${base}/hello`, next: `${base}/next`, result: `${base}/result`, event: `${base}/event` };
 }
 
 const isPageSummary = (value: unknown): value is BridgePageSummary => {
@@ -100,3 +123,14 @@ export function isBridgeRequest(value: unknown): value is BridgeRequest {
   return typeof record.id === 'string' && typeof record.op === 'string' && 'input' in record;
 }
 
+
+const nullableString = (value: unknown): boolean => value === null || typeof value === 'string';
+
+export function isBridgeThreadEvent(value: unknown): value is BridgeThreadEvent {
+  const event = value as Record<string, unknown> | null;
+  return !!event && event.type === 'thread'
+    && ['documentId', 'pageId', 'threadId', 'commentId', 'author', 'body'].every((key) => typeof event[key] === 'string')
+    && Number.isSafeInteger(event.threadNumber) && (event.threadNumber as number) > 0
+    && nullableString(event.nodeId) && nullableString(event.nodeLabel)
+    && (event.kind === 'new_thread' || event.kind === 'reply');
+}

@@ -8,8 +8,10 @@ import {
   createDocumentSession,
   forgetSessionHistory,
   redoSessionCommand,
+  replaceSessionDocument,
   StaleSessionRevisionError,
   undoSessionCommand,
+  updateSessionThreads,
 } from './session';
 import type { DocumentSession } from './types';
 
@@ -70,6 +72,20 @@ export function useDocumentSession(callbacks: DocumentSessionCallbacks) {
       advance((current) => amendSessionNewNode(current, nodeId, command, current.revision)),
     [advance]
   );
+  // Threads change outside undo history (domain/threads). `change` throws ThreadError on bad input.
+  // Returns the revision the session is at afterwards, or null when nothing is open.
+  const updateThreads = useCallback(
+    (change: (document: SceneDocumentV1) => SceneDocumentV1): number | null => {
+      advance((current) => updateSessionThreads(current, change, current.revision));
+      return sessionRef.current?.revision ?? null;
+    },
+    [advance]
+  );
+  // Returns the revision the session is at afterwards, as updateThreads does.
+  const replaceDocument = useCallback((document: SceneDocumentV1, label: string): number | null => {
+    advance((current) => replaceSessionDocument(current, document, label, current.revision));
+    return sessionRef.current?.revision ?? null;
+  }, [advance]);
   const forgetHistory = useCallback(() => advance(forgetSessionHistory), [advance]);
   const undo = useCallback(
     () =>
@@ -97,6 +113,8 @@ export function useDocumentSession(callbacks: DocumentSessionCallbacks) {
     openDocument,
     commit,
     amendNewNode,
+    updateThreads,
+    replaceDocument,
     forgetHistory,
     undo,
     redo,

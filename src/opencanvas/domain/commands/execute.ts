@@ -1,5 +1,6 @@
 import type { SceneDocumentV1, ScenePage } from '../document/types';
 import { validateSceneDocumentV1 } from '../document/validation';
+import { withFreeThreadNumbers } from '../threads/threads';
 import { areStructurallyEqual } from './equality';
 import type {
   AppliedDocumentCommand,
@@ -14,6 +15,7 @@ import type {
   RemovePageCommand,
   RemoveNodeCommand,
   SetConnectorCommand,
+  ReplaceDocumentCommand,
   SetDocumentNameCommand,
   SetLayerCommand,
   SetPageCommand,
@@ -53,6 +55,10 @@ function applySetDocumentName(
     document: { ...document, name: command.after },
     inverse: { ...command, before: command.after, after: command.before },
   };
+}
+
+function applyReplaceDocument(command: ReplaceDocumentCommand): AppliedDocumentCommand {
+  return { document: command.after, inverse: { ...command, before: command.after, after: command.before } };
 }
 
 function requireIndex(index: number, length: number, allowEnd: boolean): void {
@@ -132,15 +138,24 @@ function applyRemoveLayer(
   return { document: next, inverse: { ...command, kind: 'insert-layer' } };
 }
 
+// Threads are not diagram content (see domain/threads): page preconditions ignore them, since threads
+// change outside history and a stored page copy holds the threads of its time.
+function samePageContent(a: ScenePage | undefined, b: ScenePage): boolean {
+  if (!a) return false;
+  const { threads: _a, ...left } = a;
+  const { threads: _b, ...right } = b;
+  return areStructurallyEqual(left, right);
+}
+
 function applySetPage(document: SceneDocumentV1, command: SetPageCommand): AppliedDocumentCommand {
   if (command.before.id !== command.after.id || command.pageId !== command.before.id) {
     throw new DocumentCommandError('set-page cannot change a page ID.');
   }
-  if (areStructurallyEqual(command.before, command.after)) {
+  if (samePageContent(command.before, command.after)) {
     throw new DocumentCommandError('set-page command must change the page.');
   }
   const index = document.pages.findIndex((page) => page.id === command.pageId);
-  if (index < 0 || !areStructurallyEqual(document.pages[index], command.before)) {
+  if (index < 0 || !samePageContent(document.pages[index], command.before)) {
     throw new DocumentCommandError(`Page "${command.pageId}" precondition failed.`);
   }
   const pages = [...document.pages];
@@ -160,10 +175,12 @@ function applyInsertPage(
     throw new DocumentCommandError(`Page "${command.page.id}" already exists.`);
   }
   const pages = [...document.pages];
-  pages.splice(command.index, 0, command.page);
+  // A page coming back (undo of its removal) may hold thread numbers given out again since it went.
+  const page = withFreeThreadNumbers(document, command.page);
+  pages.splice(command.index, 0, page);
   return {
     document: { ...document, pages },
-    inverse: { ...command, kind: 'remove-page' },
+    inverse: { ...command, kind: 'remove-page', page },
   };
 }
 
@@ -172,14 +189,16 @@ function applyRemovePage(
   command: RemovePageCommand
 ): AppliedDocumentCommand {
   requireIndex(command.index, document.pages.length, false);
-  if (!areStructurallyEqual(document.pages[command.index], command.page)) {
+  const removed = document.pages[command.index];
+  if (!samePageContent(removed, command.page)) {
     throw new DocumentCommandError(`Page "${command.page.id}" removal precondition failed.`);
   }
   const pages = [...document.pages];
   pages.splice(command.index, 1);
+  // The inverse brings the page back with the threads it had when it went.
   return {
     document: { ...document, pages },
-    inverse: { ...command, kind: 'insert-page' },
+    inverse: { ...command, kind: 'insert-page', page: removed! },
   };
 }
 
@@ -307,6 +326,8 @@ function applyUnchecked(
   switch (command.kind) {
     case 'set-document-name':
       return applySetDocumentName(document, command);
+    case 'replace-document':
+      return applyReplaceDocument(command);
     case 'set-node':
       return applySetNode(document, command);
     case 'set-layer':

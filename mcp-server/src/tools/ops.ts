@@ -19,16 +19,25 @@ import { NOT_PAIRED, type LiveBridge } from '../lib/bridge.js';
 import { loadFileCapabilities } from '../lib/fileCapabilities.js';
 import { svgBeside, tryWriteSvgBeside } from '../lib/svgBeside.js';
 import { toolError } from '../lib/errors.js';
-import { clientShowsApps, diagramCard, VIEWER_TOOL_META, type Card } from '../lib/card.js';
+import { clientHasChannel, clientShowsApps, diagramCard, VIEWER_TOOL_META, type Card } from '../lib/card.js';
 import { DEFAULT_APP_ORIGIN, openUrl } from '../lib/openLink.js';
+import type { ServiceBinding, ServiceClient, ServiceProject } from '../lib/serviceClient.js';
+import { CONNECT_HINT, diagramField, NO_CHANNEL_NOTE, pickBinding, pickProject } from './serviceTools.js';
 
 export interface OpToolDeps {
   readonly store: DocumentStore;
   readonly bridge: LiveBridge;
+  /** The local service; absent in tests that only exercise the bridge and file modes. */
+  readonly service?: ServiceClient;
 }
 
 const documentIdField = z.string().min(1).optional()
   .describe('File-mode document id from openflow_open or openflow_create; omit to use the paired editor (or, in file mode, the document opened or created last).');
+
+const projectField = z.string().min(1).optional()
+  .describe('Service project to make the new diagram in (see list_diagrams). Optional when the service has exactly one project.');
+const diagramNameField = z.string().min(1).optional()
+  .describe('Name of the new service diagram; defaults to "Untitled diagram".');
 
 const SCRATCH = createAgentDocument('scratch');
 const pageIdField = z.string().min(1).optional()
@@ -146,10 +155,12 @@ export function registerOpTools(server: McpServer, deps: OpToolDeps): void {
         // Lookups read no document, so they take no documentId.
         ...(PAGELESS.has(op.name) ? {} : { pageId: pageIdField }), ...opInputShape(op), ...(LOOKUPS.has(op.name) ? {} : { documentId: documentIdField }),
         ...(op.name === 'export' ? { path: exportPathField } : {}),
+        ...(LOOKUPS.has(op.name) ? {} : { diagram: diagramField }),
+        ...(op.name === 'create_diagram' ? { project: projectField, diagramName: diagramNameField } : {}),
       },
       ...(DRAWING_OPS.has(op.name) ? { _meta: VIEWER_TOOL_META } : {}),
     }, async (raw: Record<string, unknown>): Promise<CallToolResult> => {
-      const { documentId, path: savePath, ...input } = raw;
+      const { documentId, path: savePath, project, diagram, diagramName, ...input } = raw;
       const agent = server.server.getClientVersion()?.name;
       const requestedPage = typeof input.pageId === 'string' ? input.pageId : undefined;
       const respond = async (output: unknown, wrap: (output: unknown) => unknown = (value) => value) => typeof savePath === 'string'
@@ -160,8 +171,49 @@ export function registerOpTools(server: McpServer, deps: OpToolDeps): void {
         DRAWING_OPS.has(op.name) && clientShowsApps(server.server.getClientCapabilities())
           ? { ...result, structuredContent: { ...await cardFor(input, output as DrawnOutput, picture) } }
           : result;
+      const service = deps.service;
+      // The service answers for a diagram this session holds or names; the legacy modes keep everything else.
+      const viaService = async (view: { projects: ServiceProject[] | null; bindings: ServiceBinding[] }): Promise<CallToolResult> => {
+        await service!.ensure();
+        const held = view.bindings;
+        const listing = op.name === 'list_diagrams';
+        const projects = listing ? view.projects ?? await service!.projects() : null;
+        // The listing is how a session that holds several finds the project it wants: it needs no single diagram.
+        if (projects && typeof diagram !== 'string' && held.length !== 1) return text({ projects });
+        let binding: ServiceBinding;
+        let made = false;
+        if (op.name === 'create_diagram' && (typeof project === 'string' || !held.length)) {
+          const target = await pickProject(service!, typeof project === 'string' ? project : undefined, view.projects);
+          const name = typeof diagramName === 'string' ? diagramName : 'Untitled diagram';
+          const created = await service!.create(target, name);
+          binding = { project: target, id: created.id, title: name, url: created.url };
+          made = true;
+        } else {
+          binding = pickBinding(held, typeof diagram === 'string' ? diagram : undefined);
+        }
+        let output: unknown;
+        try {
+          output = await service!.runOp(binding, op.name, input, requestedPage);
+        } catch (error) {
+          const reason = error instanceof Error ? error.message : String(error);
+          throw new Error(made ? `${reason} The diagram ${binding.url} was created and is connected to this session; call create_diagram again with diagram "${binding.id}" to draw on it.` : reason);
+        }
+        const result = await withCard(
+          await respond(output, (value) => ({ project: binding.project, diagram: binding.id, url: binding.url, output: value, ...(projects ? { projects } : {}) })),
+          output,
+          async (frameId, pageId) => svgText(await service!.runOp(binding, 'export', { format: 'svg', scope: 'selection', ids: [frameId] }, pageId)),
+        );
+        return DRAWING_OPS.has(op.name) && !clientHasChannel(server.server.getClientCapabilities())
+          ? { ...result, content: [...result.content, { type: 'text', text: NO_CHANNEL_NOTE }] }
+          : result;
+      };
       try {
+        const view = service && !documentId ? await service.view() : { projects: null, bindings: [] };
+        if (service && !documentId && (typeof project === 'string' || typeof diagram === 'string' || view.bindings.length)) return await viaService(view);
         if (!documentId && !deps.bridge.connected) await deps.bridge.retryPort();
+        // Nothing paired and nothing opened: the service is how a first diagram gets made. A listing only reads a service that already runs.
+        if (service && !documentId && !deps.bridge.connected && !deps.store.latest()
+          && (op.name === 'create_diagram' || (op.name === 'list_diagrams' && await service.running()))) return await viaService(view);
         if (!documentId && deps.bridge.connected) {
           const output = await deps.bridge.call(op.name, input, requestedPage, agent);
           // Live: the diagram is on the user's canvas already, so no link; the card shows the frame as the editor drew it.
@@ -170,13 +222,13 @@ export function registerOpTools(server: McpServer, deps: OpToolDeps): void {
         }
         const id = (typeof documentId === 'string' ? documentId : undefined) ?? deps.store.latest()?.id;
         if (!id && !LOOKUPS.has(op.name)) {
-          throw new Error(deps.bridge.unpairedReason ?? NOT_PAIRED);
+          throw new Error(`${deps.bridge.unpairedReason ?? NOT_PAIRED}${view.projects ? ` ${CONNECT_HINT}` : ''}`);
         }
         // Grammar and icon lookups read no document, so an agent may call them before it has one.
         const document = id ? deps.store.get(id) as unknown as SceneDocumentV1 : SCRATCH;
         const pageId = requestedPage ?? document.pages[0]?.id ?? '';
         const capabilities = await loadFileCapabilities();
-        const result = await runAgentOp(op, input, { document, pageId, capabilities });
+        const result = await runAgentOp(op, input, { document, pageId, capabilities, ...(agent ? { client: agent } : {}) });
         if (result.changed) deps.store.set(result.document as never);
         // File mode: the diagram lives only in this process until openflow_save, so the link is how a person sees it now.
         const link = DRAWING_OPS.has(op.name) ? openUrl(drawnDsl(input, result.output as DrawnOutput)) : null;
@@ -272,6 +324,8 @@ export function registerDocumentTools(server: McpServer, deps: DocumentToolDeps)
       server: `${health.name} ${health.version}`,
       cloud: 'none — everything is local',
       bridge,
+      channel: clientHasChannel(server.server.getClientCapabilities()),
+      ...(deps.service ? { service: await deps.service.status() } : {}),
       mode: health.connected ? 'live-editor' : 'file',
       editor: health.connected
         ? { documentId: health.documentId, name: health.documentName, pageId: health.pageId, pages: health.pages, lastSeenMs: health.lastSeenMs }

@@ -57,6 +57,8 @@ interface EditorAgentsInput {
   readonly toastZoomedToRead: () => void;
   readonly setAnnouncement: (message: string) => void;
   readonly pushToast: (toast: ToastItem) => void;
+  /** On a service diagram the service is the agent path: the tab bridge stays off. */
+  readonly onService: boolean;
 }
 
 /** Local agent pairing and the in-page assistant: the MCP bridge, WebMCP, the cursor, and how an agent's change reaches the map's drawing. */
@@ -64,7 +66,7 @@ export function useV2EditorAgents(input: EditorAgentsInput) {
   const {
     id, session, load, repo, map, panels, camera, code, preferences, updatePreferences, proposal, compileDraft, page, viewPage, pageRef, hostRef,
     selectionRef, selectedConnectorIdsRef, selectionNodeIds, applySelection, applyConnectorSelection, pinnable, openDrawingRef, showDrawing,
-    setActivePageId, writable, landingDirection, toastZoomedToRead, setAnnouncement, pushToast,
+    setActivePageId, writable, landingDirection, toastZoomedToRead, setAnnouncement, pushToast, onService,
   } = input;
   const { openWorkspace } = panels;
   // Local agent pairing: the ops run here, against this session, through the
@@ -125,6 +127,8 @@ export function useV2EditorAgents(input: EditorAgentsInput) {
     capabilities: agentCapabilities,
     // false tells the agent its edit did not land (a locked page), instead of reporting it applied.
     commit: (command: DocumentCommand) => { if (!writable(command)) return false; session.commit(command); return true; },
+    // Agent thread changes happen outside undo history.
+    threadChange: session.updateThreads,
     onActivity: setAnnouncement,
     // An agent edit off-screen (or under the agent panel) lands readable, as the assistant's does; one in view stays put.
     // It waits for the renderer to draw the edit: a frame later the host often had no bounds for it yet.
@@ -138,7 +142,7 @@ export function useV2EditorAgents(input: EditorAgentsInput) {
   };
   const agentBridge = useV2AgentBridge({
     ...agentSession,
-    enabled: preferences.agentBridgeEnabled,
+    enabled: preferences.agentBridgeEnabled && !onService,
     port: preferences.bridgePort,
     token: preferences.bridgeToken,
     revision: session.revision,
@@ -168,5 +172,5 @@ export function useV2EditorAgents(input: EditorAgentsInput) {
       if (reveal && nodeIds.length + ends.length) camera.revealNodes([...nodeIds, ...ends]);
     },
   });
-  return { aiSettings, assistant, diagramCount, selectedDiagramCount, agentBridge, webMcp, presence, agentShown };
+  return { aiSettings, assistant, diagramCount, selectedDiagramCount, agentBridge, webMcp, presence, agentShown, commentsReach: onService || agentBridge.status === 'connected' };
 }

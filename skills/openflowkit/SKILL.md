@@ -5,16 +5,16 @@ description: Draw diagrams that stay valid, editable and saved next to the code.
 
 # OpenFlowKit diagrams
 
-Write Mermaid or OpenFlow DSL, hand it to the `openflowkit` MCP server, and save the result as a
-`.openflow.json` beside the code it explains: it opens at app.openflowkit.com (Open file) and reads back.
+Write Mermaid or OpenFlow DSL, hand it to the `openflowkit` MCP server, and save the result as a `.openflow.json`
+beside the code it explains: it opens at app.openflowkit.com (Open file) and reads back.
 
-**When to draw:** a flow with branches, a system with more than three moving parts, a protocol,
-a data model, a state machine. Not a list, a single call, or what one sentence explains.
+**When to draw:** a flow with branches, a system with more than three moving parts, a protocol, a data model,
+a state machine. Not a list, a single call, or what one sentence explains.
 
 ## Setup (once)
 
-`claude mcp add -s user openflowkit -- npx -y openflowkit mcp` (any MCP client: `npx -y openflowkit mcp`); it
-calls no outside service. In claude.ai or ChatGPT, `https://mcp.openflowkit.com/mcp` draws chat cards only.
+`claude mcp add -s user openflowkit -- npx -y openflowkit mcp` (any MCP client: `npx -y openflowkit mcp`); it calls no
+outside service. In claude.ai or ChatGPT, `https://mcp.openflowkit.com/mcp` draws chat cards only.
 
 ## Draw and save
 
@@ -31,17 +31,17 @@ calls no outside service. In claude.ai or ChatGPT, `https://mcp.openflowkit.com/
 
 ## Change a diagram
 
-`get_diagram` returns the DSL and `frameId` (file mode: `openflow_open` first, then pass
-`documentId`) → edit the text → `update_diagram` with `{ frameId, dsl }` → `openflow_save`.
-Not `create_diagram` again: that draws a second diagram. `update_diagram` redraws from the text, so
-`canvasEdits` (the user's recolours, moves, renames) are lost unless you merge each `carry` into that
-node's one `[ … ]` list; `discarded` lists any lost. "The box I selected" is `selection` in `get_document`.
+`get_diagram` returns the DSL and `frameId` (file mode: `openflow_open` first, then pass `documentId`) → edit the
+text → `update_diagram` with `{ frameId, dsl }` → `openflow_save`. Not `create_diagram` again: that draws a second
+diagram. `update_diagram` redraws from the text, so `canvasEdits` (the user's recolours, moves, renames) are lost
+unless you merge each `carry` into that node's one `[ … ]` list; `discarded` lists any lost. To re-read it, `get_diagram`
+with `diffOnly: true` returns `dslDiff`, only the lines the canvas changed. "The box I selected" is `selection` in `get_document`.
+Pinned threads: `list_threads` (`unanswered: true` = waiting on you; `threadId`), `reply_to_thread`, `resolve_thread`, `start_thread` (`nodeId` or `point`). Not DSL; `get_document` counts them.
 
 ## Draw this repo's architecture
 
-`discover_architecture` with `{ path }` proposes a C4 workspace (`dsl`) from the code. Review its
-names, `create_diagram` with it, and write the text to `architecture.ofk` at the repo root; later,
-`drift_report` with `{ path }` says what the code gained or lost since.
+`discover_architecture` with `{ path }` proposes a C4 workspace (`dsl`) from the code. Review its names, `create_diagram`
+with it, and write the text to `architecture.ofk` at the repo root; later, `drift_report` with `{ path }` says what changed.
 
 ## OpenFlow DSL in one screen
 

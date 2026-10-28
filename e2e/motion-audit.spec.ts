@@ -7,7 +7,7 @@ import { expect, test } from './test';
 // screen-reader surface is complete, and reduced motion leaves a still.
 // Slack, Notion, X and Keynote are verified by the file's own magic bytes and
 // browser playback in motion-encode.spec.ts; those apps are not installable
-// here and are listed as assumed in STATE.md.
+// here and are listed as assumed in STATUS.md.
 // Run headed: npm run e2e:headed -- e2e/motion-audit.spec.ts
 
 const DSL = `%% ofk 1

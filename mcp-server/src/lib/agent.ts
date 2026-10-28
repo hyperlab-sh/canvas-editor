@@ -69,6 +69,21 @@ export interface BridgeRequest {
   readonly client?: string;
 }
 
+export interface BridgeThreadEvent {
+  readonly type: 'thread';
+  readonly documentId: string;
+  readonly pageId: string;
+  readonly threadId: string;
+  /** The thread's number in the document ("#3"). */
+  readonly threadNumber: number;
+  readonly commentId: string;
+  readonly nodeId: string | null;
+  readonly nodeLabel: string | null;
+  readonly kind: 'new_thread' | 'reply';
+  readonly author: string;
+  readonly body: string;
+}
+
 export interface BridgeHealth {
   readonly ok: true;
   readonly protocol: number;
@@ -314,7 +329,7 @@ interface AgentBundle {
   readonly MAX_IMAGE_KB: number;
   base64Kb(base64: string): number;
   runAgentOp(op: AgentOp, rawInput: unknown, context: {
-    document: SceneDocumentV1; pageId: string; capabilities: OpCapabilities;
+    document: SceneDocumentV1; pageId: string; capabilities: OpCapabilities; client?: string;
   }): Promise<{ document: SceneDocumentV1; changed: boolean; output: unknown }>;
   createFileCapabilities(options: {
     grammar: string;
@@ -345,10 +360,11 @@ interface AgentBundle {
   readonly BRIDGE_POLL_SECONDS: number;
   readonly BRIDGE_IDLE_MS: number;
   readonly bridgeTokenHeader: string;
-  bridgeUrls(port: number, host?: string): { base: string; health: string; hello: string; next: string; result: string };
+  bridgeUrls(port: number, host?: string): { base: string; health: string; hello: string; next: string; result: string; event: string };
   isAllowedBridgeOrigin(origin: string | undefined | null): boolean;
   isBridgeClientInfo(value: unknown): value is BridgeClientInfo;
   isBridgeRequest(value: unknown): value is BridgeRequest;
+  isBridgeThreadEvent(value: unknown): value is BridgeThreadEvent;
   readonly WIDGET_KINDS: readonly string[];
   readonly FRAME_PRESETS: readonly string[];
   readonly DSL_FAMILIES: readonly [string, ...string[]];
@@ -391,7 +407,7 @@ export const {
   compileWorkspace, architectureWorkspaceText, archModelFromJson, exportCanonicalSvg,
   collectIconArt, tablerSvg, ICON_PACK_IDS, headlessElkLayout, deterministicLayout, CAPABILITY_MANIFEST,
   BRIDGE_PROTOCOL_VERSION, BRIDGE_DEFAULT_PORT, BRIDGE_POLL_SECONDS, BRIDGE_IDLE_MS,
-  bridgeTokenHeader, bridgeUrls, isAllowedBridgeOrigin, isBridgeClientInfo, isBridgeRequest, WIDGET_KINDS, FRAME_PRESETS, DSL_FAMILIES,
+  bridgeTokenHeader, bridgeUrls, isAllowedBridgeOrigin, isBridgeClientInfo, isBridgeRequest, isBridgeThreadEvent, WIDGET_KINDS, FRAME_PRESETS, DSL_FAMILIES,
   STARTER_TEMPLATES, findStarterTemplate,
   discoverArchitecture, capUnits, discoveryToDsl, driftReport, modelFromNode, modelFromDocument, readArchModel,
   discoverySummary, acceptsArchitectureFile, slugDiscoveryId,

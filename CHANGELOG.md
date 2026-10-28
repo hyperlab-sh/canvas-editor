@@ -11,6 +11,26 @@ separately; its changes are listed under *For developers* in each release.
 
 ### Added
 
+- **Threads panel.** Press **C**, or choose **Threads** in the workspace rail (second in the toolbar, with the open count), to list every
+  thread of the diagram, across pages, latest activity first. It shares its place with the AI assistant. Search reads
+  every comment; **Show resolved** and **Unanswered only** filter; a card shows who started it, `#n · page`, the first
+  lines and the reply count. Clicking a card goes to its page, brings the pin into view and opens the thread. Unread is
+  kept per browser: a dot on the card and on the pin. **Copy link** puts `#3 · Page 1 · on "label" — <link>` on the
+  clipboard, and the link (`#/d/<id>?thread=<id>`) opens that thread. Read-only views can list, search and copy links.
+  Every thread now has a number (`number` in the document and in `list_threads`; `thread_number` on live-comment channel
+  events), unique across pages. `BridgeThreadEvent` now requires `threadNumber`. The **Live comments** switch moved
+  from each thread's box into the Threads panel header, with a hint beside it. Pins can be dragged, with the comment or
+  the select tool, onto a shape (the thread follows it) or empty canvas (a page pin); it is not an undo step. A click
+  away from a comment or reply box that holds text now shakes it once instead of closing it, and a second click closes.
+- **Agent thread tools and live comments.** Agents can read the threads pinned on the canvas (`list_threads`, with
+  optional `threadId` and `unanswered` filters), add a comment to one (`reply_to_thread`), resolve it (`resolve_thread`)
+  and start new ones (`start_thread`), live or on a file, signed with the agent's name; none of it is an undo step or
+  part of the diagram text. A thread is the pinned conversation and a comment is one message in it; the document keeps
+  them in `pages[].threads[].comments`. `get_document` and `list_pages` report
+  `openThreads`. With **Live comments** on in the editor, each comment you write is pushed into the running Claude Code
+  session as a channel event (`type: "thread"`, `POST /event` on the bridge; start Claude Code with
+  `--dangerously-load-development-channels plugin:openflowkit@openflowkit`). The MCP server now declares the
+  `claude/channel` capability; nothing changes for clients that ignore it.
 - **Private repos in the browser.** On the "not found, or it is private" screen, **Private repo? Use a GitHub token**
   takes a fine-grained token with Contents read-only access; the files are then read through the GitHub API. The
   token stays in this tab.
@@ -20,6 +40,10 @@ separately; its changes are listed under *For developers* in each release.
   by the server. Off unless set.
 - **Connect agent: paste a prompt.** Step 1 can be a prompt you paste into your agent, which then adds OpenFlowKit
   itself, or the command, config or one-click link as before.
+
+- **`get_diagram` with `diffOnly`.** An agent that already holds the text it wrote can ask for just what changed on
+  the canvas: `dslDiff`, a unified diff from the authored text to the text regenerated from the canvas, in place of the
+  whole `dsl`. Empty while the canvas matches the text.
 
 ### Changed
 
@@ -37,6 +61,9 @@ separately; its changes are listed under *For developers* in each release.
 
 ### Fixed
 
+- **The canvas no longer breaks when Safari drops the drawing context.** Safari can take WebGL away (a GPU reset,
+  memory pressure); the next frame threw "Argument 1 ('shader') to WebGL2RenderingContext.shaderSource must be an
+  instance of WebGLShader". Frames now wait for the context to come back, then draw as before.
 - **Reorder works on the canvas** ([#92](https://github.com/openflowkit/openflowkit/issues/92)). Bring to front,
   Send to back and the step versions changed the order but the canvas kept drawing shapes in the order they were made.
   A shape in front now covers the text and images of the shapes behind it too, overlapping images keep their order

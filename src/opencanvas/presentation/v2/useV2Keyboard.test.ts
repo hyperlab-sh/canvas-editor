@@ -284,3 +284,16 @@ describe('keyOwnedByTarget', () => {
     expect(keyOwnedByTarget(event(button, { key: 'Escape' }))).toBe(false);
   });
 });
+
+describe('useV2Keyboard comment tool', () => {
+  it('bare C arms the comment tool; ⌘C still copies and ⇧C does not', () => {
+    const { key, onToolChange, onCopy } = setup(vi.fn(() => false));
+    key({ key: 'c' });
+    expect(onToolChange).toHaveBeenCalledExactlyOnceWith('comment');
+    key({ key: 'c', metaKey: true });
+    expect(onCopy).toHaveBeenCalledOnce();
+    expect(onToolChange).toHaveBeenCalledOnce();
+    key({ key: 'C', shiftKey: true });
+    expect(onToolChange).toHaveBeenCalledOnce();
+  });
+});

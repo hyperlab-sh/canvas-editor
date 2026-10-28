@@ -203,7 +203,75 @@ it goes away, so Undo never acts on the wrong change. A client that sends no nam
 ### Undo
 
 Every change an agent makes is one undo step, like an edit of your own: ⌘Z or Ctrl+Z, or **Undo** in the panel.
-When two agents draw, each change is its own step.
+When two agents draw, each change is its own step. Threads are the exception: an agent's comment or a new thread is
+not an undo step, and undoing a drawing change never removes a thread.
+
+## The Threads panel
+
+A thread is a conversation pinned to the canvas; a comment is one message in it. Every thread gets a number, `#1`,
+`#2`, and so on, unique in the diagram and kept when a thread is resolved or another is deleted. The agent sees the
+number as `number` in `list_threads` and as `thread_number` on a live-comment channel event.
+
+Press **C**, or choose **Threads** in the workspace rail, second after the AI assistant (it shows how many threads are open), to open the panel. It
+shares its place with the AI assistant: one is open at a time. It lists the threads of every page, the one with the
+latest comment first.
+
+- **Search** reads every comment of every thread, on every page, ignoring case. Empty search shows all.
+- **Filter** has two switches. **Show resolved** (off by default) adds resolved threads, dimmed. **Unanswered only**
+  keeps threads whose last comment was written by a person, not by the agent. The panel remembers both.
+- **Live comments** has its switch in the panel header, with a **?** beside it ("Automatically send new comments to
+  your agent"). It is one setting for the whole editor, not per thread.
+- A card shows the first comment's author, `#3 · Page 1`, the first lines, and how many replies follow. A dot means
+  there is something you have not read. Hover it (or tab to it) for **Resolve**, and **⋯** for **Mark as read** or
+  **Mark as unread**, **Copy link** and **Delete thread…** (it asks first).
+- **Click a card** to go to its page, bring the pin into view (the zoom stays unless the pin would be off screen) and
+  open the thread. Clicking a pin on the canvas highlights its card.
+
+Drag a pin to move its thread, with the comment tool or the select tool. Dropped on a shape, the thread follows that
+shape; dropped on empty canvas, it stays where it is on the page. A move under a few pixels is a click and opens the
+thread. Moving a thread is not an undo step, and a read-only view cannot move pins.
+
+Text you have typed in a new comment or a reply is not lost to a stray click: the first click outside the box only
+shakes it (with reduced motion, flashes its outline), and a second one closes it and discards the text. Typing starts
+the count over; an empty box closes at once; **Esc** closes as before.
+
+Unread is kept in this browser only, not in the diagram and not shared: a thread is unread when it has a comment newer
+than the last time you opened it that you did not write. A thread you never opened counts the comments of others.
+Opening a thread marks it read, and **Mark as unread** keeps it unread until you open it again.
+
+**Copy link** puts a line like `#3 · Page 1 · on "Session updateComments" — https://…/#/d/<id>?thread=<id>` on the
+clipboard. Opening the link loads the diagram, opens the panel and the thread, then removes `?thread=` from the
+address. If the thread is gone, you get a short message and nothing else changes. Links open the diagram in the
+browser that holds it, so they are for you and your own devices, not a share link.
+
+In a read-only view (a shared link) the panel lists, searches, opens and copies links; resolving and deleting are
+hidden. Pins are not drawn in Map mode: a card for a thread on a page leaves Map to the canvas, then opens the thread.
+
+## Live comments
+
+By default an agent sees your threads only when it asks: tell it "check the comments" and it calls `list_threads`
+(`unanswered: true` returns only the threads whose last comment is yours; `threadId` returns one). Nothing is pushed,
+so nothing costs tokens until you ask. It can add a comment to a thread (`reply_to_thread`), resolve it
+(`resolve_thread`) or start one (`start_thread`). Its comments carry its name, such as "Claude Code". Threads are
+not drawing, so they never become an undo step.
+
+Live comments is opt-in. Turn it on in the editor (the **Live comments** toggle, available while an agent is
+connected) and each comment you write, in a new thread or an existing one, is pushed into your running Claude Code session as it
+arrives. Claude Code shows it as a channel message, and the agent answers with `reply_to_thread` in the same thread.
+Start Claude Code with the channel flag:
+
+```bash
+claude --dangerously-load-development-channels plugin:openflowkit@openflowkit
+```
+
+This needs the plugin installed (see [Claude Code](#claude-code)), Claude Code 2.1.80 or newer, an interactive session
+(not `-p`), and, on Team and Enterprise plans, an organization that allows channels. Channels are a research preview;
+OpenFlowKit is not on the approved list yet, which is why the flag is needed.
+
+Only the session that owns the connection to the editor receives live comments: when several agent sessions share one
+canvas, that is the first one that started. A session started without the flag, or one that does not own the
+connection, drops the comment silently and the editor shows no error. Nothing else changes: all the tools work as
+before, and agent comments are never pushed back.
 
 ## Troubleshooting
 

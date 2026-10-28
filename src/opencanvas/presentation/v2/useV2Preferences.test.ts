@@ -28,3 +28,47 @@ describe('bridge token', () => {
     expect(JSON.parse(mcpConfig(43119, '')).mcpServers.openflowkit.env).toBeUndefined();
   });
 });
+
+describe('comment preferences', () => {
+  beforeEach(() => localStorage.clear());
+  const store = (value: unknown) => localStorage.setItem('openflowkit-v2-preferences', JSON.stringify(value));
+
+  it('default to live comments off', () => {
+    expect(readPreferences()).toMatchObject({ liveComments: false });
+  });
+
+  it('keep only a literal true for live comments', () => {
+    store({ liveComments: true });
+    expect(readPreferences()).toMatchObject({ liveComments: true });
+    store({ liveComments: 'yes' });
+    expect(readPreferences()).toMatchObject({ liveComments: false });
+  });
+
+  it('ignore a displayName stored by an earlier version', () => {
+    store({ displayName: 'Ada', liveComments: true });
+    const loaded = readPreferences();
+    expect(loaded).toMatchObject({ liveComments: true });
+    expect(loaded).not.toHaveProperty('displayName');
+  });
+});
+
+describe('threads panel preferences', () => {
+  beforeEach(() => localStorage.clear());
+  const store = (value: unknown) => localStorage.setItem('openflowkit-v2-preferences', JSON.stringify(value));
+
+  it('default to resolved hidden, unanswered-only off and nothing read', () => {
+    expect(readPreferences()).toMatchObject({ threadsShowResolved: false, threadsUnansweredOnly: false, threadReads: {}, threadSent: [] });
+  });
+
+  it('keep only a literal true for the toggles', () => {
+    store({ threadsShowResolved: true, threadsUnansweredOnly: 'yes' });
+    expect(readPreferences()).toMatchObject({ threadsShowResolved: true, threadsUnansweredOnly: false });
+  });
+
+  it('keep well-formed read marks and drop the rest', () => {
+    store({ threadReads: { 'd:t': '2026-10-26T12:00:00.000Z', 'd:u': 'unread', 'd:bad': 'x', 'd:n': 3 } });
+    expect(readPreferences().threadReads).toEqual({ 'd:t': '2026-10-26T12:00:00.000Z', 'd:u': 'unread' });
+    store({ threadReads: 'nope' });
+    expect(readPreferences().threadReads).toEqual({});
+  });
+});

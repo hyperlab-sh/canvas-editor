@@ -58,6 +58,8 @@ interface V2DocumentBarProps extends V2SettingsProps {
   readonly onRetrySave: () => void;
   readonly onReload: () => void;
   readonly onToast: (toast: ToastItem) => void;
+  /** Only on a service diagram: the label of the session holding it (null when none), and Disconnect. */
+  readonly holder?: { readonly label: string | null; readonly onDisconnect: () => void };
   readonly onRename: (name: string) => void;
   /** Opens the shared export panel, anchored on the canvas-menu button. */
   readonly onOpenExport: (anchor: HTMLElement | null) => void;
@@ -268,6 +270,14 @@ export function V2DocumentBar(props: V2DocumentBarProps): React.JSX.Element {
           ) : null}
           {props.onEditShared ? (
             <Button variant="primary" disabled={copying} onClick={editShared}>Edit in OpenFlowKit</Button>
+          ) : null}
+          {props.holder?.label ? (
+            <span className="ofk-v2-holder" data-testid="v2-holder">
+              <span className="ofk-v2-holder-label">{props.holder.label}</span>
+              <Tooltip content="Disconnect this session from the diagram">
+                <Button variant="quiet" aria-label="Disconnect" onClick={props.holder.onDisconnect}>Disconnect</Button>
+              </Tooltip>
+            </span>
           ) : null}
           <Tooltip content="Pages">
             <Button ref={pagesRef} variant="quiet" aria-expanded={panel === 'pages'} aria-haspopup="dialog"

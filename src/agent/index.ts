@@ -10,9 +10,9 @@ export { headlessElkLayout } from './headlessLayout';
 export type { FileHostOptions } from './host';
 export {
   BRIDGE_DEFAULT_PORT, BRIDGE_IDLE_MS, BRIDGE_POLL_SECONDS, BRIDGE_PROTOCOL_VERSION,
-  bridgeTokenHeader, bridgeUrls, isAllowedBridgeOrigin, isBridgeClientInfo, isBridgeRequest,
+  bridgeTokenHeader, bridgeUrls, isAllowedBridgeOrigin, isBridgeClientInfo, isBridgeThreadEvent, isBridgeRequest,
 } from './bridge/protocol';
-export type { BridgeClientInfo, BridgeHealth, BridgePageSummary, BridgeRequest, BridgeResult } from './bridge/protocol';
+export type { BridgeClientInfo, BridgeThreadEvent, BridgeHealth, BridgePageSummary, BridgeRequest, BridgeResult } from './bridge/protocol';
 export type { AnyAgentOp } from './ops';
 export type { AgentOp, ExportedFile, ExportRequest, IconMatch, OpCapabilities, OpContext, OpOutcome } from './ops';
 export { CAPABILITY_MANIFEST, MANIFEST_VERSION, manifestCoverage, unlistedOps } from './manifest';

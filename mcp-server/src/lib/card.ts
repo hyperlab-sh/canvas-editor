@@ -72,6 +72,14 @@ export function clientShowsApps(capabilities: { extensions?: Record<string, unkn
   return Boolean(ui) && typeof ui === 'object' && (!Array.isArray(ui.mimeTypes) || ui.mimeTypes.includes(VIEWER_MIME));
 }
 
+/**
+ * True when the client declared `claude/channel` at initialize, or the operator set OPENFLOWKIT_CHANNEL=1 for a
+ * session started with channels (D15): a client that listens for thread events does not always say so.
+ */
+export function clientHasChannel(capabilities: { experimental?: Record<string, unknown> } | undefined): boolean {
+  return capabilities?.experimental?.['claude/channel'] !== undefined || process.env.OPENFLOWKIT_CHANNEL === '1';
+}
+
 export const PREVIEW_TOOL = 'preview_diagram';
 /** Hosts keep an app-only tool out of the model's tool list and let only the card call it (MCP Apps `visibility`). */
 export const PREVIEW_TOOL_META = { ui: { resourceUri: VIEWER_URI, visibility: ['app'] } };

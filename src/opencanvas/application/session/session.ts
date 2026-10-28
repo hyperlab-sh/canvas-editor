@@ -1,3 +1,4 @@
+import { takeThreads } from '../../domain/threads/threads';
 import type { DocumentCommand } from '../../domain/commands/types';
 import type { SceneDocumentV1 } from '../../domain/document/types';
 import {
@@ -73,6 +74,41 @@ export function amendSessionNewNode(
 export function forgetSessionHistory(session: DocumentSession): DocumentSession {
   if (session.history.past.length !== 1) return session;
   return { ...session, history: createDocumentHistory(session.document, session.history.limit) };
+}
+
+/**
+ * A thread change (domain/threads): a new revision, so autosave and the agent bridge see it, but no undo
+ * step, and undo/redo of the steps around it keep it.
+ */
+export function updateSessionThreads(
+  session: DocumentSession,
+  change: (document: SceneDocumentV1) => SceneDocumentV1,
+  expectedRevision: number
+): DocumentSession {
+  requireCurrentRevision(session, expectedRevision);
+  const document = change(session.document);
+  if (document === session.document) return session;
+  return { document, revision: session.revision + 1, history: { ...session.history, present: document } };
+}
+
+/**
+ * An incoming copy of the document (another tab or the agent saved it) as one undo step: undo brings back
+ * what this tab had. The threads are the incoming copy's, not this tab's: a comment made elsewhere shows
+ * here, and a save from this tab does not delete it. They sit outside history, so undo and redo keep them.
+ */
+export function replaceSessionDocument(
+  session: DocumentSession,
+  document: SceneDocumentV1,
+  label: string,
+  expectedRevision: number
+): DocumentSession {
+  const command: DocumentCommand = {
+    kind: 'replace-document', id: `replace-document:${session.revision}`, label,
+    before: session.document, after: document,
+  };
+  const committed = commitSessionCommand(session, command, expectedRevision);
+  const present = takeThreads(committed.document, document);
+  return { ...committed, document: present, history: { ...committed.history, present } };
 }
 
 export function undoSessionCommand(

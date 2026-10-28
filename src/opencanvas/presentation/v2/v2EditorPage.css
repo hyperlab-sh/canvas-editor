@@ -1449,3 +1449,136 @@
   /* A phone: the field gets the whole row so its placeholder reads in full, the button goes under it. */
   .ofk-v2-welcome-stack > .ofk-v2-map-repo-form { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Comments: Figma-style pins over the canvas and a dark thread card. The card stays dark in both themes, as Figma's does. */
+.ofk-comment-anchor { position: absolute; top: 0; left: 0; z-index: calc(var(--ofk-layer-toolbar, 10) - 1); width: 0; height: 0; pointer-events: none; will-change: transform; }
+.ofk-comment-anchor:has([data-comment-open]) { z-index: var(--ofk-layer-toolbar, 10); }
+.ofk-comment-pin {
+  position: absolute; left: 0; bottom: 0; box-sizing: border-box; width: 30px; height: 30px; padding: 0; border: 2px solid #fff;
+  border-radius: 50% 50% 50% 0; background: #fff; overflow: hidden; cursor: pointer; pointer-events: auto;
+  box-shadow: 0 1px 3px rgb(0 0 0 / .35), 0 3px 10px rgb(0 0 0 / .18);
+  transition: transform .12s ease;
+}
+.ofk-comment-pin[data-ghost] { pointer-events: none; opacity: .9; }
+.ofk-comment-pin:hover { transform: scale(1.06); transform-origin: 0 100%; }
+.ofk-comment-pin:focus-visible, .ofk-comment-pin[data-selected] { outline: 2px solid var(--c-accent, #0d99ff); outline-offset: 2px; }
+.ofk-comment-pin .ofk-comment-avatar { width: 100% !important; height: 100% !important; border-radius: inherit; }
+.ofk-comment-avatar {
+  display: inline-grid; place-items: center; flex: none; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 600; line-height: 1;
+  user-select: none;
+}
+.ofk-comment-avatar[data-kind='agent'] { background: var(--ofk-primary); color: var(--ofk-onPrimary, #fff); }
+.ofk-comment-avatar svg { width: 60%; height: 60%; }
+
+.ofk-comment-card {
+  --c-accent: #0d99ff; --c-surface: #2c2c2c; --c-text: #fff; --c-muted: rgb(255 255 255 / .6); --c-line: rgb(255 255 255 / .12);
+  position: absolute; left: 38px; top: -34px; box-sizing: border-box; width: 320px; max-width: min(320px, 86vw);
+  display: grid; gap: 8px; padding: 10px; border-radius: 12px; background: var(--c-surface); color: var(--c-text);
+  font-size: 13px; line-height: 1.4; pointer-events: auto; cursor: default;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / .4), 0 8px 28px rgb(0 0 0 / .35);
+}
+.ofk-comment-anchor[data-side='left'] .ofk-comment-card { left: auto; right: 8px; }
+.ofk-comment-composer { width: 300px; }
+.ofk-comment-card p, .ofk-comment-card h3, .ofk-comment-card ul { margin: 0; }
+.ofk-comment-card .ofk-icon-button { color: var(--c-muted); }
+.ofk-comment-card .ofk-icon-button:hover:not(:disabled) { color: var(--c-text); background: rgb(255 255 255 / .1); }
+.ofk-comment-thread > header { display: flex; align-items: center; gap: 2px; padding: 0 2px 0 4px; }
+.ofk-comment-thread > header h3 { flex: 1; font-size: 13px; font-weight: 600; }
+.ofk-comment-messages { display: grid; gap: 12px; max-height: 280px; padding: 2px 4px; overflow-y: auto; list-style: none; }
+.ofk-comment-message { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+.ofk-comment-meta { display: flex; gap: 6px; align-items: baseline; }
+.ofk-comment-meta strong { font-weight: 600; }
+.ofk-comment-meta time, .ofk-comment-meta span { color: var(--c-muted); font-size: 12px; }
+.ofk-comment-body { white-space: pre-wrap; overflow-wrap: anywhere; }
+.ofk-comment-thread > footer { display: grid; gap: 4px; }
+
+.ofk-comment-input {
+  display: flex; align-items: flex-end; gap: 6px; padding: 5px 5px 5px 12px; border-radius: 10px; background: rgb(255 255 255 / .08);
+  box-shadow: inset 0 0 0 1px var(--c-line);
+}
+.ofk-comment-input textarea:focus-visible { outline: none; }
+.ofk-comment-input:focus-within { box-shadow: inset 0 0 0 2px var(--c-accent, #0d99ff); }
+.ofk-comment-input textarea {
+  flex: 1; min-width: 0; margin: 0; padding: 4px 0; border: 0; outline: 0; background: transparent; color: var(--c-text); font: inherit;
+  resize: none; field-sizing: content; min-height: 22px; max-height: 140px;
+}
+.ofk-comment-input textarea::placeholder { color: var(--c-muted); }
+.ofk-comment-send {
+  display: grid; place-items: center; flex: none; width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%;
+  background: var(--c-accent, #0d99ff); color: #fff; cursor: pointer;
+}
+.ofk-comment-send:disabled { background: rgb(255 255 255 / .16); color: var(--c-muted); cursor: default; }
+.ofk-comment-send:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+.ofk-comment-send svg { width: 16px; height: 16px; }
+.ofk-comment-edit { margin-top: 4px; }
+
+.ofk-comment-confirm { padding: 8px 10px; border-radius: 8px; background: rgb(240 70 70 / .16); box-shadow: inset 0 0 0 1px rgb(240 70 70 / .5); }
+.ofk-comment-confirm p { margin-bottom: 8px; }
+.ofk-comment-confirm > div { display: flex; gap: 6px; }
+.ofk-comment-confirm .ofk-button[data-variant='quiet'] { color: var(--c-text); }
+
+.ofk-comment-live { color: var(--c-muted); font-size: 12px; }
+.ofk-comment-live p { margin: 2px 0 0; }
+.ofk-comment-card .ofk-comment-live { padding: 0 4px; color: var(--c-muted); }
+.ofk-v2[data-tool='comment'] .ofk-v2-canvas { cursor: crosshair; }
+@media (prefers-reduced-motion: reduce) { .ofk-comment-pin { transition: none; } }
+.ofk-connection-panel .ofk-comment-live { margin-top: 14px; }
+
+/* Threads panel: search and filter on top, a list of thread cards. A card is one button (the whole row opens the thread) with its actions beside it. */
+.ofk-v2 .ofk-threads-panel .ofk-panel-body { display: flex; flex-direction: column; min-height: 0; padding: 0; overflow: hidden; }
+.ofk-threads-bar { flex: none; display: flex; align-items: center; gap: 4px; padding: 10px 12px 8px 16px; }
+.ofk-threads-search { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 10px; color: var(--ofk-muted); background: var(--ofk-surface); border: 1px solid var(--ofk-border); border-radius: 8px; }
+.ofk-threads-search:focus-within { outline: 2px solid var(--ofk-focus); outline-offset: 0; border-color: transparent; }
+.ofk-threads-search svg { width: 16px; height: 16px; flex: none; }
+.ofk-threads-search input { flex: 1; min-width: 0; padding: 0; font: inherit; font-size: 13px; color: var(--ofk-text); background: none; border: 0; outline: none; }
+.ofk-threads-bar .ofk-icon-button { flex: none; color: var(--ofk-secondary); }
+.ofk-threads-bar .ofk-icon-button[data-active] { color: var(--ofk-accent); }
+.ofk-threads-send { flex: none; padding: 0 12px 8px 16px; }
+.ofk-threads-send .ofk-button { width: 100%; }
+.ofk-threads-list { flex: 1; min-height: 0; margin: 0; padding: 0 8px 12px; overflow-y: auto; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.ofk-threads-card { position: relative; border-radius: 10px; }
+.ofk-threads-card:hover, .ofk-threads-card:focus-within, .ofk-threads-card[data-menu-open] { background: var(--ofk-hover, color-mix(in srgb, var(--ofk-text) 6%, transparent)); }
+.ofk-threads-card[data-selected] { background: color-mix(in srgb, var(--ofk-accent) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ofk-accent) 55%, transparent); }
+.ofk-threads-card-main { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: start; width: 100%; box-sizing: border-box; padding: 10px 12px 10px 10px; font: inherit; color: var(--ofk-text); text-align: start; background: none; border: 0; border-radius: inherit; cursor: pointer; }
+.ofk-threads-card-main:focus-visible { outline: 2px solid var(--ofk-focus); outline-offset: -2px; }
+.ofk-threads-card-text { display: grid; gap: 2px; min-width: 0; }
+.ofk-threads-card-where { display: flex; align-items: center; gap: 6px; min-width: 0; padding-inline-end: 64px; font-size: 12px; color: var(--ofk-muted); }
+.ofk-threads-card-where > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ofk-threads-card-state { flex: none; padding: 0 6px; font-size: 11px; border-radius: 99px; background: color-mix(in srgb, var(--ofk-success) 18%, transparent); color: var(--ofk-success); }
+.ofk-threads-card-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ofk-accent); }
+.ofk-threads-card-meta { display: flex; align-items: baseline; gap: 6px; font-size: 13px; }
+.ofk-threads-card-meta strong { font-weight: 600; }
+.ofk-threads-card-meta time { font-size: 12px; color: var(--ofk-muted); }
+.ofk-threads-card-body { display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; white-space: pre-wrap; }
+.ofk-threads-card-replies { font-size: 12px; font-weight: 500; color: var(--ofk-accent); }
+.ofk-threads-card[data-unread] .ofk-threads-card-meta strong { font-weight: 700; }
+.ofk-threads-card[data-resolved] .ofk-threads-card-main > .ofk-comment-avatar, .ofk-threads-card[data-resolved] .ofk-threads-card-body { opacity: .55; }
+.ofk-threads-card-actions { position: absolute; top: 6px; inset-inline-end: 6px; display: flex; gap: 0; opacity: 0; transition: opacity .1s ease; }
+.ofk-threads-card:hover .ofk-threads-card-actions, .ofk-threads-card:focus-within .ofk-threads-card-actions, .ofk-threads-card[data-menu-open] .ofk-threads-card-actions { opacity: 1; }
+.ofk-threads-card-actions .ofk-icon-button { width: 28px; height: 28px; min-width: 28px; min-height: 28px; color: var(--ofk-secondary); }
+@media (hover: none) { .ofk-threads-card-actions { opacity: 1; } }
+.ofk-threads-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 32px 32px 64px; text-align: center; color: var(--ofk-muted); }
+.ofk-threads-empty > svg { width: 32px; height: 32px; margin-bottom: 4px; }
+.ofk-threads-empty h3 { margin: 0; font-size: 14px; font-weight: 600; color: var(--ofk-text); }
+.ofk-threads-empty p { margin: 0 0 8px; font-size: 13px; line-height: 1.45; }
+@media (prefers-reduced-motion: reduce) { .ofk-threads-card-actions { transition: none; } }
+
+/* A pin with news carries a dot; a resolved thread opened from the panel is shown dimmed. */
+.ofk-comment-pin[data-unread]::after { content: ''; position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; box-sizing: border-box; border-radius: 50%; background: var(--ofk-accent, #0d99ff); border: 2px solid #fff; }
+.ofk-comment-pin[data-resolved] { opacity: .6; filter: grayscale(.6); }
+
+/* Threads panel header: the live comments switch and its hint sit before Close. */
+.ofk-threads-live { margin-inline-start: auto; display: flex; align-items: center; gap: 2px; min-width: 0; }
+.ofk-threads-live .ofk-comment-live { padding: 0; }
+.ofk-threads-live .ofk-comment-live label, .ofk-threads-live .ofk-comment-live span { font-size: 12px; white-space: nowrap; }
+
+/* A click away from a box holding text shakes it instead of closing it. */
+@keyframes ofk-comment-wiggle { 0%, 100% { translate: 0; } 20% { translate: -6px; } 40% { translate: 5px; } 60% { translate: -4px; } 80% { translate: 3px; } }
+.ofk-comment-card[data-wiggle] { animation: ofk-comment-wiggle 300ms ease-in-out; }
+@media (prefers-reduced-motion: reduce) {
+  .ofk-comment-card[data-wiggle] { animation: none; outline: 2px solid var(--ofk-accent, #0d99ff); outline-offset: 2px; }
+}
+.ofk-comment-pin[data-dragging] { cursor: grabbing; transform: scale(1.1); transition: none; touch-action: none; }
+.ofk-comment-pin { touch-action: none; }
+.ofk-v2-holder { display: inline-flex; align-items: center; gap: 2px; min-width: 0; }
+.ofk-v2-holder-label { min-width: 0; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-inline: 6px; font-size: 13px; color: var(--ofk-secondary); }

@@ -6,12 +6,15 @@ import { isJsonObject } from './json';
 import { validateNodeContentLayout } from '../node-layout/model';
 import { validateNodeSizingPolicy } from '../node-sizing/model';
 import {
+  COMMENT_BODY_MAX,
   SCENE_DOCUMENT_FORMAT,
   SCENE_DOCUMENT_VERSION,
   type ConnectorEndpoint,
   type ConnectorLabel,
   type ConnectorRouteIntent,
   type SceneAnchor,
+  type SceneComment,
+  type SceneThread,
   type SceneConnector,
   type SceneDocumentV1,
   type SceneLayer,
@@ -157,6 +160,40 @@ function isConnector(value: unknown): value is SceneConnector {
   );
 }
 
+function isComment(value: unknown): value is SceneComment {
+  return (
+    isRecord(value) &&
+    isNonEmptyString(value.id) &&
+    isRecord(value.author) &&
+    (value.author.kind === 'human' || value.author.kind === 'agent') &&
+    isNonEmptyString(value.author.name) &&
+    isNonEmptyString(value.body) &&
+    value.body.length <= COMMENT_BODY_MAX &&
+    isNonEmptyString(value.createdAt) &&
+    (value.editedAt === undefined || isNonEmptyString(value.editedAt))
+  );
+}
+
+// A missing anchor node is not an issue: the node may have been deleted, and the pin stays at `point`.
+function isThread(value: unknown): value is SceneThread {
+  return (
+    isRecord(value) &&
+    isNonEmptyString(value.id) &&
+    Number.isSafeInteger(value.number) &&
+    (value.number as number) > 0 &&
+    isRecord(value.anchor) &&
+    isNullableString(value.anchor.nodeId) &&
+    (value.anchor.offset === null || isPoint2d(value.anchor.offset)) &&
+    (value.anchor.nodeId === null) === (value.anchor.offset === null) &&
+    isPoint2d(value.anchor.point) &&
+    typeof value.resolved === 'boolean' &&
+    Array.isArray(value.comments) &&
+    value.comments.length > 0 &&
+    value.comments.every(isComment) &&
+    hasUniqueIds(value.comments)
+  );
+}
+
 function hasUniqueIds(values: readonly { readonly id: string }[]): boolean {
   return new Set(values.map((value) => value.id)).size === values.length;
 }
@@ -178,7 +215,9 @@ function isPage(value: unknown): value is ScenePage {
     value.connectors.every(isConnector) &&
     hasUniqueIds(value.connectors) &&
     isJsonObject(value.metadata) &&
-    isJsonObject(value.extensions)
+    isJsonObject(value.extensions) &&
+    (value.threads === undefined ||
+      (Array.isArray(value.threads) && value.threads.every(isThread) && hasUniqueIds(value.threads)))
   );
 }
 
@@ -284,6 +323,10 @@ export function validateSceneDocumentV1(value: unknown): DocumentValidationResul
   } else {
     if (!hasUniqueIds(value.pages))
       issues.push({ path: '$.pages', message: 'Page IDs must be unique.' });
+    const numbers = value.pages.flatMap((page) => (page.threads ?? []).map((thread) => thread.number));
+    if (new Set(numbers).size !== numbers.length) {
+      issues.push({ path: '$.pages', message: 'Thread numbers must be unique within the document.' });
+    }
     value.pages.forEach((page, index) =>
       issues.push(...collectPageReferenceIssues(page, `$.pages[${index}]`))
     );

@@ -51,6 +51,7 @@ export function shortcutGroups(apple = isApplePlatform()): readonly ShortcutGrou
       rows: [
         ['Select', 'V', ['v']],
         ['Hand', 'H', ['h']],
+        ['Comment', 'C', ['c']],
         ['Rectangle', 'R', ['r']],
         ['Ellipse', 'O', ['o']],
         ['Shapes', 'S', ['s']],
