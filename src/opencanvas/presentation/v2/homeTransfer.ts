@@ -54,12 +54,3 @@ export async function downloadAllDiagrams({ repository, toast, fail }: HomeTrans
     toast({ tone: 'success', title: `Downloaded ${plural(documents.length, 'diagram')}`, description: 'One file. Import it here to bring them back.' });
   } catch (error) { fail(error); }
 }
-
-/** Renames a diagram of this browser; a sentence for the user when it cannot be, else null. */
-export async function renameLocalDiagram(repository: V2DocumentRepository, id: string, name: string): Promise<string | null> {
-  const loaded = await repository.loadDocument(id);
-  if (loaded.status !== 'ok') return 'This diagram can only be renamed after it opens cleanly. Open it first.';
-  if (!name || loaded.record.document.name === name) return null;
-  const saved = await repository.saveDocument(id, { ...loaded.record.document, name }, loaded.record.revision + 1);
-  return saved.status === 'saved' ? null : 'That diagram changed in another tab. Reload and try again.';
-}

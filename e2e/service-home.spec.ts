@@ -23,6 +23,7 @@ test.beforeAll(async () => {
   const app = join(scratch, 'app');
   execFileSync('npx', ['vite', 'build', '--outDir', app, '--emptyOutDir'], { stdio: 'pipe' });
   const config = join(scratch, 'service.json');
+  // The config requires a port; --port 0 below overrides it.
   writeFileSync(config, JSON.stringify({
     port: 43120, projects: [{ name: 'alpha', path: alphaDir }, { name: 'beta', path: join(scratch, 'beta') }],
   }));
@@ -47,7 +48,7 @@ test.afterAll(() => {
   if (scratch) rmSync(scratch, { recursive: true, force: true });
 });
 
-test('Home groups service diagrams by project; only the rename is offered on them @gate', async ({ page }) => {
+test('Home groups service diagrams by project; only the rename is offered on them', async ({ page }) => {
   await page.goto(`${url}/#/home`);
   await expect(page.getByTestId('v2-home')).toBeVisible();
   // A diagram of this browser's own, brought in as a file.
@@ -80,6 +81,26 @@ test('Home groups service diagrams by project; only the rename is offered on the
   await expect(page.getByRole('menuitem', { name: 'Star' })).toHaveCount(0);
   await expect(beta.getByRole('button', { name: 'Star Beta flow' })).toHaveCount(0);
   await page.keyboard.press('Escape');
+  // No way to select a service card, so no selection bar and its Delete; the browser's card has one.
+  await expect(beta.getByRole('checkbox', { name: 'Select Beta flow' })).toHaveCount(0);
+  await expect(page.getByRole('checkbox', { name: 'Select Local one' })).toBeAttached();
+  // Delete and Space on a focused service card do nothing.
+  await beta.getByRole('link', { name: 'Beta flow' }).focus();
+  await page.keyboard.press('Delete');
+  await page.keyboard.press('Space');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByTestId('v2-home')).not.toHaveAttribute('data-selecting', '');
+  await expect(beta).toContainText('Beta flow');
+  expect(readdirSync(join(scratch, 'beta'))).toHaveLength(1);
+
+  // Renaming to the same name sends nothing: the file's revision stays.
+  const revision = async () => ((await (await fetch(`${url}/projects/alpha/diagrams/${ids['Alpha flow']}`)).json()) as { revision: number }).revision;
+  const before = await revision();
+  await alpha.getByRole('link', { name: 'Alpha flow' }).focus();
+  await page.keyboard.press('F2');
+  await page.getByRole('textbox', { name: 'Rename Alpha flow' }).press('Enter');
+  await expect(page.getByRole('textbox', { name: 'Rename Alpha flow' })).toHaveCount(0);
+  expect(await revision()).toBe(before);
 
   // Rename through the service: the file's name changes.
   await page.getByRole('button', { name: 'More actions for Alpha second' }).click();

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { V2DocumentInvalidError, V2StorageError, V2StorageUnavailableError } from '../v2/v2Errors';
-import { createServiceRepository } from './serviceRepository';
+import { createServiceRepository, renameServiceDiagram } from './serviceRepository';
 
 interface RunningService { readonly url: string; close(): Promise<void> }
 // Loaded by path, not import: the root project does not type-check the service's sources.
@@ -90,6 +90,29 @@ describe('createServiceRepository', () => {
     // Paired by a load, a save at a revision the load did not give is refused the same way.
     await fresh.loadDocument(id);
     await expect(fresh.saveDocument(id, loaded.record.document, revision + 5, revision + 4)).rejects.toThrow(/Open the diagram again/);
+  });
+
+  it('renames a diagram through the service', async () => {
+    const { id } = await post('/projects/alpha/diagrams', { name: 'Flow' });
+    await renameServiceDiagram('alpha', id, 'Renamed', service.url);
+    const loaded = await createServiceRepository('alpha', service.url).loadDocument(id);
+    expect(loaded.status === 'ok' && loaded.record.document.name).toBe('Renamed');
+  });
+
+  it('refuses to rename a diagram the service does not have, in the service’s words', async () => {
+    await expect(renameServiceDiagram('alpha', 'nope', 'X', service.url)).rejects.toThrow(/could not rename the diagram: .+/);
+    await expect(renameServiceDiagram('alpha', 'nope', 'X', service.url)).rejects.toThrow(V2StorageError);
+  });
+
+  it('says the service is not reachable when a rename finds a closed port', async () => {
+    const closed = await new Promise<number>((resolve) => {
+      const probe = createServer().listen(0, '127.0.0.1', () => {
+        const { port } = probe.address() as { port: number };
+        probe.close(() => resolve(port));
+      });
+    });
+    await expect(renameServiceDiagram('alpha', 'x', 'X', `http://127.0.0.1:${closed}`)).rejects.toThrow(V2StorageUnavailableError);
+    await expect(renameServiceDiagram('alpha', 'x', 'X', `http://127.0.0.1:${closed}`)).rejects.toThrow(/not reachable/);
   });
 
   it('reports a hand-edited file the service cannot read, in the service’s words', async () => {

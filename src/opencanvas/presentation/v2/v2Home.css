@@ -98,6 +98,8 @@
 
 /* Ways to start: four cards, each with its own small loop. */
 .ofk-home-map { max-width: 520px; }
+.ofk-home-projects { display: flex; flex-direction: column; gap: 24px; margin-top: 16px; }
+.ofk-home-project-title { margin: 0 0 12px; color: var(--ofk-text); font-size: 13.5px; font-weight: 600; }
 .ofk-home-chips + .ofk-home-map { margin: 12px 0 4px; }
 .ofk-home-map .ofk-v2-map-repo-form { margin: 0; }
 .ofk-home-starts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }

@@ -5,7 +5,7 @@ import type { HomeNotice } from './V2LegacyRoutes';
 import { Button, EmptyState, ErrorState, Icon, SystemRoot, ToastRegion, withToast, type ToastItem } from '../design-system';
 import { CommandPalette } from '../design-system/CommandPalette';
 import { createV2Repository, type V2DocumentSummary, type V2Thumbnail } from '../../../services/storage/v2/v2Repository';
-import { createServiceRepository, renameServiceDiagram } from '../../../services/storage/service/serviceRepository';
+import { listServiceDocuments } from '../../../services/storage/service/serviceRepository';
 import { describeStorageFailure } from '../../../services/storage/v2/v2Errors';
 import { plainImportFailure } from '../../domain/document/legacyWorkspace';
 import { readV1ImportMarker, runV1Import } from '../../../services/storage/v2/v1Import';
@@ -22,7 +22,8 @@ import { HOME_NEWS } from './homeNews';
 import { arrange, copyName, gridStep, parseView, selectRange, toggleId, useHomeState, type HomeView } from './homeLibrary';
 import { SORTS, STARTS, VIEWS, plural, typing, viewLink } from './homeConfig';
 import { buildHomeCommands } from './homeCommands';
-import { downloadAllDiagrams, importHomeFiles, renameLocalDiagram, type HomeTransfer } from './homeTransfer';
+import { downloadAllDiagrams, importHomeFiles, type HomeTransfer } from './homeTransfer';
+import { renameLocalDiagram, renameServiceCard } from './homeActions';
 import { HomeProjects } from './V2HomeProjects';
 import { V2HomeSidebar } from './V2HomeSidebar';
 import { V2HomeHeader } from './V2HomeHeader';
@@ -98,7 +99,7 @@ export function V2HomePage(): React.JSX.Element {
       (error: unknown) => setListError(describeStorageFailure(error)));
     repository.listArchive().then(setArchive, () => setArchive([]));
     // No service, or one that answers badly, is not an error: there is just no Projects section.
-    createServiceRepository('').listDocuments().then(setServiceDocuments, () => setServiceDocuments(null));
+    listServiceDocuments().then(setServiceDocuments, () => setServiceDocuments(null));
     // A preview that fails to load is a placeholder, never an error.
     repository.listThumbnails().then((listed) => { setThumbnails(listed); setThumbnailsListed(true); }, () => undefined);
   }, [repository]);
@@ -165,12 +166,8 @@ export function V2HomePage(): React.JSX.Element {
     const name = draft.trim();
     setRenaming(null);
     try {
-      if (project !== undefined) {
-        if (name) await renameServiceDiagram(project, id, name);
-      } else {
-        const problem = await renameLocalDiagram(repository, id, name);
-        if (problem) setProblem(problem);
-      }
+      const problem = project === undefined ? await renameLocalDiagram(repository, id, name) : await renameServiceCard(serviceDocuments, project, id, name);
+      if (problem) setProblem(problem);
     } catch (error) {
       fail(error);
     }
