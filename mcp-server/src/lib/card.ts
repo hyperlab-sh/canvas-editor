@@ -72,6 +72,11 @@ export function clientShowsApps(capabilities: { extensions?: Record<string, unkn
   return Boolean(ui) && typeof ui === 'object' && (!Array.isArray(ui.mimeTypes) || ui.mimeTypes.includes(VIEWER_MIME));
 }
 
+/** True when the client declared `claude/channel` at initialize: the one signal that it listens for thread events. */
+export function clientHasChannel(capabilities: { experimental?: Record<string, unknown> } | undefined): boolean {
+  return capabilities?.experimental?.['claude/channel'] !== undefined;
+}
+
 export const PREVIEW_TOOL = 'preview_diagram';
 /** Hosts keep an app-only tool out of the model's tool list and let only the card call it (MCP Apps `visibility`). */
 export const PREVIEW_TOOL_META = { ui: { resourceUri: VIEWER_URI, visibility: ['app'] } };
