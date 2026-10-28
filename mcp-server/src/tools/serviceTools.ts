@@ -8,6 +8,9 @@ import type { ServiceBinding, ServiceClient } from '../lib/serviceClient.js';
 /** Appended to a service-mode drawing result when this session cannot receive the canvas's comments (AC-5). */
 export const NO_CHANNEL_NOTE = 'This session cannot receive comments from the canvas. Restart it with channels enabled.';
 
+/** The guidance for a session that is on the service path but holds nothing (D5). */
+export const CONNECT_HINT = 'This session is on the service: call connect_diagram for a diagram the user names, or create_diagram with a project to make one.';
+
 export const diagramField = z.string().min(1).optional()
   .describe('Service mode: id of the connected diagram to act on. Needed only when this session is connected to more than one.');
 
@@ -23,8 +26,8 @@ export function pickBinding(bindings: readonly ServiceBinding[], diagram?: strin
 }
 
 /** The project a new diagram goes in: the one named, else the only one there is. */
-export async function pickProject(service: ServiceClient, project?: string): Promise<string> {
-  const names = (await service.projects()).map(({ name }) => name);
+export async function pickProject(service: ServiceClient, project?: string, listed?: readonly { name: string }[] | null): Promise<string> {
+  const names = (listed ?? await service.projects()).map(({ name }) => name);
   if (project) {
     if (!names.includes(project)) throw new Error(`There is no project "${project}". Projects: ${names.join(', ') || 'none configured'}.`);
     return project;
