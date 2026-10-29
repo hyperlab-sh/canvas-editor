@@ -28,6 +28,7 @@ import { renderMapHtml } from './lib/mapHtml.js';
 import { MAP_DEPTHS, MapInputError, buildRepoMap, summarizeMap } from './lib/repoMap.js';
 import { MCP_SERVER_VERSION } from './lib/version.js';
 import { welcome } from './lib/welcome.js';
+import { CLI_NAME } from './cliName.js';
 import {
   EMPTY_SVG,
   type SiteFlow,
@@ -48,16 +49,16 @@ export interface CliIo {
   terminal?: { readonly columns: number; readonly color: boolean };
 }
 
-const USAGE = `openflowkit — diagrams agents write, kept valid, editable and next to the code
+const USAGE = `${CLI_NAME} — diagrams agents write, kept valid, editable and next to the code
 
 Usage:
 ${OP_USAGE}
-  openflowkit discover <dir> [--out architecture.ofk] [--no-svg]
-  openflowkit drift <dir> [--model architecture.ofk] [--json]
-  openflowkit build <dir> [--out dist]
-  openflowkit map <dir> [--depth overview|detailed|everything] [--html out.html]
-  openflowkit mcp
-  openflowkit serve [--port N] [--config path] [--app dir]
+  ${CLI_NAME} discover <dir> [--out architecture.ofk] [--no-svg]
+  ${CLI_NAME} drift <dir> [--model architecture.ofk] [--json]
+  ${CLI_NAME} build <dir> [--out dist]
+  ${CLI_NAME} map <dir> [--depth overview|detailed|everything] [--html out.html]
+  ${CLI_NAME} mcp
+  ${CLI_NAME} serve [--port N] [--config path] [--app dir]
 
 Commands:
 ${OP_COMMANDS}
@@ -150,9 +151,9 @@ function formatDrift(
 
 async function runDrift(args: readonly string[], io: CliIo): Promise<number> {
   const parsed = parseArgs(args, new Set(['model', 'max-files']));
-  if (parsed.error) { io.err(`openflowkit drift: ${parsed.error}\n\n${USAGE}`); return 2; }
+  if (parsed.error) { io.err(`${CLI_NAME} drift: ${parsed.error}\n\n${USAGE}`); return 2; }
   const dir = parsed.positionals[0];
-  if (!dir) { io.err(`openflowkit drift: missing <dir>\n\n${USAGE}`); return 2; }
+  if (!dir) { io.err(`${CLI_NAME} drift: missing <dir>\n\n${USAGE}`); return 2; }
   const modelPath = parsed.flags.get('model') ?? path.join(dir, 'architecture.ofk');
   try {
     const maxFiles = maxFilesOf(parsed.flags);
@@ -161,7 +162,7 @@ async function runDrift(args: readonly string[], io: CliIo): Promise<number> {
     // Only the model is read, so the compile's default layout is fine here.
     const model = firstModel(await compileWorkspace(source));
     if (!model) {
-      io.err(`openflowkit drift: no C4 model in ${modelPath}`);
+      io.err(`${CLI_NAME} drift: no C4 model in ${modelPath}`);
       return 2;
     }
     const report = driftReport(model, discovery);
@@ -173,7 +174,7 @@ async function runDrift(args: readonly string[], io: CliIo): Promise<number> {
     }
     return drift ? 1 : 0;
   } catch (error) {
-    io.err(`openflowkit drift: ${error instanceof Error ? error.message : String(error)}`);
+    io.err(`${CLI_NAME} drift: ${error instanceof Error ? error.message : String(error)}`);
     return 2;
   }
 }
@@ -182,9 +183,9 @@ async function runDrift(args: readonly string[], io: CliIo): Promise<number> {
 
 async function runDiscover(args: readonly string[], io: CliIo): Promise<number> {
   const parsed = parseArgs(args, new Set(['out', 'name', 'max-files']));
-  if (parsed.error) { io.err(`openflowkit discover: ${parsed.error}\n\n${USAGE}`); return 2; }
+  if (parsed.error) { io.err(`${CLI_NAME} discover: ${parsed.error}\n\n${USAGE}`); return 2; }
   const dir = parsed.positionals[0];
-  if (!dir) { io.err(`openflowkit discover: missing <dir>\n\n${USAGE}`); return 2; }
+  if (!dir) { io.err(`${CLI_NAME} discover: missing <dir>\n\n${USAGE}`); return 2; }
   try {
     const maxFiles = maxFilesOf(parsed.flags);
     const discovery = await runArchitectureDiscovery(dir, maxFiles ? { maxFiles } : {});
@@ -201,11 +202,11 @@ async function runDiscover(args: readonly string[], io: CliIo): Promise<number> 
         const document = await documentOfDsl(dsl, path.basename(out).replace(/\.[^.]+$/, ''));
         if (document === null) {
           const stale = existsSync(svgBeside(out)) ? `; ${svgBeside(out)} is now stale` : '';
-          io.err(`openflowkit discover: ${out} does not compile; no svg written${stale}`);
+          io.err(`${CLI_NAME} discover: ${out} does not compile; no svg written${stale}`);
         } else {
           const picture = await tryWriteSvgBeside(out, document);
           if ('svg' in picture) io.out(`wrote ${picture.svg}`);
-          else { failedSvg = true; io.err(`openflowkit discover: saved ${out}; svg failed: ${picture.svgError}`); }
+          else { failedSvg = true; io.err(`${CLI_NAME} discover: saved ${out}; svg failed: ${picture.svgError}`); }
         }
       }
       io.err(discoverySummary(discovery));
@@ -215,7 +216,7 @@ async function runDiscover(args: readonly string[], io: CliIo): Promise<number> 
     }
     return 0;
   } catch (error) {
-    io.err(`openflowkit discover: ${error instanceof Error ? error.message : String(error)}`);
+    io.err(`${CLI_NAME} discover: ${error instanceof Error ? error.message : String(error)}`);
     return 2;
   }
 }
@@ -224,12 +225,12 @@ async function runDiscover(args: readonly string[], io: CliIo): Promise<number> 
 
 async function runMap(args: readonly string[], io: CliIo): Promise<number> {
   const parsed = parseArgs(args, new Set(['depth', 'html']));
-  if (parsed.error) { io.err(`openflowkit map: ${parsed.error}\n\n${USAGE}`); return 2; }
+  if (parsed.error) { io.err(`${CLI_NAME} map: ${parsed.error}\n\n${USAGE}`); return 2; }
   const dir = parsed.positionals[0];
-  if (!dir) { io.err(`openflowkit map: missing <dir>\n\n${USAGE}`); return 2; }
+  if (!dir) { io.err(`${CLI_NAME} map: missing <dir>\n\n${USAGE}`); return 2; }
   const depth = parsed.flags.get('depth') ?? 'overview';
   if (!(MAP_DEPTHS as readonly string[]).includes(depth)) {
-    io.err(`openflowkit map: --depth must be overview, detailed or everything, not "${depth}"`);
+    io.err(`${CLI_NAME} map: --depth must be overview, detailed or everything, not "${depth}"`);
     return 2;
   }
   try {
@@ -246,7 +247,7 @@ async function runMap(args: readonly string[], io: CliIo): Promise<number> {
     }
     return 0;
   } catch (error) {
-    io.err(`openflowkit map: ${error instanceof Error ? error.message : String(error)}`);
+    io.err(`${CLI_NAME} map: ${error instanceof Error ? error.message : String(error)}`);
     return error instanceof MapInputError ? 1 : 2;
   }
 }
@@ -254,16 +255,16 @@ async function runMap(args: readonly string[], io: CliIo): Promise<number> {
 
 async function runBuild(args: readonly string[], io: CliIo): Promise<number> {
   const parsed = parseArgs(args, new Set(['out']));
-  if (parsed.error) { io.err(`openflowkit build: ${parsed.error}\n\n${USAGE}`); return 2; }
+  if (parsed.error) { io.err(`${CLI_NAME} build: ${parsed.error}\n\n${USAGE}`); return 2; }
   const dir = parsed.positionals[0];
-  if (!dir) { io.err(`openflowkit build: missing <dir>\n\n${USAGE}`); return 2; }
+  if (!dir) { io.err(`${CLI_NAME} build: missing <dir>\n\n${USAGE}`); return 2; }
   const outDir = parsed.flags.get('out') ?? 'dist';
   try {
     const source = await readFile(path.join(dir, 'architecture.ofk'), 'utf8');
     // The MCP file host's compile: ELK layout plus the editor's icon rule and art.
     const workspace = await (await loadFileCapabilities()).compileWorkspace(source) as unknown as BundleWorkspace;
     if (workspace.views.length === 0) {
-      io.err('openflowkit build: architecture.ofk compiled to no views');
+      io.err(`${CLI_NAME} build: architecture.ofk compiled to no views`);
       return 2;
     }
     const model = firstModel(workspace) ?? { elements: [], relations: [], views: [], flows: [] };
@@ -320,7 +321,7 @@ async function runBuild(args: readonly string[], io: CliIo): Promise<number> {
     io.out(`built ${outDir} — ${views.length} view(s), ${flows.reduce((total, flow) => total + flow.steps.length, 0)} flow step(s)`);
     return 0;
   } catch (error) {
-    io.err(`openflowkit build: ${error instanceof Error ? error.message : String(error)}`);
+    io.err(`${CLI_NAME} build: ${error instanceof Error ? error.message : String(error)}`);
     return 2;
   }
 }
@@ -330,17 +331,17 @@ async function runBuild(args: readonly string[], io: CliIo): Promise<number> {
 /** One command's usage, options and summary, cut from USAGE so the two cannot disagree; null for no such command. */
 function commandHelp(command: string): string | null {
   const lines = USAGE.split('\n');
-  const usage = lines.filter((line) => line.trimStart() === `openflowkit ${command}` || line.trimStart().startsWith(`openflowkit ${command} `));
+  const usage = lines.filter((line) => line.trimStart() === `${CLI_NAME} ${command}` || line.trimStart().startsWith(`${CLI_NAME} ${command} `));
   if (usage.length === 0) return null;
   const summary = lines.find((line) => line.startsWith(`  ${command} `))?.slice(command.length + 2).trim();
   const options = lines.filter((line) => line.startsWith('  -') && new RegExp(`\\b${command}\\b`).test(line));
-  return [`openflowkit ${command}${summary ? ` — ${summary}` : ''}`, '', 'Usage:', ...usage, ...(options.length ? ['', 'Options:', ...options] : [])].join('\n');
+  return [`${CLI_NAME} ${command}${summary ? ` — ${summary}` : ''}`, '', 'Usage:', ...usage, ...(options.length ? ['', 'Options:', ...options] : [])].join('\n');
 }
 
 export async function main(argv: readonly string[], io: CliIo): Promise<number> {
   const [command, ...rest] = argv;
   if (command === '--help' || command === '-h' || command === 'help') { io.out(USAGE); return 0; }
-  if (command === '--version' || command === '-v') { io.out(`openflowkit ${MCP_SERVER_VERSION}`); return 0; }
+  if (command === '--version' || command === '-v') { io.out(`${CLI_NAME} ${MCP_SERVER_VERSION}`); return 0; }
   if (!command) {
     if (io.terminal) { io.out(welcome({ ...io.terminal, version: MCP_SERVER_VERSION })); return 0; }
     io.err(USAGE);
@@ -358,7 +359,7 @@ export async function main(argv: readonly string[], io: CliIo): Promise<number> 
   if (command === 'serve') return (await import('./service/serve.js')).runServe(rest, io);
   const handled = await runRegistryCommand(command, rest, io, USAGE);
   if (handled !== null) return handled;
-  io.err(`openflowkit: unknown command "${command}"\n\n${USAGE}`);
+  io.err(`${CLI_NAME}: unknown command "${command}"\n\n${USAGE}`);
   return 2;
 }
 
@@ -378,7 +379,7 @@ if (isMain(import.meta.url)) {
   }).then(
     (code) => { process.exitCode = code; },
     (error: unknown) => {
-      process.stderr.write(`openflowkit: ${error instanceof Error ? error.message : String(error)}\n`);
+      process.stderr.write(`${CLI_NAME}: ${error instanceof Error ? error.message : String(error)}\n`);
       process.exitCode = 2;
     },
   );

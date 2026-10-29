@@ -15,13 +15,14 @@ import { DocumentStore } from './lib/documentStore.js';
 import { loadFileCapabilities } from './lib/fileCapabilities.js';
 import { exportSvg, svgBeside, tryWriteSvgBeside } from './lib/svgBeside.js';
 import type { CliIo } from './cli.js';
+import { CLI_NAME } from './cliName.js';
 
-export const OP_USAGE = `  openflowkit op <name> [--doc file.openflow.json] [--args '{…}' | --args -] [--page <id>] [--svg]
-  openflowkit op <name> --help
-  openflowkit ops [--json]
-  openflowkit render <file|-> [-o out.svg] [--theme light|dark] [--strict] [--json]
-  openflowkit convert <file|-> [-o out.openflow.json] [--svg] [--strict] [--json]
-  openflowkit validate <file|-> [--strict] [--json]`;
+export const OP_USAGE = `  ${CLI_NAME} op <name> [--doc file.openflow.json] [--args '{…}' | --args -] [--page <id>] [--svg]
+  ${CLI_NAME} op <name> --help
+  ${CLI_NAME} ops [--json]
+  ${CLI_NAME} render <file|-> [-o out.svg] [--theme light|dark] [--strict] [--json]
+  ${CLI_NAME} convert <file|-> [-o out.openflow.json] [--svg] [--strict] [--json]
+  ${CLI_NAME} validate <file|-> [--strict] [--json]`;
 
 export const OP_COMMANDS = `  op        run one agent op (the same ops as the MCP server) on a document file
   ops       list the ops
@@ -110,13 +111,13 @@ async function runOp(args: readonly string[], io: CliIo): Promise<number> {
     result = await runAgentOp(op, input, { document, pageId, capabilities: await loadFileCapabilities() });
   } catch (error) {
     if (!(error as { diagnostics?: unknown }).diagnostics) throw error;
-    io.err(`openflowkit op ${name}: ${(error as Error).message.replace(/\n/g, '; ')}; nothing saved`);
+    io.err(`${CLI_NAME} op ${name}: ${(error as Error).message.replace(/\n/g, '; ')}; nothing saved`);
     return 1;
   }
   const errors = ((result.output as { diagnostics?: readonly Diagnostic[] } | null)?.diagnostics ?? []).filter(({ severity }) => severity === 'error');
   if (errors.length) {
     io.out(JSON.stringify({ changed: false, output: result.output }, null, 2));
-    io.err(`openflowkit op ${name}: ${errors.map((issue) => `line ${issue.line}: ${issue.message}`).join('; ')}; nothing saved`);
+    io.err(`${CLI_NAME} op ${name}: ${errors.map((issue) => `line ${issue.line}: ${issue.message}`).join('; ')}; nothing saved`);
     return 1;
   }
   let picture: Awaited<ReturnType<typeof tryWriteSvgBeside>> | undefined;
@@ -126,11 +127,11 @@ async function runOp(args: readonly string[], io: CliIo): Promise<number> {
     await store.save(result.document.id, docPath);
     if (values.svg) picture = await tryWriteSvgBeside(docPath, result.document, pageId);
   } else if (result.changed) {
-    io.err(`openflowkit op ${name}: no --doc, so the change was not saved`);
+    io.err(`${CLI_NAME} op ${name}: no --doc, so the change was not saved`);
   } else if (values.svg) {
-    io.err(`openflowkit op ${name}: no SVG written, nothing was saved`);
+    io.err(`${CLI_NAME} op ${name}: no SVG written, nothing was saved`);
   }
-  if (picture && 'svgError' in picture) io.err(`openflowkit op ${name}: saved ${docPath}; svg failed: ${picture.svgError}`);
+  if (picture && 'svgError' in picture) io.err(`${CLI_NAME} op ${name}: saved ${docPath}; svg failed: ${picture.svgError}`);
   io.out(JSON.stringify({ changed: result.changed, ...(result.changed && docPath ? { saved: docPath } : {}), ...picture, output: result.output }, null, 2));
   return picture && 'svgError' in picture ? 1 : 0;
 }
@@ -213,7 +214,7 @@ const droppedHint = (form: string) => `Rewrite the line (${form} shows the form)
  */
 export async function checkForValidation(source: string, terminal = false): Promise<Checked> {
   const checked = await check(source, 'validate', 'none');
-  const hint = droppedHint(terminal ? '`openflowkit op get_syntax`' : 'get_syntax');
+  const hint = droppedHint(terminal ? `\`${CLI_NAME} op get_syntax\`` : 'get_syntax');
   return {
     ...checked,
     issues: checked.issues.map((issue) => (isDropped(issue) ? { ...issue, severity: 'error', hint: issue.hint ?? hint } : issue)),
@@ -323,8 +324,8 @@ export async function runRegistryCommand(command: string, args: readonly string[
     const usageError = error instanceof UsageError;
     // --json callers get one JSON document on stdout whatever happened.
     if (args.includes('--json')) io.out(JSON.stringify({ ok: false, error: usageError ? (error as Error).message : describeError(error) }, null, 2));
-    if (usageError) { io.err(`openflowkit ${command}: ${(error as Error).message}\n\n${usage}`); return 2; }
-    io.err(`openflowkit ${command}: ${describeError(error)}`);
+    if (usageError) { io.err(`${CLI_NAME} ${command}: ${(error as Error).message}\n\n${usage}`); return 2; }
+    io.err(`${CLI_NAME} ${command}: ${describeError(error)}`);
     return 1;
   }
 }

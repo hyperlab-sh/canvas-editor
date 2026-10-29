@@ -7,6 +7,7 @@ import { buildRoutes, createHandler, type Route } from './routes.js';
 import { createEvents } from './events.js';
 import { createSessions, type SessionTiming } from './sessions.js';
 import { createStore } from './store.js';
+import { CLI_NAME } from '../cliName.js';
 
 export interface RunningService {
   readonly port: number;
@@ -76,7 +77,7 @@ function parseArgs(args: readonly string[]): { port?: number; config?: string; a
   for (let i = 0; i < args.length; i += 1) {
     const flag = args[i];
     const value = args[i + 1];
-    if (flag !== '--port' && flag !== '--config' && flag !== '--app') return `serve: unknown argument "${flag}". Usage: openflowkit serve [--port N] [--config path] [--app dir]`;
+    if (flag !== '--port' && flag !== '--config' && flag !== '--app') return `serve: unknown argument "${flag}". Usage: ${CLI_NAME} serve [--port N] [--config path] [--app dir]`;
     if (value === undefined) return `serve: ${flag} needs a value.`;
     i += 1;
     if (flag === '--port') {
@@ -101,16 +102,16 @@ export async function runServe(args: readonly string[], io: CliIo, onStart?: (se
   const appDir = parsed.app ?? process.env.OPENFLOWKIT_APP_DIR ?? defaultAppDir();
   try {
     const service = await startService({ port, appDir, config });
-    io.out(`openflowkit service listening on ${service.url} (app: ${resolve(appDir)})`);
+    io.out(`${CLI_NAME} service listening on ${service.url} (app: ${resolve(appDir)})`);
     onStart?.(service);
     return 0;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'EADDRINUSE') throw error;
     if (await isOurService(port)) {
-      io.out(`openflowkit service is already running on http://127.0.0.1:${port}`);
+      io.out(`${CLI_NAME} service is already running on http://127.0.0.1:${port}`);
       return 0;
     }
-    io.err(`openflowkit serve: port ${port} is in use by something that is not an OpenFlowKit service. Free it, or pick another with --port or the config file.`);
+    io.err(`${CLI_NAME} serve: port ${port} is in use by something that is not an OpenFlowKit service. Free it, or pick another with --port or the config file.`);
     return 1;
   }
 }
