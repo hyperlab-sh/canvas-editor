@@ -145,12 +145,12 @@ export function V2AgentPanel({
         onAccept={async () => undefined} onDismiss={proposal.discard} onUndo={assistant.undo} />;
     }
     if (isLive && proposal.phase === 'failed') {
-      return <p className="ofk-v2-outcome" data-tone="danger">{proposal.error ?? BAR_LABELS.failed}</p>;
+      return <p className="canvas-v2-outcome" data-tone="danger">{proposal.error ?? BAR_LABELS.failed}</p>;
     }
     const outcome = message.outcome === 'applied' ? 'Applied to the canvas'
       : message.outcome === 'undone' ? 'Applied, then undone'
         : message.outcome === 'discarded' ? 'Discarded' : 'Proposal expired — Retry for a fresh one';
-    return <p className="ofk-v2-outcome" data-outcome={message.outcome ?? 'expired'}>
+    return <p className="canvas-v2-outcome" data-outcome={message.outcome ?? 'expired'}>
       {message.outcome === 'applied' ? <Icon icon={IconCheck} /> : null}{outcome}
     </p>;
   };
@@ -175,18 +175,18 @@ export function V2AgentPanel({
     const done = !streaming;
     return {
       id: message.id, role: 'agent',
-      content: <div className="ofk-v2-reply" data-streaming={streaming || undefined}>
+      content: <div className="canvas-v2-reply" data-streaming={streaming || undefined}>
         <Thinking message={message} live={streaming} />
         <Steps steps={message.steps} live={streaming} />
         {reply.prose ? <Markdown text={reply.prose} /> : null}
         {phase ? <Activity phase={phase} reading={diagramCount > 0 && !message.steps?.length} /> : null}
         {!streaming && !reply.prose && !reply.blocks.length && !message.error && !message.proposalId
-          ? <p className="ofk-v2-outcome">{message.status === 'stopped' ? 'Stopped.' : 'No reply.'}</p> : null}
-        {message.status === 'stopped' && reply.prose ? <p className="ofk-v2-outcome">Stopped.</p> : null}
-        {message.note ? <p className="ofk-v2-outcome">{message.note}</p> : null}
-        {message.error ? <div className="ofk-v2-reply-error" role="alert">
+          ? <p className="canvas-v2-outcome">{message.status === 'stopped' ? 'Stopped.' : 'No reply.'}</p> : null}
+        {message.status === 'stopped' && reply.prose ? <p className="canvas-v2-outcome">Stopped.</p> : null}
+        {message.note ? <p className="canvas-v2-outcome">{message.note}</p> : null}
+        {message.error ? <div className="canvas-v2-reply-error" role="alert">
           <p>{message.error}</p>
-          <div className="ofk-v2-assistant-actions">
+          <div className="canvas-v2-assistant-actions">
             <Button onClick={() => assistant.retry(message.id)} disabled={busy}><Icon icon={IconRefresh} />Retry</Button>
             <Button variant="quiet" onClick={() => setProviderOpen(true)}>Check provider</Button>
           </div>
@@ -194,11 +194,11 @@ export function V2AgentPanel({
       </div>,
       attachment: <>
         {review(message)}
-        {done ? <div className="ofk-v2-message-actions" data-role="agent">
+        {done ? <div className="canvas-v2-message-actions" data-role="agent">
           <CopyButton text={reply.prose || message.text} label="Copy reply" />
           <IconButton variant="quiet" label="Retry" disabled={busy} icon={<Icon icon={IconRefresh} />} onClick={() => assistant.retry(message.id)} />
           <IconButton variant="quiet" label="Report on GitHub" icon={<Icon icon={IconFlag} />} onClick={() => report(message)} />
-          {message.model ? <span className="ofk-v2-message-meta">{message.model}</span> : null}
+          {message.model ? <span className="canvas-v2-message-meta">{message.model}</span> : null}
         </div> : null}
       </>,
     };
@@ -216,17 +216,17 @@ export function V2AgentPanel({
       <AgentPanel
         title="AI assistant"
         onClose={onClose}
-        className="ofk-v2-assistant-panel"
+        className="canvas-v2-assistant-panel"
         data-status={busy ? 'connecting' : configured ? 'connected' : 'off'}
         tools={<>
           {assistant.chats.length ? <IconButton variant="quiet" label="Chat history" aria-pressed={historyOpen}
             icon={<Icon icon={IconHistory} />} onClick={() => openHistory(!historyOpen)} /> : null}
           {messages.length ? <IconButton variant="quiet" label="New chat" icon={<Icon icon={IconMessagePlus} />}
             onClick={() => { assistant.newChat(); setEditingId(null); setHistoryOpen(false); input.current?.focus(); }} /> : null}
-          <button type="button" className="ofk-connection-badge ofk-v2-provider-badge"
+          <button type="button" className="canvas-connection-badge canvas-v2-provider-badge"
             aria-label={configured ? `AI provider: ${modelLabel}. Change` : 'Connect an AI provider'}
             title={configured ? modelLabel : undefined} onClick={() => setProviderOpen(true)}>
-            <span className="ofk-connection-dot" /><span className="ofk-v2-provider-model">{configured ? modelLabel : 'No provider'}</span>
+            <span className="canvas-connection-dot" /><span className="canvas-v2-provider-model">{configured ? modelLabel : 'No provider'}</span>
           </button>
         </>}
         messages={historyOpen ? [] : thread}
@@ -234,27 +234,27 @@ export function V2AgentPanel({
           onOpen={(chatId) => { assistant.openChat(chatId); setEditingId(null); openHistory(false); }}
           // The last chat gone leaves nothing to list, and no History button to leave by.
           onDelete={(chatId) => { assistant.deleteChat(chatId); if (assistant.chats.length <= 1) openHistory(false); }}
-          onClose={() => openHistory(false)} /> : <div className="ofk-v2-assistant-welcome">
-          <div className="ofk-v2-assistant-hero" aria-hidden="true">
-            <span className="ofk-v2-assistant-hero-prompt">Map onboarding</span>
-            <span className="ofk-connection-hero-link"><i /><i /><i /></span>
-            <span className="ofk-v2-assistant-hero-diagram">
-              <span className="ofk-v2-assistant-mark"><Icon icon={IconSparkles} /></span>
+          onClose={() => openHistory(false)} /> : <div className="canvas-v2-assistant-welcome">
+          <div className="canvas-v2-assistant-hero" aria-hidden="true">
+            <span className="canvas-v2-assistant-hero-prompt">Map onboarding</span>
+            <span className="canvas-connection-hero-link"><i /><i /><i /></span>
+            <span className="canvas-v2-assistant-hero-diagram">
+              <span className="canvas-v2-assistant-mark"><Icon icon={IconSparkles} /></span>
               <i /><i /><i />
             </span>
           </div>
           <h3>{diagramCount ? 'Ask about this page, or change it.' : 'From a thought to a clear picture.'}</h3>
-          <p className="ofk-connection-lede">
+          <p className="canvas-connection-lede">
             {configured
               ? 'Talk it through, ask for a review, or describe a change. Edits arrive as proposals you approve.'
               : 'Bring your own key — Gemini, Claude, OpenAI, Ollama and six more — and describe the diagram you need.'}
           </p>
           {!configured ? <>
             <Button variant="primary" onClick={() => setProviderOpen(true)}><Icon icon={IconSparkles} />Connect a provider</Button>
-            <span className="ofk-model-welcome-note">Your key stays on this machine.</span>
+            <span className="canvas-model-welcome-note">Your key stays on this machine.</span>
           </> : null}
-          <h4 className="ofk-connection-heading">Try</h4>
-          <ul className="ofk-v2-assistant-starters">
+          <h4 className="canvas-connection-heading">Try</h4>
+          <ul className="canvas-v2-assistant-starters">
             {starters.map(({ icon, prompt }) =>
               <li key={prompt}><Button variant="quiet" onClick={() => { setDraft(prompt); input.current?.focus(); }}>
                 <Icon icon={icon} />{prompt}
@@ -262,7 +262,7 @@ export function V2AgentPanel({
           </ul>
         </div>}
         composer={
-          <div className="ofk-v2-prompt-box" data-busy={busy || undefined} data-dragging={dragging || undefined}
+          <div className="canvas-v2-prompt-box" data-busy={busy || undefined} data-dragging={dragging || undefined}
             onDragOver={(event) => {
               if (readOnly || !event.dataTransfer.types.includes('Files')) return;
               event.preventDefault();
@@ -275,7 +275,7 @@ export function V2AgentPanel({
               setDragging(false);
               void attach([...event.dataTransfer.files]);
             }}>
-            {images.length ? <ul className="ofk-v2-attachments" aria-label="Attached images">
+            {images.length ? <ul className="canvas-v2-attachments" aria-label="Attached images">
               {images.map((image, index) => (
                 <li key={index}>
                   <img src={imageUrl(image)} alt={image.name || 'Attached image'} />
@@ -284,7 +284,7 @@ export function V2AgentPanel({
                 </li>
               ))}
             </ul> : null}
-            {attachError ? <p className="ofk-v2-attach-error" role="alert">{attachError}</p> : null}
+            {attachError ? <p className="canvas-v2-attach-error" role="alert">{attachError}</p> : null}
             <textarea ref={input} aria-label="Ask AI assistant" rows={2}
               placeholder={readOnly ? 'Read-only document' : messages.length ? 'Reply, or ask for a change…' : 'Ask, review, or describe a diagram…'}
               value={draft} disabled={readOnly}
@@ -313,21 +313,21 @@ export function V2AgentPanel({
                 onChange={(event) => { void attach([...(event.target.files ?? [])]); event.target.value = ''; }} />
               <IconButton variant="quiet" label="Attach images" disabled={readOnly || images.length >= MAX_IMAGES}
                 icon={<Icon icon={IconPhoto} />} onClick={() => files.current?.click()} />
-              <button type="button" className="ofk-v2-chip" data-active={scope === 'selection' || undefined}
+              <button type="button" className="canvas-v2-chip" data-active={scope === 'selection' || undefined}
                 disabled={selectedDiagramCount === 0}
                 aria-label={`Scope: ${scopeText}. ${selectedDiagramCount ? 'Switch scope' : 'Select a diagram to narrow the scope'}`}
                 title={selectedDiagramCount ? 'Switch between the selection and the whole page' : 'Select a diagram to work on just that one'}
                 onClick={() => setScopePick(scope === 'selection' ? 'page' : 'selection')}>
                 <Icon icon={scope === 'selection' ? IconTarget : IconStack2} /><span>{scopeText}</span>
               </button>
-              {sendsThinking(settings.provider) ? <button type="button" className="ofk-v2-chip" aria-pressed={assistant.think}
+              {sendsThinking(settings.provider) ? <button type="button" className="canvas-v2-chip" aria-pressed={assistant.think}
                 data-active={assistant.think || undefined}
                 title="Let the model reason before it answers. Slower, better on hard asks."
                 onClick={() => assistant.setThink(!assistant.think)}>
                 <Icon icon={IconBulb} />Think
               </button> : null}
-              <span className="ofk-v2-prompt-spacer" />
-              {!busy && (draft.trim() || images.length) ? <span className="ofk-v2-prompt-hint"><Kbd keys="Enter" /></span> : null}
+              <span className="canvas-v2-prompt-spacer" />
+              {!busy && (draft.trim() || images.length) ? <span className="canvas-v2-prompt-hint"><Kbd keys="Enter" /></span> : null}
               {busy
                 ? <IconButton variant="secondary" label="Stop" icon={<Icon icon={IconPlayerStop} />} onClick={assistant.stop} />
                 : <IconButton variant="primary" label="Send prompt" disabled={readOnly || (!draft.trim() && !images.length)}

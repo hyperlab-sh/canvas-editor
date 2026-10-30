@@ -1,0 +1,40 @@
+%% canvas 1
+architecture
+title: Canvas
+
+// This repo's own C4 model. `canvas drift .` checks it against the code, and the PR diagrams
+// check (action/) renders it on every pull request that changes it.
+model {
+  developer = person "Developer" [icon: tabler/user, desc: "Draws, writes diagrams as code, reviews"]
+  agent = person "Coding agent" [icon: tabler/robot, desc: "Claude Code, Cursor, VS Code, Codex"]
+
+  canvas = system "Canvas" {
+    app = container "canvas-app" [tech: React, desc: "The editor: canvas, code panel, Map mode. Diagrams stay in the browser"]
+    mcp = container "canvas-mcp" [icon: tabler/plug-connected, tech: Node CLI, desc: "MCP server, live bridge on 127.0.0.1, file mode"]
+    cli = container "canvas" [icon: tabler/terminal-2, tech: Node CLI, desc: "npx @hyperlab.sh/canvas: render, validate, map, mcp"]
+    docs = container "canvas-docs" [tech: Astro, desc: "docs.canvas.hyperlab.sh"]
+    share = container "canvas-share" [tech: Cloudflare Workers, desc: "Encrypted share links at share.canvas.hyperlab.sh"]
+    shares = store "canvas-shares" [tech: R2, desc: "Ciphertext only; the key stays in the link"]
+    stats = container "canvas-stats" [tech: Cloudflare Workers, desc: "Private usage dashboard"]
+    data = store "canvas-data" [tech: D1, desc: "Anonymous usage counts and feedback"]
+  }
+  github = external "GitHub" [icon: tabler/brand-github, desc: "Public repos, read for Map mode"]
+  ai = external "AI providers" [icon: tabler/sparkles, desc: "Anthropic, OpenAI, Google or Ollama, with your own key"]
+
+  developer -> canvas.app : draws and writes
+  developer -> canvas.docs : reads
+  agent -> canvas.mcp : MCP over stdio
+  agent -> canvas.cli : runs
+  canvas.cli -> canvas.mcp : imports
+  canvas.app -> canvas.mcp : long-polls the bridge [tech: "HTTP on localhost"]
+  canvas.app -> canvas.share : uploads an encrypted diagram [tech: HTTPS]
+  canvas.share -> canvas.shares : stores ciphertext
+  canvas.share -> canvas.data : counts usage
+  canvas.stats -> canvas.data : reads
+  canvas.app -> github : reads repo files [tech: REST]
+  canvas.app -> ai : prompts [tech: HTTPS]
+}
+views {
+  view container of canvas
+  view context of canvas
+}

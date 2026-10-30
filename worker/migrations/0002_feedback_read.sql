@@ -1,2 +1,2 @@
--- Stats page "Mark all read" (stats.openflowkit.com). Apply: npx wrangler d1 migrations apply openflowkit-data --remote
+-- Stats page "Mark all read" (stats.canvas.hyperlab.sh). Apply: npx wrangler d1 migrations apply canvas-data --remote
 ALTER TABLE feedback ADD COLUMN read_at TEXT;

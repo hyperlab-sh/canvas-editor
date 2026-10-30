@@ -1,20 +1,20 @@
 ---
-name: openflowkit
-description: Draw diagrams that stay valid, editable and saved next to the code. Use when a flowchart, architecture, sequence, state, ER, class, mindmap or git graph would explain something better than prose, or when the user asks for a diagram. Needs the openflowkit MCP server.
+name: canvas
+description: Draw diagrams that stay valid, editable and saved next to the code. Use when a flowchart, architecture, sequence, state, ER, class, mindmap or git graph would explain something better than prose, or when the user asks for a diagram. Needs the canvas MCP server.
 ---
 
-# OpenFlowKit diagrams
+# Canvas diagrams
 
-Write Mermaid or OpenFlow DSL, hand it to the `openflowkit` MCP server, and save the result as a `.openflow.json`
-beside the code it explains: it opens at app.openflowkit.com (Open file) and reads back.
+Write Mermaid or OpenFlow DSL, hand it to the `canvas` MCP server, and save the result as a `.openflow.json`
+beside the code it explains: it opens at canvas.hyperlab.sh (Open file) and reads back.
 
 **When to draw:** a flow with branches, a system with more than three moving parts, a protocol, a data model,
 a state machine. Not a list, a single call, or what one sentence explains.
 
 ## Setup (once)
 
-`claude mcp add -s user openflowkit -- npx -y openflowkit mcp` (any MCP client: `npx -y openflowkit mcp`); it calls no
-outside service. In claude.ai or ChatGPT, `https://mcp.openflowkit.com/mcp` draws chat cards only.
+`claude mcp add -s user canvas -- npx -y @hyperlab.sh/canvas mcp` (any MCP client: `npx -y @hyperlab.sh/canvas mcp`); it calls no
+outside service. In claude.ai or ChatGPT, `https://mcp.canvas.hyperlab.sh/mcp` draws chat cards only.
 
 ## Draw and save
 
@@ -22,7 +22,7 @@ outside service. In claude.ai or ChatGPT, `https://mcp.openflowkit.com/mcp` draw
 2. `validate_openflow_dsl` with `{ dsl }` until `ok`. Fix every `error`: a line the parser dropped is one,
    with its line and a hint. Warnings are guesses; read them. For Mermaid (or Structurizr DSL, D2),
    `converted.losses` name what did not carry over and `converted.dsl` is what it became.
-3. With an editor paired (`whoami`; if not, ask the user to open app.openflowkit.com/#/connect),
+3. With an editor paired (`whoami`; if not, ask the user to open canvas.hyperlab.sh/#/connect),
    `create_diagram` with `{ dsl }` draws where the user is looking. Otherwise use file mode:
    `openflow_create`, then `create_diagram` with `{ dsl, documentId }`.
 4. `openflow_save` with `{ path }` (plus `documentId` in file mode) beside the code, e.g.
@@ -41,7 +41,7 @@ Pinned threads: `list_threads` (`unanswered: true` = waiting on you; `threadId`)
 ## Draw this repo's architecture
 
 `discover_architecture` with `{ path }` proposes a C4 workspace (`dsl`) from the code. Review its names, `create_diagram`
-with it, and write the text to `architecture.ofk` at the repo root; later, `drift_report` with `{ path }` says what changed.
+with it, and write the text to `architecture.canvas` at the repo root; later, `drift_report` with `{ path }` says what changed.
 
 ## OpenFlow DSL in one screen
 

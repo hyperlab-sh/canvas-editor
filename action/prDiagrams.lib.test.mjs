@@ -6,16 +6,16 @@ import {
 
 describe('pathMatcher', () => {
   it('matches extensions, case-insensitively', () => {
-    const m = pathMatcher('.openflow.json,.ofk');
+    const m = pathMatcher('.openflow.json,.canvas');
     expect(m('a/b.openflow.json')).toBe(true);
-    expect(m('architecture.OFK')).toBe(true);
+    expect(m('architecture.Canvas')).toBe(true);
     expect(m('package.json')).toBe(false);
   });
   it('matches globs', () => {
-    const m = pathMatcher('docs/**/*.ofk, *.mmd');
-    expect(m('docs/a/b/c.ofk')).toBe(true);
-    expect(m('docs/c.ofk')).toBe(true);
-    expect(m('src/c.ofk')).toBe(false);
+    const m = pathMatcher('docs/**/*.canvas, *.mmd');
+    expect(m('docs/a/b/c.canvas')).toBe(true);
+    expect(m('docs/c.canvas')).toBe(true);
+    expect(m('src/c.canvas')).toBe(false);
     expect(m('x.mmd')).toBe(true);
     expect(m('d/x.mmd')).toBe(false);
   });
@@ -23,12 +23,12 @@ describe('pathMatcher', () => {
 
 describe('parseNameStatus', () => {
   it('covers added, modified, deleted and renamed', () => {
-    const raw = ['A', 'new.ofk', 'M', 'm.ofk', 'D', 'gone.ofk', 'R087', 'old.ofk', 'moved.ofk', ''].join('\0');
+    const raw = ['A', 'new.canvas', 'M', 'm.canvas', 'D', 'gone.canvas', 'R087', 'old.canvas', 'moved.canvas', ''].join('\0');
     expect(parseNameStatus(raw)).toEqual([
-      { status: 'added', path: 'new.ofk' },
-      { status: 'modified', path: 'm.ofk' },
-      { status: 'deleted', path: 'gone.ofk' },
-      { status: 'renamed', oldPath: 'old.ofk', path: 'moved.ofk' },
+      { status: 'added', path: 'new.canvas' },
+      { status: 'modified', path: 'm.canvas' },
+      { status: 'deleted', path: 'gone.canvas' },
+      { status: 'renamed', oldPath: 'old.canvas', path: 'moved.canvas' },
     ]);
     expect(parseNameStatus('')).toEqual([]);
   });
@@ -38,7 +38,7 @@ describe('svgBeside (mirror of mcp-server/src/lib/svgBeside.ts)', () => {
   it.each([
     ['a/flow.openflow.json', 'a/flow.svg'],
     ['a/flow.json', 'a/flow.svg'],
-    ['architecture.ofk', 'architecture.svg'],
+    ['architecture.canvas', 'architecture.svg'],
     ['A/Flow.OpenFlow.JSON', 'A/Flow.svg'],
     ['notes.txt', 'notes.txt.svg'],
   ])('%s -> %s', (file, svg) => expect(svgBeside(file)).toBe(svg));
@@ -50,8 +50,8 @@ describe('escaping', () => {
     expect(code('line1\nline2 @bob')).toBe('` line1 line2 @bob `');
   });
   it('escapes paths, drift names and error lines in the comment', () => {
-    const body = buildComment({ entries: [{ path: 'x`@evil.ofk', status: 'added', errors: ['after: <b>@team</b> failed'], drift: { gone: 1, new: 0, changed: 0, items: ['gone: @all (a)'] } }] });
-    expect(body).toContain('`` x`@evil.ofk ``');
+    const body = buildComment({ entries: [{ path: 'x`@evil.canvas', status: 'added', errors: ['after: <b>@team</b> failed'], drift: { gone: 1, new: 0, changed: 0, items: ['gone: @all (a)'] } }] });
+    expect(body).toContain('`` x`@evil.canvas ``');
     expect(body).toContain('> ` after: <b>@team</b> failed `');
     expect(body).toContain('- ` gone: @all (a) `');
   });
@@ -112,7 +112,7 @@ describe('buildComment', () => {
     expect(body).toContain('(https://x/run/1)');
   });
   it('reports errors as a line and a refreshed svg as pushed', () => {
-    const body = buildComment({ entries: [{ path: 'b.ofk', status: 'added', errors: ['after: render failed: bad'] }], stale: [{ svg: 'b.svg', refreshed: true }] });
+    const body = buildComment({ entries: [{ path: 'b.canvas', status: 'added', errors: ['after: render failed: bad'] }], stale: [{ svg: 'b.svg', refreshed: true }] });
     expect(body).toContain('> ` after: render failed: bad `');
     expect(body).toContain('was refreshed and pushed');
     expect(body).not.toContain('No change to the diagram source');

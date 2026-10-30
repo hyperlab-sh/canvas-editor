@@ -25,8 +25,8 @@ export function AgentBadge({
           ? 'success'
           : 'neutral';
   const body = (
-    <span className="ofk-agent-badge" data-state={state}>
-      <span className="ofk-agent-dot" aria-hidden="true" />
+    <span className="canvas-agent-badge" data-state={state}>
+      <span className="canvas-agent-dot" aria-hidden="true" />
       <Status tone={tone} live={state === 'waiting'}>
         {name}
         {detail ? ` · ${detail}` : ''}
@@ -66,7 +66,7 @@ export function PermissionPrompt({
   };
   return (
     <section
-      className="ofk-permission ofk-overlay ofk-enter"
+      className="canvas-permission canvas-overlay canvas-enter"
       role="alertdialog"
       aria-label={`${agent} ${t.title}`}
     >
@@ -76,7 +76,7 @@ export function PermissionPrompt({
         </Status>
         <p>{request}</p>
       </div>
-      <div className="ofk-permission-actions">
+      <div className="canvas-permission-actions">
         <Button variant="quiet" onClick={onDeny}>
           {t.deny}
         </Button>
@@ -98,7 +98,7 @@ export function ProvenanceBadge({
 }) {
   return (
     <span
-      className="ofk-provenance"
+      className="canvas-provenance"
       title={label}
       aria-label={standalone ? label : undefined}
       aria-hidden={standalone ? undefined : true}
@@ -118,13 +118,13 @@ export function AgentCursor({
   ...rest
 }: { name: string; working?: boolean; ref?: Ref<HTMLDivElement> } & HTMLAttributes<HTMLDivElement>) {
   return (
-    <div ref={ref} className="ofk-agent-cursor" aria-hidden="true" {...rest}>
-      <svg className="ofk-agent-cursor-arrow" viewBox="0 0 20 22" width="20" height="22">
+    <div ref={ref} className="canvas-agent-cursor" aria-hidden="true" {...rest}>
+      <svg className="canvas-agent-cursor-arrow" viewBox="0 0 20 22" width="20" height="22">
         <path d="M2.5 1.5v16.2l4.3-4 2.9 6.6 2.9-1.3-2.8-6.4h5.9z" />
       </svg>
-      <span className="ofk-agent-cursor-pill">
+      <span className="canvas-agent-cursor-pill">
         {name}
-        {working ? <span className="ofk-agent-cursor-dots"><i /><i /><i /></span> : null}
+        {working ? <span className="canvas-agent-cursor-dots"><i /><i /><i /></span> : null}
       </span>
     </div>
   );

@@ -23,7 +23,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms / SPEED));
 const DRAW_DSL = 'flowchart\ntitle: Checkout\nCart -> Pay\nPay -> Ship\nShip -> Done';
 const EXTRA = '\nPay -> Declined [label: card declined]\nDeclined -> Pay [label: retry once]\nDeclined -> Cancelled';
 
-const HELLO = `Hi! I'm the OpenFlowKit assistant. I can:
+const HELLO = `Hi! I'm the Canvas assistant. I can:
 
 - **Explain** a diagram in plain words
 - **Review** it and point out gaps

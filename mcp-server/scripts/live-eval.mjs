@@ -13,9 +13,9 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SERVER_ROOT = resolve(HERE, '..');
-const PORT = process.env.OPENFLOWKIT_BRIDGE_PORT ?? '43119';
-const PAIR_TIMEOUT_MS = Number(process.env.OPENFLOWKIT_LIVE_TIMEOUT_MS ?? 45_000);
-const FLOW = `%% ofk 1
+const PORT = process.env.CANVAS_BRIDGE_PORT ?? '43119';
+const PAIR_TIMEOUT_MS = Number(process.env.CANVAS_LIVE_TIMEOUT_MS ?? 45_000);
+const FLOW = `%% canvas 1
 flowchart
 title: Live eval
 
@@ -50,10 +50,10 @@ async function main() {
     command: 'npx',
     args: ['tsx', 'src/index.ts'],
     cwd: SERVER_ROOT,
-    env: { ...process.env, OPENFLOWKIT_BRIDGE_PORT: PORT },
+    env: { ...process.env, CANVAS_BRIDGE_PORT: PORT },
     stderr: 'pipe',
   });
-  client = new Client({ name: 'openflowkit-live-eval', version: '0.0.0' });
+  client = new Client({ name: 'canvas-live-eval', version: '0.0.0' });
   await client.connect(transport);
   try {
     const editor = await waitForEditor(client);

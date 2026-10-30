@@ -1,6 +1,6 @@
 import { V2StorageBlockedError } from './v2/v2Errors';
 
-export const FLOW_PERSISTENCE_DB_NAME = 'openflowkit-persistence';
+export const FLOW_PERSISTENCE_DB_NAME = 'canvas-persistence';
 const FLOW_PERSISTENCE_DB_VERSION = 5;
 export const FLOW_DOCUMENT_STORE_NAME = 'flowDocuments';
 export const FLOW_METADATA_STORE_NAME = 'flowMetadata';

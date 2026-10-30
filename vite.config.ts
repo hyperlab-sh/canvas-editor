@@ -21,8 +21,8 @@ deployedHeaders['Content-Security-Policy'] = deployedHeaders['Content-Security-P
 const { version } = JSON.parse(readFileSync(path.resolve(__dirname, 'package.json'), 'utf8')) as { version: string };
 
 // The Custom provider's same-origin proxy, as nginx/ai-proxy.sh sets it up in the Docker image: only when
-// OPENFLOWKIT_AI_UPSTREAM is set, only the model list and chat, without the browser's Origin or cookies.
-const aiUpstream = process.env.OPENFLOWKIT_AI_UPSTREAM?.replace(/\/+$/, '');
+// CANVAS_AI_UPSTREAM is set, only the model list and chat, without the browser's Origin or cookies.
+const aiUpstream = process.env.CANVAS_AI_UPSTREAM?.replace(/\/+$/, '');
 const aiProxy: Record<string, ProxyOptions> = aiUpstream ? {
   '^/ai-proxy/(models|chat/completions)(\\?.*)?$': {
     target: aiUpstream, changeOrigin: true, rewrite: (url) => url.replace(/^\/ai-proxy/, ''),

@@ -35,29 +35,29 @@ export function V2PagesMenu({ pages, open, anchorRef, onClose }: V2PagesMenuProp
     if (!cancelled.current && draft.trim()) pages.rename(id, draft);
     setRenamingId(null);
   }
-  return <Popover role="dialog" aria-label="Pages" className="ofk-pages-popover" open={open} anchorRef={anchorRef} onClose={onClose} placement="bottom-start"
+  return <Popover role="dialog" aria-label="Pages" className="canvas-pages-popover" open={open} anchorRef={anchorRef} onClose={onClose} placement="bottom-start"
     onEscapeKeyDown={(event) => {
       if (!renamingId) return;
       event.preventDefault(); event.stopPropagation(); cancelled.current = true;
       setRenamingId(null); actionAnchor.current?.focus();
     }}>
-    <header className="ofk-utility-header"><h2>Pages <span>{pages.pages.length}</span></h2>
+    <header className="canvas-utility-header"><h2>Pages <span>{pages.pages.length}</span></h2>
       <IconButton variant="quiet" label="Close pages" icon={<Icon icon={IconX} />} onClick={onClose} />
     </header>
-    <ul className="ofk-page-rows" aria-label="Pages">
+    <ul className="canvas-page-rows" aria-label="Pages">
       {pageListEntries(pages.pages).map((entry) => {
-        if (entry.kind === 'group') return <li key={entry.id} className="ofk-page-group">{entry.name}</li>;
+        if (entry.kind === 'group') return <li key={entry.id} className="canvas-page-group">{entry.name}</li>;
         const { page, depth } = entry;
         return <li key={page.id} data-active={page.id === pages.activePage?.id || undefined} data-depth={depth || undefined}
         onContextMenu={(event) => { event.preventDefault(); actionAnchor.current = event.currentTarget; setActionId(page.id); }}>
-        {renamingId === page.id ? <input ref={focusInput} className="ofk-v2-page-rename" value={draft} aria-label={`Rename ${page.name}`} maxLength={80}
+        {renamingId === page.id ? <input ref={focusInput} className="canvas-v2-page-rename" value={draft} aria-label={`Rename ${page.name}`} maxLength={80}
           onChange={(event) => setDraft(event.target.value)} onBlur={() => commitRename(page.id)}
           onKeyDown={(event) => {
             if (event.key === 'Enter') { event.preventDefault(); commitRename(page.id); }
             if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); cancelled.current = true; setRenamingId(null); }
-          }} /> : <button type="button" className="ofk-v2-page-select" aria-current={page.id === pages.activePage?.id ? 'page' : undefined}
+          }} /> : <button type="button" className="canvas-v2-page-select" aria-current={page.id === pages.activePage?.id ? 'page' : undefined}
           onClick={() => pages.select(page.id)} onDoubleClick={() => rename(page.id, page.name)}>
-          <Icon icon={IconFile} /><span className="ofk-v2-page-name" title={page.name}>{page.name}</span>
+          <Icon icon={IconFile} /><span className="canvas-v2-page-name" title={page.name}>{page.name}</span>
           {page.id === pages.activePage?.id ? <Icon icon={IconCheck} /> : null}
         </button>}
         <IconButton variant="quiet" label={`Actions for ${page.name}`} aria-haspopup="menu" aria-expanded={actionId === page.id}
@@ -65,7 +65,7 @@ export function V2PagesMenu({ pages, open, anchorRef, onClose }: V2PagesMenuProp
       </li>;
       })}
     </ul>
-    <footer className="ofk-pages-footer"><Button variant="quiet" disabled={pages.readOnly} onClick={() => { const added = pages.add(); if (added) rename(added.id, added.name); }}><Icon icon={IconPlus} /> Add page</Button></footer>
+    <footer className="canvas-pages-footer"><Button variant="quiet" disabled={pages.readOnly} onClick={() => { const added = pages.add(); if (added) rename(added.id, added.name); }}><Icon icon={IconPlus} /> Add page</Button></footer>
     <Menu open={!!actionPage} anchorRef={actionAnchor} onClose={() => setActionId(null)} label="Page actions" placement="right-start">
       {actionPage ? <>
         <MenuItem icon={<Icon icon={IconPencil} />} disabled={pages.readOnly || pages.isLocked(actionPage.id)} onSelect={() => rename(actionPage.id, actionPage.name)}>Rename</MenuItem>

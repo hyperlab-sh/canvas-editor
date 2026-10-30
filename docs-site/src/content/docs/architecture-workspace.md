@@ -13,7 +13,7 @@ reads **Open another folder (*name*)**). The folder layout is fixed:
 
 | Path | What it holds |
 | --- | --- |
-| `architecture.ofk` | the DSL source — the model and its views |
+| `architecture.canvas` | the DSL source — the model and its views |
 | `views/*.snap` | layout overrides: element id → position, per view |
 | `adr/*.md` | architecture decision records, linked from elements |
 

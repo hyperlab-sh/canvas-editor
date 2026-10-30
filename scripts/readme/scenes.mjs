@@ -41,7 +41,7 @@ export async function openPage(browser, { viewport, scale = 2, path = '' }) {
   page.on('pageerror', (error) => console.warn(`page error: ${error.message}`));
   if (GITHUB_REC) await replayGithub(page);
   await page.goto(APP + path);
-  await page.addStyleTag({ content: '.ofk-toasts { visibility: hidden !important; }' });
+  await page.addStyleTag({ content: '.canvas-toasts { visibility: hidden !important; }' });
   return page;
 }
 
@@ -95,7 +95,7 @@ export async function fit(page, { deselect = false } = {}) {
 /** Pinches and scrolls (as a trackpad would) until the boxes `ids` fill the free canvas left of the side panel. */
 export async function frameOn(page, ids) {
   const viewport = page.viewportSize();
-  const panel = await page.locator('.ofk-v2-workspace-panel').first().boundingBox();
+  const panel = await page.locator('.canvas-v2-workspace-panel').first().boundingBox();
   const free = { x: 30, y: 90, width: (panel?.x ?? viewport.width) - 110, height: viewport.height - 200 };
   const bounds = () => page.evaluate((list) => {
     const rects = list.map((id) => window.__V2__.getNodeRect(id)).filter(Boolean);
@@ -159,7 +159,7 @@ export async function agentScene(page, source = CHECKOUT) {
   await editorReady(page);
   const agent = await connectAgent(page);
   await agent.call('create_diagram', { dsl: source });
-  await page.locator('.ofk-connection-activity').waitFor();
+  await page.locator('.canvas-connection-activity').waitFor();
   await settle(page, 600);
   await nameDocument(page);
   await fit(page);
@@ -196,7 +196,7 @@ export async function mapScene(page) {
 
 export async function homeScene(page) {
   await page.goto(`${APP}#/home`);
-  await page.waitForSelector('[data-testid="v2-home"] .ofk-home-templates img');
-  await page.waitForFunction(() => [...document.querySelectorAll('.ofk-home-templates img')].every((img) => img.complete));
+  await page.waitForSelector('[data-testid="v2-home"] .canvas-home-templates img');
+  await page.waitForFunction(() => [...document.querySelectorAll('.canvas-home-templates img')].every((img) => img.complete));
   await settle(page);
 }

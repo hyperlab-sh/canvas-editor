@@ -15,7 +15,7 @@ const seed = {
   stores: { ...current.indexedDb, flowMetadata: premarch.indexedDb.flowMetadata },
   localStorage: fallback.localStorage as Record<string, string>,
 };
-export const tabs = JSON.parse(premarch.indexedDb.flowMetadata.find((row: Json) => row.id === 'openflowkit-storage').value).state.tabs;
+export const tabs = JSON.parse(premarch.indexedDb.flowMetadata.find((row: Json) => row.id === 'canvas-storage').value).state.tabs;
 // v1 showed IndexedDB whenever it held a live diagram, so the fallback and tab copies here are
 // strays: not listed (a delete in v1 must stay deleted), kept in the v1 backup download.
 export const expected = current.indexedDb.documents.map((row: Json) => `v1-${row.id}`).sort();
@@ -26,7 +26,7 @@ export async function seedV1(page: Page): Promise<void> {
   await page.goto('/v1-seed');
   await page.evaluate(async ({ stores, localStorage: entries }) => {
     const db: IDBDatabase = await new Promise((resolve, reject) => {
-      const request = indexedDB.open('openflowkit-persistence', 3);
+      const request = indexedDB.open('canvas-persistence', 3);
       request.onupgradeneeded = () => { for (const name of Object.keys(stores)) request.result.createObjectStore(name, { keyPath: 'id' }); };
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);

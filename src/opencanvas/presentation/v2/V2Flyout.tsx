@@ -83,7 +83,7 @@ export function FlyoutButton<T extends string>(props: {
         role="option"
         aria-selected={option.id === props.selectedId}
         aria-label={option.label}
-        className="ofk-v2-flyout-cell"
+        className="canvas-v2-flyout-cell"
         data-selected={option.id === props.selectedId || undefined}
         {...(autofocusId === option.id ? { 'data-autofocus': '' } : {})}
         tabIndex={-1}
@@ -97,7 +97,7 @@ export function FlyoutButton<T extends string>(props: {
     </Tooltip>
   );
   const grid = (cells: readonly ToolOption<T>[]) => (
-    <div className="ofk-v2-flyout-grid" style={{ gridTemplateColumns: `repeat(${props.columns ?? 4}, 1fr)` }}>
+    <div className="canvas-v2-flyout-grid" style={{ gridTemplateColumns: `repeat(${props.columns ?? 4}, 1fr)` }}>
       {cells.map(cell)}
     </div>
   );
@@ -146,12 +146,12 @@ export function FlyoutButton<T extends string>(props: {
   return (
     <>
       {activate ? (
-        <span className="ofk-v2-flyout-slot">
+        <span className="canvas-v2-flyout-slot">
           {button}
           <Tooltip content={`${props.label} options`}>
             <button
               type="button"
-              className="ofk-v2-flyout-corner"
+              className="canvas-v2-flyout-corner"
               tabIndex={-1}
               aria-label={`${props.label} options`}
               aria-haspopup="dialog"
@@ -167,12 +167,12 @@ export function FlyoutButton<T extends string>(props: {
       ) : button}
       <Popover role="dialog" aria-label={`${props.label} options`} open={props.open}
         anchorRef={anchorRef} onClose={() => props.onOpenChange(false)} placement="right-start"
-        gap={12} className="ofk-v2-flyout" onKeyDown={moveFocus}
+        gap={12} className="canvas-v2-flyout" onKeyDown={moveFocus}
         onPointerDown={(event) => event.stopPropagation()}>
         <div role="listbox" aria-label={props.label} tabIndex={-1}>
           {sections.map((section, index) => section.title ? (
-            <div key={section.title} role="group" aria-labelledby={`${headingId}-${index}`} className="ofk-v2-flyout-section">
-              <div id={`${headingId}-${index}`} className="ofk-v2-flyout-heading">{section.title}</div>
+            <div key={section.title} role="group" aria-labelledby={`${headingId}-${index}`} className="canvas-v2-flyout-section">
+              <div id={`${headingId}-${index}`} className="canvas-v2-flyout-heading">{section.title}</div>
               {grid(section.options)}
             </div>
           ) : <div key={index}>{grid(section.options)}</div>)}

@@ -40,7 +40,7 @@ function workspaceBody(model: ArchModel): string[] {
  * view, drilling down or exporting a flow all go back through the compiler.
  */
 export function architectureWorkspaceText(model: ArchModel): string {
-  const lines = ['%% ofk 1', 'architecture'];
+  const lines = ['%% canvas 1', 'architecture'];
   if (model.name) lines.push(`title: ${quote(model.name)}`);
   if (model.palette && model.palette !== 'pastel') lines.push(`appearance: ${model.palette}`);
   if (model.icons) lines.push(`icons: ${model.icons}`);

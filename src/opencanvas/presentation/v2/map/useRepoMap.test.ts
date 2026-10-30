@@ -115,7 +115,7 @@ describe('useRepoMap', () => {
     await waitFor(() => expect(calls).toHaveLength(2));
     expect(calls[1]!.opts.token).toBe('tok');
     await act(async () => calls[1]!.reject(new RepoError({ kind: 'token-rejected' }, 'x')));
-    expect(sessionStorage.getItem('ofk.github-token')).toBeNull();
+    expect(sessionStorage.getItem('canvas.github-token')).toBeNull();
     expect(result.current.problem?.askToken).toBe(true);
   });
 });

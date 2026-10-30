@@ -6,6 +6,6 @@ describe('createAgentDocument', () => {
     const document = createAgentDocument('Checkout', 'doc-1');
     expect(parseAgentDocument(document)).toEqual(document);
     expect(document).toMatchObject({ id: 'doc-1', name: 'Checkout', pages: [{ id: 'doc-1:page-1', name: 'Page 1', nodes: [], connectors: [] }] });
-    expect(JSON.stringify(document)).not.toContain('openflowkit.legacy');
+    expect(JSON.stringify(document)).not.toContain('canvas.legacy');
   });
 });

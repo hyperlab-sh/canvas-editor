@@ -1,15 +1,15 @@
 {
-  "name": "openflowkit",
-  "description": "OpenFlowKit: diagrams for coding agents",
+  "name": "canvas",
+  "description": "Canvas: diagrams for coding agents",
   "owner": {
-    "name": "OpenFlowKit",
-    "url": "https://github.com/openflowkit/openflowkit"
+    "name": "Canvas",
+    "url": "https://github.com/hyperlab-sh/canvas-editor"
   },
   "plugins": [
     {
-      "name": "openflowkit",
+      "name": "canvas",
       "source": "./plugin",
-      "description": "The OpenFlowKit MCP server and diagram skill."
+      "description": "The Canvas MCP server and diagram skill."
     }
   ]
 }

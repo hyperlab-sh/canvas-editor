@@ -1,4 +1,4 @@
-// Private stats page, stats.openflowkit.com. One server-rendered page over the share Worker's D1 (`openflowkit-data`):
+// Private stats page, stats.canvas.hyperlab.sh. One server-rendered page over the share Worker's D1 (`canvas-data`):
 //   GET  /?range=7|30|90  the dashboard (default 30 days), numbers from loadStats (queries.ts), same as `npm run stats`
 //   POST /read            "Mark all read" (form: before, range) → 303 back to the page
 // Two locks, both fail closed: a Cloudflare Access application in front, and this Worker verifying Access's JWT
@@ -37,7 +37,7 @@ export interface Deps {
   jwks?: JwksCache;
 }
 
-export const STATS_ORIGIN = 'https://stats.openflowkit.com';
+export const STATS_ORIGIN = 'https://stats.canvas.hyperlab.sh';
 const JWKS_TTL_MS = 3_600_000;
 const GROWTH_TTL_SECONDS = 3_600;
 const BUDGET_WARN = 0.6;
@@ -105,8 +105,8 @@ export function accessToken(request: Request): string | null {
 // ---- growth -----------------------------------------------------------------------------------------------------
 
 export const GROWTH_SOURCES = {
-  stars: { url: 'https://api.github.com/repos/openflowkit/openflowkit', pick: (body: Record<string, unknown>) => body.stargazers_count },
-  npm: { url: 'https://api.npmjs.org/downloads/point/last-week/openflowkit', pick: (body: Record<string, unknown>) => body.downloads },
+  stars: { url: 'https://api.github.com/repos/hyperlab-sh/canvas-editor', pick: (body: Record<string, unknown>) => body.stargazers_count },
+  npm: { url: 'https://api.npmjs.org/downloads/point/last-week/canvas', pick: (body: Record<string, unknown>) => body.downloads },
 } as const;
 export type Growth = Record<keyof typeof GROWTH_SOURCES, number | null>;
 
@@ -118,7 +118,7 @@ async function publicNumber(source: (typeof GROWTH_SOURCES)[keyof typeof GROWTH_
     if (body === undefined) {
       // ponytail: GitHub allows 60 unauthenticated calls an hour per IP, shared on Workers; a token secret if — shows up.
       const response = await fetcher(source.url, {
-        headers: { 'User-Agent': 'openflowkit-stats', Accept: 'application/json' }, signal: AbortSignal.timeout(3_000),
+        headers: { 'User-Agent': 'canvas-stats', Accept: 'application/json' }, signal: AbortSignal.timeout(3_000),
       });
       if (!response.ok) return null;
       body = await response.text();
@@ -281,7 +281,7 @@ export function renderPage(stats: Stats, growth: Growth): string {
       tile('Link visits that went on to edit', int(stats.share.sharedSessions), 'viewers who only read send nothing'),
       tile('Viewers who copied to edit', int(stats.share.copied), 'shared visits that became users'),
     ].join('')}</div>`, `Last ${days} days.`),
-    section('Product fit and money', `<div class="pair"><div><h3>If OpenFlowKit went away</h3>${stats.pmf.total ? bars((['very', 'somewhat', 'not'] as const).map((answer) => ({
+    section('Product fit and money', `<div class="pair"><div><h3>If Canvas went away</h3>${stats.pmf.total ? bars((['very', 'somewhat', 'not'] as const).map((answer) => ({
       label: `${answer} disappointed`, value: stats.pmf[answer], display: `${pct(stats.pmf[answer] / stats.pmf.total, 0)} · ${int(stats.pmf[answer])}`,
     }))) : empty('No answers yet.')}</div><div><h3>Would pay for</h3>${bars(Object.entries(stats.pay).map(([option, votes]) => ({
       label: named(PAY_NAMES, option), value: votes, display: int(votes),
@@ -299,8 +299,8 @@ export function renderPage(stats: Stats, growth: Growth): string {
         label: named(PAY_NAMES, option), value: n, display: `${pct(n / stats.pro.joined, 0)} · ${int(n)}`,
       }))) : empty('No one yet.')}`, `Last ${days} days. A waitlist, not sales: nobody has paid. The fair-price slider starts at the plan's founding price.`),
     section('Growth outside the app', `<div class="tiles">${[
-      tile('GitHub stars', int(growth.stars), 'openflowkit/openflowkit'),
-      tile('npm downloads', int(growth.npm), '`openflowkit`, last week'),
+      tile('GitHub stars', int(growth.stars), 'hyperlab-sh/canvas-editor'),
+      tile('npm downloads', int(growth.npm), '`canvas`, last week'),
     ].join('')}</div>`, 'Fetched server-side, cached for an hour. — means the source did not answer.'),
     section('Health', `<div class="tiles">${tile('Errors per 1k sessions', fixed(stats.errorsPer1k), `last ${days} days`)}</div>`
       + `<div class="meter${budgetWarn ? ' warn' : ''}"><div class="meter-label">Usage beacons, last 30 days, vs the 10M requests Workers Paid includes <b>${int(stats.budget.requests)} (${pct(stats.budget.share)})</b></div>`
@@ -308,7 +308,7 @@ export function renderPage(stats: Stats, growth: Growth): string {
       + (budgetWarn ? '<p class="warning"><b>Warning:</b> over 60%. Past 10M a month, requests cost $0.30 per million.</p>' : '')
       + '<p class="note">Counts beacons only; share links use the same allowance.</p></div>'),
   ].join('\n');
-  return htmlDocument('OpenFlowKit stats', `<header><div><h1>OpenFlowKit stats</h1><p class="note">Updated ${esc(when(stats.generatedAt))} · all days are UTC</p></div>`
+  return htmlDocument('Canvas stats', `<header><div><h1>Canvas stats</h1><p class="note">Updated ${esc(when(stats.generatedAt))} · all days are UTC</p></div>`
     + `<nav class="range" aria-label="Range">${range}</nav></header><main>${body}</main>`);
 }
 

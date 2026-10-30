@@ -8,7 +8,7 @@ import { classDsl, erDsl, stateDsl } from './mermaidToDslStructure';
 import { lossDiagnostic, styleLosses } from './mermaidToDslShared';
 import type { Converted, FlowEdge, FlowNode, MermaidConversion, MermaidConversionError } from './mermaidToDslTypes';
 
-// Mermaid → OFK DSL. The existing per-family parsers (DOM-free, corpus-tested)
+// Mermaid → Canvas DSL. The existing per-family parsers (DOM-free, corpus-tested)
 // produce the graph model; this adapter turns that model back into text. Losses
 // are reported as W180 diagnostics so the code panel lists them like any other.
 
@@ -48,7 +48,7 @@ const MERMAID_ONLY =/-->|-\.->|==>|~~~|subgraph|@\{|\|\w+\||-\[\||\[\[\(|\}\]/;
 /** True when the text starts a Mermaid diagram (used for the panel banner). */
 export function looksLikeMermaid(text: string): boolean {
   // Our own pragma is decisive: a DSL document is never Mermaid.
-  if (/^\s*%%\s*ofk\b/m.test(text)) return false;
+  if (/^\s*%%\s*canvas\b/m.test(text)) return false;
   text = withoutFrontMatter(text).body;
   const first = text.split('\n').map((line) => line.trim()).find((line) => line && !line.startsWith('%%'));
   if (!first) return false;
@@ -112,13 +112,13 @@ function distinctIds(nodes: FlowNode[], edges: FlowEdge[]): { nodes: FlowNode[];
   };
 }
 
-/** Mermaid text → OFK DSL, or an error explaining why it cannot be converted. */
+/** Mermaid text → Canvas DSL, or an error explaining why it cannot be converted. */
 export function mermaidToDsl(source: string): MermaidConversion | MermaidConversionError {
   const front = withoutFrontMatter(source);
   const text = front.body;
   const header = /^\s*([A-Za-z][\w-]*)/m.exec(text.split('\n').filter((line) => !line.trim().startsWith('%%')).join('\n'))?.[1] ?? '';
   // Asked explicitly, a shared header (`mindmap`) is taken as Mermaid even without Mermaid-only syntax.
-  const shared = /^(mindmap|architecture|gitgraph)$/i.test(header) && !/^\s*%%\s*ofk\b/m.test(text);
+  const shared = /^(mindmap|architecture|gitgraph)$/i.test(header) && !/^\s*%%\s*canvas\b/m.test(text);
   if (!shared && !looksLikeMermaid(text)) return { error: 'No Mermaid diagram header found' };
   const unsupported = { error: `Mermaid "${header}" cannot be converted. Convertible: ${CONVERTIBLE}.` };
   const conversion = (() => {

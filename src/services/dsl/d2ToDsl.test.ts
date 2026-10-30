@@ -138,7 +138,7 @@ describe('looksLikeD2', () => {
   it('never claims our DSL or Mermaid', () => {
     expect(looksLikeD2('flowchart\n  A [cylinder] -> B : reads')).toBe(false);
     expect(looksLikeD2('architecture\nmodel {\n  system Shop\n}')).toBe(false);
-    expect(looksLikeD2('%% ofk 1\nflowchart\nA -> B')).toBe(false);
+    expect(looksLikeD2('%% canvas 1\nflowchart\nA -> B')).toBe(false);
     expect(looksLikeD2('flowchart LR\n  A --> B')).toBe(false);
     expect(looksLikeD2('API [aws/lambda] -> DB [cylinder]')).toBe(false);
   });

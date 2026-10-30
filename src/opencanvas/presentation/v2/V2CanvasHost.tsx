@@ -140,10 +140,10 @@ export function V2CanvasHost(props: V2CanvasHostProps): React.JSX.Element {
   // component's props. The equality bail-out below is what terminates it.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(() => {
-    const next = contextBarEdges(props.sectionRef.current?.closest<HTMLElement>('.ofk-v2') ?? null);
+    const next = contextBarEdges(props.sectionRef.current?.closest<HTMLElement>('.canvas-v2') ?? null);
     setEdges((current) => (current.left === next.left && current.right === next.right ? current : next));
   });
-  const barLayout = (bar: HTMLElement) => ({ width: bar.offsetWidth, ...contextBarEdges(bar.closest<HTMLElement>('.ofk-v2')) });
+  const barLayout = (bar: HTMLElement) => ({ width: bar.offsetWidth, ...contextBarEdges(bar.closest<HTMLElement>('.canvas-v2')) });
   // Sticky defaults live with the host for the session: what you last styled
   // is what the next shape/text/connector gets.
   const stylePresetsRef = useRef<StylePresets>({ shape: {}, text: {}, connector: {}, ink: {} });
@@ -364,7 +364,7 @@ export function V2CanvasHost(props: V2CanvasHostProps): React.JSX.Element {
   return (
     <section
       ref={props.sectionRef}
-      className="ofk-v2-canvas"
+      className="canvas-v2-canvas"
       data-testid="v2-canvas"
       tabIndex={0}
       aria-label="Diagram canvas. Press V to select, R for rectangle, O for ellipse, A for connector, T for text. Double-click or press Enter to edit a label."
@@ -377,13 +377,13 @@ export function V2CanvasHost(props: V2CanvasHostProps): React.JSX.Element {
       onWheel={handleWheel}
       onContextMenu={(event) => openCanvasContextMenu(event, props.hostRef.current, props)}
     >
-      <div ref={setViewport} className="ofk-v2-viewport" data-testid="v2-viewport" />
+      <div ref={setViewport} className="canvas-v2-viewport" data-testid="v2-viewport" />
       {props.tool === 'laser' ? <V2LaserTrail sectionRef={props.sectionRef} /> : null}
       {unavailableReason ? (
-        <div className="ofk-v2-fallback" data-testid="v2-webgl-off" title={unavailableReason}>
+        <div className="canvas-v2-fallback" data-testid="v2-webgl-off" title={unavailableReason}>
           <ErrorState hero={<V2StateHero kind="no-canvas" />}
             title="This browser can’t draw the canvas."
-            description="OpenFlowKit needs WebGL. Turn on hardware acceleration in your browser settings, or open this page in Chrome, Edge or Firefox."
+            description="Canvas needs WebGL. Turn on hardware acceleration in your browser settings, or open this page in Chrome, Edge or Firefox."
             action={<Button variant="primary" onClick={props.onOpenCode}>Diagram as code</Button>}
             secondary={<Button variant="quiet" onClick={() => navigate('/home')}>Back to home</Button>} />
         </div>

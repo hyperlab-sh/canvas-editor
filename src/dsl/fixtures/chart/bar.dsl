@@ -1,4 +1,4 @@
-%% ofk 1
+%% canvas 1
 chart bar
 title: Monthly revenue
 

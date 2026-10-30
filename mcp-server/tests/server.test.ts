@@ -17,7 +17,7 @@ describe('createServer', () => {
     const server = createServer();
     // The server.server exposes the underlying low-level server. The version
     // is mirrored on the protocol-level instance.
-    expect(MCP_SERVER_NAME).toBe('openflowkit');
+    expect(MCP_SERVER_NAME).toBe('canvas');
     expect(MCP_SERVER_VERSION).toMatch(/^\d+\.\d+\.\d+$/);
     // Basic shape assertion — instantiation must not throw and must expose tool registration.
     expect(typeof (server as unknown as { registerTool: unknown }).registerTool).toBe('function');
@@ -28,7 +28,7 @@ describe('stdio entry', () => {
   it('exits and frees the bridge port when its client goes away', async () => {
     const port = await freePort();
     const child = spawn(process.execPath, ['--import', 'tsx', 'src/index.ts'], {
-      cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, OPENFLOWKIT_BRIDGE_PORT: String(port) },
+      cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, CANVAS_BRIDGE_PORT: String(port) },
     });
     try {
       await new Promise<void>((done) => child.stderr.on('data', (chunk) => { if (String(chunk).includes('listening')) done(); }));
@@ -47,7 +47,7 @@ describe('stdio entry', () => {
   it('answers a one-shot piped session before it exits', async () => {
     const port = await freePort();
     const child = spawn(process.execPath, ['--import', 'tsx', 'src/index.ts'], {
-      cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, OPENFLOWKIT_BRIDGE_PORT: String(port) },
+      cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, CANVAS_BRIDGE_PORT: String(port) },
     });
     let stdout = '';
     child.stdout.on('data', (chunk) => { stdout += String(chunk); });
@@ -65,11 +65,11 @@ describe('stdio entry', () => {
     }
   }, 20_000);
 
-  // `npx -y openflowkit mcp` is the one line the docs and the welcome screen give agents.
-  it('starts from the CLI as `openflowkit mcp`', async () => {
+  // `npx -y @hyperlab.sh/canvas mcp` is the one line the docs and the welcome screen give agents.
+  it('starts from the CLI as `canvas mcp`', async () => {
     const port = await freePort();
     const child = spawn(process.execPath, ['--import', 'tsx', 'src/cli.ts', 'mcp'], {
-      cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, OPENFLOWKIT_BRIDGE_PORT: String(port) },
+      cwd: new URL('..', import.meta.url).pathname, env: { ...process.env, CANVAS_BRIDGE_PORT: String(port) },
     });
     let stdout = '';
     child.stdout.on('data', (chunk) => { stdout += String(chunk); });

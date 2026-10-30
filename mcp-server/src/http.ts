@@ -76,19 +76,19 @@ export function createHttpServer({ viewerHtml, appOrigin = DEFAULT_APP_ORIGIN, a
       await server.connect(transport);
       await transport.handleRequest(req, res, parsed);
     } catch (error) {
-      console.error('openflowkit-http:', error);
+      console.error('canvas-http:', error);
       if (!res.headersSent) rpcError(res, 500, 'Internal error');
     }
   });
 }
 
-/** OPENFLOWKIT_ALLOWED_HOSTS: comma-separated hostnames. HOST decides the bind address; unset means localhost only. */
+/** CANVAS_ALLOWED_HOSTS: comma-separated hostnames. HOST decides the bind address; unset means localhost only. */
 function main(): void {
   const port = Number.parseInt(process.env.PORT ?? '', 10) || 8787;
   const bind = process.env.HOST ?? '127.0.0.1';
-  const extra = (process.env.OPENFLOWKIT_ALLOWED_HOSTS ?? '').split(',').map((h) => h.trim()).filter(Boolean);
+  const extra = (process.env.CANVAS_ALLOWED_HOSTS ?? '').split(',').map((h) => h.trim()).filter(Boolean);
   const local = ['127.0.0.1', 'localhost', '::1'].includes(bind);
-  if (!local && extra.length === 0) throw new Error('HOST is not localhost: set OPENFLOWKIT_ALLOWED_HOSTS to the hostnames this server answers to');
+  if (!local && extra.length === 0) throw new Error('HOST is not localhost: set CANVAS_ALLOWED_HOSTS to the hostnames this server answers to');
   const viewerPath = resolve(fileURLToPath(new URL('.', import.meta.url)), 'viewer', 'viewer.html');
   const viewerHtml = readFileSync(viewerPath, 'utf8');
   const server = createHttpServer({
@@ -96,7 +96,7 @@ function main(): void {
     appOrigin: process.env.APP_ORIGIN || DEFAULT_APP_ORIGIN,
     allowedHosts: local ? [...LOCAL_HOSTS, ...extra] : extra,
   });
-  server.listen(port, bind, () => console.error(`openflowkit-http: listening on http://${bind}:${port}/mcp`));
+  server.listen(port, bind, () => console.error(`canvas-http: listening on http://${bind}:${port}/mcp`));
 }
 
 if (isMain(import.meta.url)) main();

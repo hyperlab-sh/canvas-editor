@@ -10,7 +10,7 @@ import { expect, test } from './test';
 // here and are listed as assumed in STATUS.md.
 // Run headed: npm run e2e:headed -- e2e/motion-audit.spec.ts
 
-const DSL = `%% ofk 1
+const DSL = `%% canvas 1
 flowchart down
 
   Client [blue] -> API [green] : HTTPS
@@ -69,14 +69,14 @@ test('the animation dialog is keyboard- and screen-reader-complete', async ({ pa
   const preview = page.getByRole('img', { name: 'Animation preview' });
   await expect(preview).toBeVisible();
   // The panel opens playing; park it so the transport state is steady.
-  await page.locator('.ofk-motion-transport input[type="range"]').fill('0');
+  await page.locator('.canvas-motion-transport input[type="range"]').fill('0');
   await expect(preview).toHaveAttribute('alt', /preview, \d+ steps/);
-  const slider = page.locator('.ofk-motion-transport input[type="range"]');
+  const slider = page.locator('.canvas-motion-transport input[type="range"]');
   await expect(slider).toHaveAttribute('aria-valuetext', /of \d+\.\d seconds/);
   await expect(page.getByRole('button', { name: /Play \(space\)/ })).toHaveAttribute('aria-pressed', 'false');
 
   // Every chip names its step and its keyboard moves.
-  const chip = page.locator('.ofk-motion-chip').first();
+  const chip = page.locator('.canvas-motion-chip').first();
   await expect(chip).toHaveAttribute('aria-label', /Step 1 of \d+.*Alt\+left and right move it/);
 
   // Tab order stays inside the dialog and reaches the download button.

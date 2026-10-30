@@ -27,7 +27,7 @@ export function motionRecipe(intent: MotionIntent, reducedMotion: boolean, objec
           ? foundation.curve.standard
           : foundation.curve.enter,
     // Layered surfaces grow from their anchor, never from the screen center.
-    transformOrigin: 'var(--ofk-origin, top left)',
+    transformOrigin: 'var(--canvas-origin, top left)',
     staggerMs: 0, // A 1000-object response must not become a 1000-step performance.
     animateGeometry: intent === 'navigate' && !reducedMotion,
     animateOpacity: intent !== 'manipulate' && !reducedMotion && objectCount <= 100,

@@ -1,21 +1,21 @@
 #!/bin/sh
-# The Custom AI provider's same-origin proxy, off unless OPENFLOWKIT_AI_UPSTREAM is set (an OpenAI-compatible base URL,
+# The Custom AI provider's same-origin proxy, off unless CANVAS_AI_UPSTREAM is set (an OpenAI-compatible base URL,
 # e.g. http://host.docker.internal:11434/v1). It forwards exactly two paths there: GET /ai-proxy/models and
 # POST /ai-proxy/chat/completions. The upstream comes from the server's environment, never from the browser, so this is
 # not an open proxy. The key passes through in the Authorization header; nothing here logs it (access log off, and nginx
 # never logs headers or bodies). Runs from /docker-entrypoint.d before nginx starts.
 set -eu
-dir="${OFK_NGINX_DIR:-/etc/nginx/ofk}"
+dir="${CANVAS_NGINX_DIR:-/etc/nginx/canvas}"
 mkdir -p "$dir"
 out="$dir/ai-proxy.conf"
-upstream="${OPENFLOWKIT_AI_UPSTREAM:-}"
+upstream="${CANVAS_AI_UPSTREAM:-}"
 upstream="${upstream%/}"
 
 if [ -z "$upstream" ]; then
   cat > "$out" <<'CONF'
 location ^~ /ai-proxy/ {
     default_type application/json;
-    return 503 '{"error":{"message":"This server has no AI proxy. Start it with OPENFLOWKIT_AI_UPSTREAM set to your OpenAI-compatible endpoint."}}';
+    return 503 '{"error":{"message":"This server has no AI proxy. Start it with CANVAS_AI_UPSTREAM set to your OpenAI-compatible endpoint."}}';
 }
 CONF
   exit 0
@@ -23,11 +23,11 @@ fi
 
 case "$upstream" in
   http://?*|https://?*) ;;
-  *) echo "OPENFLOWKIT_AI_UPSTREAM must be an http:// or https:// URL, got: $upstream" >&2; exit 1 ;;
+  *) echo "CANVAS_AI_UPSTREAM must be an http:// or https:// URL, got: $upstream" >&2; exit 1 ;;
 esac
 # It is written into nginx config: anything that could end a directive or expand a variable is refused.
 case "$upstream" in
-  *[[:space:]\;\'\"\{\}\$\\]*) echo "OPENFLOWKIT_AI_UPSTREAM has a character nginx config cannot take: $upstream" >&2; exit 1 ;;
+  *[[:space:]\;\'\"\{\}\$\\]*) echo "CANVAS_AI_UPSTREAM has a character nginx config cannot take: $upstream" >&2; exit 1 ;;
 esac
 
 common='
@@ -60,4 +60,4 @@ location ^~ /ai-proxy/ {
     return 404;
 }
 CONF
-echo "openflowkit: AI proxy on, /ai-proxy/ -> $upstream"
+echo "canvas: AI proxy on, /ai-proxy/ -> $upstream"

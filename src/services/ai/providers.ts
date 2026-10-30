@@ -100,7 +100,7 @@ export const AI_PROVIDERS: readonly AiProviderDefinition[] = Object.freeze([
     keyPlaceholder: 'sk-ant-...', keyPattern: '^sk-ant-', needsKey: true,
     consoleUrl: 'https://console.anthropic.com/settings/keys', consoleName: 'Anthropic Console',
     logoPath: '/logos/claude.svg', risk: 'mixed',
-    hint: 'Browser calls need the direct-browser-access header — OpenFlowKit sends it.',
+    hint: 'Browser calls need the direct-browser-access header — Canvas sends it.',
   },
   {
     id: 'groq', label: 'Groq', wire: 'openai',
@@ -156,7 +156,7 @@ export const AI_PROVIDERS: readonly AiProviderDefinition[] = Object.freeze([
     consoleUrl: 'https://openrouter.ai/settings/keys', consoleName: 'OpenRouter Dashboard',
     logoPath: '/logos/openrouter.svg', risk: 'browser_friendly',
     hint: 'One key for OpenAI, Anthropic, Google and more.',
-    extraHeaders: Object.freeze({ 'HTTP-Referer': 'https://openflowkit.com', 'X-Title': 'OpenFlowKit' }),
+    extraHeaders: Object.freeze({ 'HTTP-Referer': 'https://canvas.hyperlab.sh', 'X-Title': 'Canvas' }),
   },
   {
     // Its own /api/chat, not the /v1 shim: only the native API takes num_ctx (see provider.ts).

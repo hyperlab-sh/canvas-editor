@@ -26,7 +26,7 @@ describe('sequence family', () => {
   });
 
   it('draws a message with `[head: cross]` ending in a cross, solid or dashed, and keeps it on a round trip', async () => {
-    const text = '%% ofk 1\nsequence\n\nA -> B : lost [head: cross]\nB --> A : lost reply [head: cross]\nA -> B : plain\n';
+    const text = '%% canvas 1\nsequence\n\nA -> B : lost [head: cross]\nB --> A : lost reply [head: cross]\nA -> B : plain\n';
     const result = await compile(text);
     expect(result.diagnostics.filter((item) => item.severity !== 'info')).toEqual([]);
     const [solid, dashed, plain] = result.connectors.map(resolveConnectorPresentation);

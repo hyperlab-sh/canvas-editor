@@ -5,7 +5,7 @@ import { V2_TIPS, type V2TipId } from './v2FeatureTips';
 import { platformKeys } from './v2Shortcuts';
 
 /** Floating UI a tip must never cover: the selection's context bar, chrome toolbars, panels, menus, dialogs, find and flow bars. */
-const FLOATING_UI = '[data-context-bar], .ofk-floating-region .ofk-toolbar, .ofk-panel, .ofk-popover:not([data-passive]), dialog[open], .ofk-v2-find, .ofk-v2-flow';
+const FLOATING_UI = '[data-context-bar], .canvas-floating-region .canvas-toolbar, .canvas-panel, .canvas-popover:not([data-passive]), dialog[open], .canvas-v2-find, .canvas-v2-flow';
 
 /** True when the tip's box overlaps any other floating UI on screen. */
 export function overlapsFloatingUi(tip: Element): boolean {
@@ -28,7 +28,7 @@ export function useYielding(layer: React.RefObject<HTMLElement | null>, active: 
     let frame = 0;
     const check = () => {
       frame = 0;
-      const card = layer.current?.closest('.ofk-v2-tip');
+      const card = layer.current?.closest('.canvas-v2-tip');
       if (card) setYielding(overlapsFloatingUi(card));
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(check); };
@@ -82,18 +82,18 @@ export function V2FeatureTip({ id, onAction, onClose }: {
   const keys = tip.keys ? platformKeys(tip.keys) : null;
   return (
     <Popover open passive anchorRef={anchor} onClose={onClose} placement={tip.placement} gap={12}
-      className="ofk-v2-tip" data-tip={id} data-yielding={yielding || undefined}
+      className="canvas-v2-tip" data-tip={id} data-yielding={yielding || undefined}
       style={yielding ? { visibility: 'hidden' } : undefined}>
-      <div ref={layer} className="ofk-v2-tip-card" aria-live="polite" aria-label="Tip">
-        <div className="ofk-v2-tip-head">
-          <span className="ofk-v2-tip-glyph" aria-hidden="true"><Icon icon={tip.icon} /></span>
+      <div ref={layer} className="canvas-v2-tip-card" aria-live="polite" aria-label="Tip">
+        <div className="canvas-v2-tip-head">
+          <span className="canvas-v2-tip-glyph" aria-hidden="true"><Icon icon={tip.icon} /></span>
           <strong>{tip.title}</strong>
           <IconButton variant="quiet" label="Dismiss tip" icon={<Icon icon={IconX} />} onClick={onClose} />
         </div>
         <p>{tip.text}</p>
         {/* A tip with nothing to open is only words: its close button is the way out. */}
         {tip.action ? (
-          <div className="ofk-v2-tip-actions">
+          <div className="canvas-v2-tip-actions">
             <Button variant="quiet" onClick={onClose}>Got it</Button>
             <Button variant="secondary" onClick={onAction}>
               {tip.action}

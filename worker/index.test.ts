@@ -8,7 +8,7 @@ import { FakeBucket, FakeD1, FakeQuotaNamespace } from './fakeBucket';
 import { handle, MAX_BODY_BYTES, type Env } from './index';
 
 /** Cloudflare's documented siteverify shapes. */
-const TURNSTILE_OK = { success: true, 'error-codes': [], challenge_ts: '2026-10-07T00:00:00Z', hostname: 'app.openflowkit.com' };
+const TURNSTILE_OK = { success: true, 'error-codes': [], challenge_ts: '2026-10-07T00:00:00Z', hostname: 'canvas.hyperlab.sh' };
 const TURNSTILE_BAD = { success: false, 'error-codes': ['invalid-input-response'] };
 
 const siteverify = (result: unknown): typeof fetch => async (input, init) => {
@@ -29,14 +29,14 @@ beforeEach(() => {
 const usage = () => quota.storage.values.get('usage') as { bytes: number; month: string; uploads: number } | undefined;
 
 const post = (body: Uint8Array | string, headers: Record<string, string> = {}) =>
-  new Request('https://share.openflowkit.com/s', { method: 'POST', body, headers: { 'X-Turnstile-Token': 'tok', ...headers } });
+  new Request('https://share.canvas.hyperlab.sh/s', { method: 'POST', body, headers: { 'X-Turnstile-Token': 'tok', ...headers } });
 /** Our envelope's shape: version byte 1, then at least IV + tag. */
 const envelope = (length = 40, fill = 7): Uint8Array => { const bytes = new Uint8Array(length).fill(fill); bytes[0] = 1; return bytes; };
 const upload = async (body: Uint8Array | string = envelope()) => {
   const response = await handle(post(body), env, siteverify(TURNSTILE_OK));
   return { response, ...(response.status === 201 ? await response.json() as { id: string; deleteToken: string } : { id: '', deleteToken: '' }) };
 };
-const url = (id: string) => `https://share.openflowkit.com/s/${id}`;
+const url = (id: string) => `https://share.canvas.hyperlab.sh/s/${id}`;
 
 describe('share worker', () => {
   it('POST stores the body and GET streams it back', async () => {
@@ -76,7 +76,7 @@ describe('share worker', () => {
   it('413 over 1 MiB, by Content-Length and by streamed bytes; exactly 1 MiB passes', async () => {
     const big = envelope(MAX_BODY_BYTES + 1);
     expect((await handle(post(big), env, siteverify(TURNSTILE_OK))).status).toBe(413);
-    const chunked = new Request('https://share.openflowkit.com/s', {
+    const chunked = new Request('https://share.canvas.hyperlab.sh/s', {
       method: 'POST', headers: { 'X-Turnstile-Token': 'tok' }, duplex: 'half',
       body: new ReadableStream<Uint8Array>({ start(c) { c.enqueue(big.slice(0, 600_000)); c.enqueue(big.slice(0, 600_000)); c.close(); } }),
     } as RequestInit);
@@ -168,12 +168,12 @@ describe('share worker', () => {
     const allowed = async (origin: string, vars: Partial<Env> = {}) => (await handle(new Request(url('0'.repeat(32)), {
       method: 'OPTIONS', headers: { Origin: origin },
     }), { ...env, ...vars })).headers.get('Access-Control-Allow-Origin');
-    expect(await allowed('https://app.openflowkit.com')).toBe('https://app.openflowkit.com');
+    expect(await allowed('https://canvas.hyperlab.sh')).toBe('https://canvas.hyperlab.sh');
     expect(await allowed('https://staging.example.com')).toBeNull();
     const vars = { ALLOWED_ORIGINS: 'https://staging.example.com, https://app.example.org' };
     expect(await allowed('https://staging.example.com', vars)).toBe('https://staging.example.com');
     expect(await allowed('https://app.example.org', vars)).toBe('https://app.example.org');
-    expect(await allowed('https://app.openflowkit.com', vars)).toBeNull();
+    expect(await allowed('https://canvas.hyperlab.sh', vars)).toBeNull();
     expect(await allowed('http://localhost:5173', vars)).toBe('http://localhost:5173');
   });
 
@@ -181,7 +181,7 @@ describe('share worker', () => {
     const preflight = (origin: string) => handle(new Request(url('0'.repeat(32)), {
       method: 'OPTIONS', headers: { Origin: origin, 'Access-Control-Request-Method': 'POST' },
     }), env);
-    for (const origin of ['https://app.openflowkit.com', 'http://localhost:3000', 'http://127.0.0.1:4173']) {
+    for (const origin of ['https://canvas.hyperlab.sh', 'http://localhost:3000', 'http://127.0.0.1:4173']) {
       const response = await preflight(origin);
       expect(response.status).toBe(204);
       expect(response.headers.get('Access-Control-Allow-Origin')).toBe(origin);
@@ -225,7 +225,7 @@ const beacon = (overrides: Record<string, unknown> = {}) => ({
   counts: { session: 1, created_draw: 2, active_seconds: 300 }, ...overrides,
 });
 const sendBeacon = (body: unknown, headers: Record<string, string> = {}, now = NOW) => handle(Object.assign(
-  new Request('https://share.openflowkit.com/e', {
+  new Request('https://share.canvas.hyperlab.sh/e', {
     method: 'POST', body: typeof body === 'string' ? body : JSON.stringify(body),
     headers: { 'Content-Type': 'text/plain;charset=UTF-8', 'CF-Connecting-IP': '198.51.100.4', 'User-Agent': 'Mozilla/5.0 Test', ...headers },
   }), { cf: { country: 'IN' } }), env, undefined, now);
@@ -321,7 +321,7 @@ describe('usage beacon (POST /e)', () => {
   });
 
   it('405 for GET /e', async () => {
-    expect((await handle(new Request('https://share.openflowkit.com/e'), env)).status).toBe(405);
+    expect((await handle(new Request('https://share.canvas.hyperlab.sh/e'), env)).status).toBe(405);
   });
 
   it('the migrations declare an integer column for every usage event (a new event needs a migration)', () => {
@@ -334,7 +334,7 @@ describe('usage beacon (POST /e)', () => {
 });
 
 const sendFeedback = (body: unknown, fetcher: typeof fetch = siteverify(TURNSTILE_OK), headers: Record<string, string> = {}) =>
-  handle(Object.assign(new Request('https://share.openflowkit.com/feedback', {
+  handle(Object.assign(new Request('https://share.canvas.hyperlab.sh/feedback', {
     method: 'POST', body: typeof body === 'string' ? body : JSON.stringify(body),
     headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.51.100.4', 'X-Turnstile-Token': 'tok', ...headers },
   }), { cf: { country: 'DE' } }), env, fetcher, NOW);
@@ -423,14 +423,14 @@ describe('feedback (POST /feedback)', () => {
   it('500 JSON with CORS headers when D1 fails, on /e and /feedback', async () => {
     env.USAGE_SALT = 'salt';
     env.DB = { prepare: () => { throw new Error('D1 is down'); } };
-    const origin = { Origin: 'https://app.openflowkit.com' };
+    const origin = { Origin: 'https://canvas.hyperlab.sh' };
     for (const response of [
       await sendBeacon(beacon(), origin),
       await sendFeedback({ kind: 'feature', feature: 'ai', rating: 'up', version: '2.1.0' }, noTurnstile, origin),
     ]) {
       expect(response.status).toBe(500);
       expect(await response.json()).toEqual({ error: 'storage-error' });
-      expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://app.openflowkit.com');
+      expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://canvas.hyperlab.sh');
     }
   });
 });

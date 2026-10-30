@@ -59,7 +59,7 @@ test('an oversize remembered set is ignored and the overview opens instead @gate
   await page.getByRole('button', { name: 'Create C4 workspace', exact: true }).click();
   await expect.poll(async () => (await doc(page).catch(() => null))?.pages.length).toBe(3);
   const document = (await doc(page))!;
-  const key = `ofk.map-open:${document.id}:${document.pages[0]!.id}`;
+  const key = `canvas.map-open:${document.id}:${document.pages[0]!.id}`;
   await page.evaluate(([k]) => localStorage.setItem(k!, JSON.stringify(Array.from({ length: 2001 }, (_, i) => i === 0 ? 'shop.api' : `x${i}`))), [key]);
   await enterMap(page);
   // `shop.api` was in the oversize list: had it been honoured, the API box would be open.

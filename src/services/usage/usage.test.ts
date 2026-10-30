@@ -6,7 +6,7 @@ import {
 import type { UsageBeacon } from './usageEvents';
 
 describe('sourceOf', () => {
-  const own = 'app.openflowkit.com';
+  const own = 'canvas.hyperlab.sh';
   it.each([
     ['https://news.ycombinator.com/item?id=1', 'hn'],
     ['https://www.producthunt.com/posts/x', 'producthunt'],
@@ -14,14 +14,14 @@ describe('sourceOf', () => {
     ['https://x.com/someone', 'x'],
     ['https://mobile.twitter.com/', 'x'],
     ['https://old.reddit.com/r/programming', 'reddit'],
-    ['https://github.com/openflowkit/openflowkit', 'github'],
+    ['https://github.com/hyperlab-sh/canvas-editor', 'github'],
     ['https://www.google.com/', 'google'],
     ['https://www.google.co.uk/', 'google'],
     ['https://www.linkedin.com/feed', 'linkedin'],
     ['https://lnkd.in/xyz', 'linkedin'],
     ['https://example.org/blog', 'other'],
     ['https://notgithub.com/', 'other'],
-    ['https://app.openflowkit.com/#/home', 'direct'],
+    ['https://canvas.hyperlab.sh/#/home', 'direct'],
     ['', 'direct'],
   ])('%s → %s', (referrer, expected) => {
     expect(sourceOf('', referrer, own)).toBe(expected);
@@ -67,8 +67,8 @@ describe('ensureInstall', () => {
     expect(ensureInstall(localStorage, new Date(), () => 'b'.repeat(32))).toEqual({ ...first, returning: true });
   });
   it('a malformed id starts over', () => {
-    localStorage.setItem('ofk.usage.id', 'nope');
-    localStorage.setItem('ofk.usage.firstSeen', '2026-01-01');
+    localStorage.setItem('canvas.usage.id', 'nope');
+    localStorage.setItem('canvas.usage.firstSeen', '2026-01-01');
     expect(ensureInstall(localStorage, new Date('2026-10-11T00:00:00Z'), () => 'c'.repeat(32))?.returning).toBe(false);
   });
   it('storage that throws gives null, never an exception', () => {
@@ -82,7 +82,7 @@ describe('counter and beacon', () => {
   const sent = (call = 0) => JSON.parse(beacon.mock.calls[call]![1]) as UsageBeacon;
   beforeEach(() => {
     localStorage.clear();
-    localStorage.setItem('ofk.usage', 'on'); // the test build is a dev build
+    localStorage.setItem('canvas.usage', 'on'); // the test build is a dev build
     window.location.hash = '#/d/doc-1';
     beacon.mockClear();
     beacon.mockReturnValue(true);
@@ -96,7 +96,7 @@ describe('counter and beacon', () => {
     track('export_image');
     flushUsage();
     expect(beacon).toHaveBeenCalledOnce();
-    expect(beacon.mock.calls[0]![0]).toBe('https://share.openflowkit.com/e');
+    expect(beacon.mock.calls[0]![0]).toBe('https://share.canvas.hyperlab.sh/e');
     const body = sent();
     expect(body).toMatchObject({ v: 1, entry: 'doc', version: APP_VERSION, returning: false, counts: { session: 1, export_image: 2 } });
     expect(body.uid).toMatch(/^[0-9a-f]{32}$/);
@@ -142,12 +142,12 @@ describe('counter and beacon', () => {
     track('export_image');
     setUsageSwitch(false);
     expect(usageSwitchOn()).toBe(false);
-    expect(localStorage.getItem('ofk.usage.id')).toBeNull();
+    expect(localStorage.getItem('canvas.usage.id')).toBeNull();
     track('export_image');
     flushUsage();
     expect(beacon).toHaveBeenCalledOnce();
     setUsageSwitch(true);
-    localStorage.setItem('ofk.usage', 'on');
+    localStorage.setItem('canvas.usage', 'on');
     track('export_image');
     flushUsage();
     expect(sent(1).counts).toEqual({ export_image: 1 });
@@ -167,7 +167,7 @@ describe('counter and beacon', () => {
   });
 
   it('listeners hear events even with counting off; trackOnce counts once a load', () => {
-    localStorage.setItem('ofk.usage', 'off');
+    localStorage.setItem('canvas.usage', 'off');
     startUsage({ entry: 'doc' });
     const heard: string[] = [];
     const stop = onTrack((event) => heard.push(event));

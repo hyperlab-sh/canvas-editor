@@ -77,11 +77,11 @@ function LegacyViewText({ flow }: { readonly flow: string }): React.JSX.Element 
   }, [flow]);
   return (
     <SystemRoot appearance={appearance} density={preferences.density}>
-      <main className="ofk-home" data-testid="v2-legacy-view">
-        <header className="ofk-home-header"><h1>Made with the previous editor</h1></header>
+      <main className="canvas-home" data-testid="v2-legacy-view">
+        <header className="canvas-home-header"><h1>Made with the previous editor</h1></header>
         {text === '' ? null : (
-          <p className="ofk-home-notice">
-            This link holds a diagram written in the previous OpenFlowKit’s text format, which this version can’t draw.
+          <p className="canvas-home-notice">
+            This link holds a diagram written in the previous Canvas’s text format, which this version can’t draw.
             Copy the text to keep it.
           </p>
         )}
@@ -92,7 +92,7 @@ function LegacyViewText({ flow }: { readonly flow: string }): React.JSX.Element 
         ) : null}
         {text ? (
           <>
-            <textarea ref={textRef} className="ofk-legacy-text" readOnly value={text} aria-label="Diagram text" rows={14} />
+            <textarea ref={textRef} className="canvas-legacy-text" readOnly value={text} aria-label="Diagram text" rows={14} />
             <Button onClick={() => void copy(text)}>
               <Icon icon={IconCopy} /> {copied === 'yes' ? 'Copied' : 'Copy text'}
             </Button>

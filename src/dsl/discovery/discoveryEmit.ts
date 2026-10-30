@@ -71,7 +71,7 @@ const LABEL_ORDER = ['uses', 'calls', 'imports', 'depends on', 'deploys'];
 const labelRank = (label: string | undefined): number => (label && LABEL_ORDER.includes(label) ? LABEL_ORDER.indexOf(label) : LABEL_ORDER.length);
 
 /**
- * The discovered units as a compiling OFK architecture workspace: one system per
+ * The discovered units as a compiling Canvas architecture workspace: one system per
  * top-level directory (or one named after the repo), `view landscape` plus a
  * container view per system, `tags: discovered` on everything. Each relation
  * carries its first evidence line as a `link` (`file:line`, or what `evidenceLink`
@@ -187,7 +187,7 @@ export function discoveryToDsl(
     name: repoName, elements, relations, views, flows: [],
   });
   const header = [
-    `// discovered by openflowkit — ${units.length} units, ${result.relations.length} relations, ${result.evidenceCount} evidence lines`,
+    `// discovered by canvas — ${units.length} units, ${result.relations.length} relations, ${result.evidenceCount} evidence lines`,
     '// heuristics read manifests, imports and line matches; review names, tech and grouping before committing',
   ];
   const lines = text.split('\n');

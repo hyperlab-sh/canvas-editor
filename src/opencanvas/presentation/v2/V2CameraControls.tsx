@@ -45,12 +45,12 @@ export function V2CameraControls(props: V2CameraControlsProps): React.JSX.Elemen
   return (
     <>
       <FloatingRegion slot="bottom-start">
-        <Toolbar label="View" className="ofk-v2-view-controls">
+        <Toolbar label="View" className="canvas-v2-view-controls">
           <Tooltip content="Canvas background">
             <ColorSwatch ref={colorRef} label="Canvas background" color={canvasColor} expanded={colorOpen}
               onClick={() => setColorOpen((open) => !open)} />
           </Tooltip>
-          <span className="ofk-v2-divider" aria-hidden="true" />
+          <span className="canvas-v2-divider" aria-hidden="true" />
           <Tooltip content="Layers" shortcut="L">
             <IconButton
               variant="quiet"
@@ -60,12 +60,12 @@ export function V2CameraControls(props: V2CameraControlsProps): React.JSX.Elemen
               onClick={props.onToggleTree}
             />
           </Tooltip>
-          <span className="ofk-v2-divider" aria-hidden="true" />
+          <span className="canvas-v2-divider" aria-hidden="true" />
           <Tooltip content="Zoom">
             <Button
               ref={zoomRef}
               variant="quiet"
-              className="ofk-numeric"
+              className="canvas-numeric"
               aria-haspopup="menu"
               aria-label={`Zoom ${props.zoomPercent}%`}
               aria-expanded={menuOpen}
@@ -74,9 +74,9 @@ export function V2CameraControls(props: V2CameraControlsProps): React.JSX.Elemen
               {props.zoomPercent}%
             </Button>
           </Tooltip>
-          <span className="ofk-v2-divider" aria-hidden="true" />
+          <span className="canvas-v2-divider" aria-hidden="true" />
           <Tooltip content="Zoom to fit" shortcut={platformKeys('⇧1')}><IconButton variant="quiet" label="Zoom to fit" icon={<Icon icon={IconMaximize} />} onClick={props.onFitView} /></Tooltip>
-          <span className="ofk-v2-divider" aria-hidden="true" />
+          <span className="canvas-v2-divider" aria-hidden="true" />
           <Tooltip content="Undo" shortcut={platformKeys('⌘Z')}><IconButton variant="quiet" label="Undo" icon={<Icon icon={IconArrowBackUp} />} disabled={!props.canUndo} onClick={props.onUndo} /></Tooltip>
           <Tooltip content="Redo" shortcut={platformKeys('⇧⌘Z')}><IconButton variant="quiet" label="Redo" icon={<Icon icon={IconArrowForwardUp} />} disabled={!props.canRedo} onClick={props.onRedo} /></Tooltip>
         </Toolbar>
@@ -85,7 +85,7 @@ export function V2CameraControls(props: V2CameraControlsProps): React.JSX.Elemen
       <Popover role="dialog" aria-label="Canvas background" open={colorOpen} anchorRef={colorRef}
         onClose={() => setColorOpen(false)} placement="top-start">
         <PopoverHeader title="Canvas background" onClose={() => setColorOpen(false)} />
-        <div className="ofk-v2-properties">
+        <div className="canvas-v2-properties">
           <ColorPicker value={canvasColor} allowAlpha={false}
             presets={['#f7f7f5', '#ffffff', '#f5f1e8', '#eaf2ef', '#191b19', '#20242b']}
             onChange={(color) => props.onPreferencesChange({ canvasColor: color })} />

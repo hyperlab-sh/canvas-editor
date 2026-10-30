@@ -1,11 +1,11 @@
 {
-  "name": "openflowkit",
+  "name": "canvas",
   "interface": {
-    "displayName": "OpenFlowKit"
+    "displayName": "Canvas"
   },
   "plugins": [
     {
-      "name": "openflowkit",
+      "name": "canvas",
       "source": {
         "source": "local",
         "path": "./plugin"

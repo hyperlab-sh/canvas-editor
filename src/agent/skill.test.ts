@@ -1,4 +1,4 @@
-// The agent skill (skills/openflowkit/SKILL.md) and public/llms.txt cannot
+// The agent skill (skills/canvas/SKILL.md) and public/llms.txt cannot
 // drift from what ships: every example compiles clean, every tool it names
 // exists, its vocabulary is the grammar's, and llms.txt carries the same body.
 import { readFileSync } from 'node:fs';
@@ -10,14 +10,14 @@ import { lintDsl } from './lint';
 import { AGENT_OPS } from './ops';
 import type { IconMatch } from './ops/types';
 
-const skill = readFileSync('skills/openflowkit/SKILL.md', 'utf8');
+const skill = readFileSync('skills/canvas/SKILL.md', 'utf8');
 const grammar = readFileSync('src/dsl/grammar.md', 'utf8');
 const blocks = (language: string) => [...skill.matchAll(new RegExp('```' + language + '\\n([\\s\\S]*?)```', 'g'))].map((match) => match[1]!);
 const prose = skill.replace(/```[\s\S]*?```/g, '');
 
 describe('agent skill', () => {
   it('is a skill: name, a description, at most 120 lines', () => {
-    expect(skill).toMatch(/^---\nname: openflowkit\ndescription: .{40,}\n---\n/);
+    expect(skill).toMatch(/^---\nname: canvas\ndescription: .{40,}\n---\n/);
     expect(skill.split('\n').length).toBeLessThanOrEqual(120);
   });
 

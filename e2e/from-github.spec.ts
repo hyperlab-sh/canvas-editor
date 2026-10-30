@@ -33,9 +33,9 @@ async function serveGitHub(page: Page, repo: Readonly<Record<string, string>> | 
 
 /** Regression guard: a standalone state renders inside the system root, with design-system buttons. */
 async function expectSystemState(page: Page, testId: string, primary: string): Promise<void> {
-  await expect(page.locator(`.ofk-system[data-ofk-appearance] [data-testid="${testId}"]`)).toBeVisible();
+  await expect(page.locator(`.canvas-system[data-canvas-appearance] [data-testid="${testId}"]`)).toBeVisible();
   await expect(page.getByRole('button', { name: primary })).toHaveAttribute('data-variant', 'primary');
-  await expect(page.getByRole('button', { name: primary })).toHaveClass(/ofk-button/);
+  await expect(page.getByRole('button', { name: primary })).toHaveClass(/canvas-button/);
 }
 
 test('a public repo opens in the editor as its architecture @gate', async ({ page }) => {
@@ -55,7 +55,7 @@ test('a public repo opens in the editor as its architecture @gate', async ({ pag
   // The arrow says where it came from: a GitHub link in the model panel.
   await page.getByRole('toolbar', { name: 'Workspace', exact: true }).getByRole('button', { name: 'Architecture model', exact: true }).click();
   const panel = page.getByRole('complementary', { name: 'Architecture model' });
-  const row = (unit: string) => panel.getByRole('treeitem').filter({ has: page.locator('.ofk-tree-label', { hasText: new RegExp(`^${unit}$`) }) });
+  const row = (unit: string) => panel.getByRole('treeitem').filter({ has: page.locator('.canvas-tree-label', { hasText: new RegExp(`^${unit}$`) }) });
   for (const unit of ['web', 'api', 'worker', 'db']) await expect(row(unit)).toHaveCount(1);
   await row('web').click();
   await expect(panel.locator('a[href^="https://github.com/acme/shop/blob/"]').first()).toBeVisible();
@@ -101,5 +101,5 @@ test('the state pages follow the dark theme @gate', async ({ page }) => {
   await expect(page.getByRole('alert')).toContainText('not found, or it is private');
   const ground = await page.getByTestId('v2-from-github').evaluate((el) => getComputedStyle(el).backgroundColor);
   expect(ground).not.toBe('rgb(255, 255, 255)');
-  await expect(page.locator('.ofk-system')).toHaveAttribute('data-ofk-appearance', 'dark');
+  await expect(page.locator('.canvas-system')).toHaveAttribute('data-canvas-appearance', 'dark');
 });

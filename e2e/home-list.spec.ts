@@ -40,7 +40,7 @@ test('all diagrams: open, rename and delete from the keyboard @gate', async ({ p
 
   await page.keyboard.press('Enter');
   await expect(page.locator('[data-testid="v2-canvas"]')).toBeVisible();
-  await expect(page.locator('.ofk-v2-document-title')).toHaveText('Quarterly plan');
+  await expect(page.locator('.canvas-v2-document-title')).toHaveText('Quarterly plan');
 
   await page.goto('/#/home');
   await page.getByRole('button', { name: 'More actions for Quarterly plan' }).focus();

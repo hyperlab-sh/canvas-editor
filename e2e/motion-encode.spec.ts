@@ -7,7 +7,7 @@ import { expect, test } from './test';
 // stay under 32 ms with no blocking JS task. Run headed:
 // npm run e2e:headed -- e2e/motion-encode.spec.ts
 
-const DSL = `%% ofk 1
+const DSL = `%% canvas 1
 flowchart down
 
   Client [blue] -> API [green] : HTTPS
@@ -34,7 +34,7 @@ async function openAnimation(page: import('@playwright/test').Page, source: stri
   await page.getByRole('menuitem', { name: 'Export…' }).click();
   await page.getByRole('button', { name: /Animate this page/ }).click();
   // The panel opens playing; park the playhead so the encode is deterministic.
-  await page.locator('.ofk-motion-transport input[type="range"]').fill('0');
+  await page.locator('.canvas-motion-transport input[type="range"]').fill('0');
   const duration = page.getByRole('spinbutton', { name: 'Duration' });
   await duration.fill('2');
   await duration.blur();
@@ -121,7 +121,7 @@ test('a chart page exports through the SVG fallback', async ({ page }) => {
   test.setTimeout(180_000);
   // One chart puts every frame back on the SVG raster (the canvas renderer
   // does not cover chart marks); the export must still be a real file.
-  const chart = `%% ofk 1
+  const chart = `%% canvas 1
 chart bar
 title: Monthly revenue
 
@@ -146,7 +146,7 @@ test('a 1080p export keeps the canvas painting and the dialog live', { tag: '@lo
   test.setTimeout(300_000);
   // 500 nodes, 30 steps, a 15 s clip: 450 frames at 30 fps, the stress case.
   const nodes = 500;
-  const lines = ['%% ofk 1', 'flowchart right', ''];
+  const lines = ['%% canvas 1', 'flowchart right', ''];
   for (let col = 0; col < 25; col += 1) {
     for (let row = 0; row < 20; row += 1) lines.push(`n${col}x${row} [rect]`);
     for (let row = 1; row < 20; row += 1) lines.push(`n${col}x${row - 1} -> n${col}x${row}`);
@@ -168,7 +168,7 @@ test('a 1080p export keeps the canvas painting and the dialog live', { tag: '@lo
   await page.getByRole('radio', { name: 'MP4' }).check();
   await page.getByRole('radio', { name: '1080 px' }).check();
   await page.getByRole('radio', { name: '30 fps' }).check();
-  await expect.poll(async () => page.evaluate(() => document.querySelector('.ofk-motion-transport output')?.textContent ?? '')).toContain('5.0s');
+  await expect.poll(async () => page.evaluate(() => document.querySelector('.canvas-motion-transport output')?.textContent ?? '')).toContain('5.0s');
   await page.evaluate(() => {
     (window as unknown as { __raf: { gaps: number[]; last: number; running: boolean } }).__raf = { gaps: [], last: performance.now(), running: true };
     const tick = () => {

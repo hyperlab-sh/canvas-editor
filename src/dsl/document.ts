@@ -79,7 +79,7 @@ export function parseDocument(input: string): DslDocument {
   let consumedThrough = 0;
 
   const first = grouped[0];
-  if (first && tokenized.tokens.length > 0 && lineText(first[1]).startsWith('%% ofk ')) {
+  if (first && tokenized.tokens.length > 0 && lineText(first[1]).startsWith('%% canvas ')) {
     const parsed = Number(lineText(first[1]).slice(7));
     if (Number.isFinite(parsed)) version = parsed;
     if (version > 1) diagnostics.push(tokenDiagnostic('W001', 'warning', first[1][0], 'Version is newer than parser; parsed as version 1'));

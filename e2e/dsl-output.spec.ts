@@ -165,7 +165,7 @@ test('canvas edits re-serialize through Edit as code', async ({ page }) => {
 test('diagnostics surface under the editor and bad lines still generate', async ({ page }) => {
   await page.goto('/');
   await page.waitForSelector('[data-testid="v2-canvas"]');
-  await generate(page, '%% ofk 1\nflowchart\nGood [green]\nWonder [octahedron]\nBroken [green\nGood -> Missing [icon: aws/nope]');
+  await generate(page, '%% canvas 1\nflowchart\nGood [green]\nWonder [octahedron]\nBroken [green\nGood -> Missing [icon: aws/nope]');
   await expect(page.getByText('W131', { exact: true })).toBeVisible();
   await expect(page.getByText('W101', { exact: true })).toBeVisible();
   await expect(page.getByText('W132', { exact: true })).toBeVisible();

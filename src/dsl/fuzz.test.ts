@@ -17,7 +17,7 @@ const ALPHABET = 'ab AB\n\t"\'[]{}:=,;->-<|.*#/@()~`0123456789é中\u{1F600}';
 const FRAGMENTS = [
   '->', '-->', '<->', '<-', '--', '->>', '--|>', '..|>', '||--o{', '}o..|{', '[', ']', '{', '}', ':', '=', ',', ';', '//',
   'group', 'participant', 'loop', 'alt', 'else', 'note', 'commit', 'branch', 'merge', 'state', 'class', '[*]', 'central:',
-  '- ', 'model', 'system', 'container', 'view', 'flow', 'step', 'include', 'title:', 'direction', 'appearance:', '%% ofk 2', '\n',
+  '- ', 'model', 'system', 'container', 'view', 'flow', 'step', 'include', 'title:', 'direction', 'appearance:', '%% canvas 2', '\n',
 ];
 
 function randomText(random: () => number): string {

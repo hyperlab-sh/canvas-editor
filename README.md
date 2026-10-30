@@ -1,8 +1,8 @@
 <p align="center">
-  <a href="https://app.openflowkit.com"><img src="public/Logo_openflowkit.svg" width="72" height="72" alt="OpenFlowKit logo"></a>
+  <a href="https://canvas.hyperlab.sh"><img src="public/logo-canvas.svg" width="72" height="72" alt="Canvas logo"></a>
 </p>
 
-<h1 align="center">OpenFlowKit</h1>
+<h1 align="center">Canvas</h1>
 
 <p align="center">
   <b>Architecture diagrams you draw, write as code, or hand to your agent.</b><br>
@@ -10,36 +10,36 @@
 </p>
 
 <p align="center">
-  <a href="https://app.openflowkit.com"><b>Open the app</b></a> &nbsp;·&nbsp;
-  <a href="https://docs.openflowkit.com/">Docs</a> &nbsp;·&nbsp;
+  <a href="https://canvas.hyperlab.sh"><b>Open the app</b></a> &nbsp;·&nbsp;
+  <a href="https://docs.canvas.hyperlab.sh/">Docs</a> &nbsp;·&nbsp;
   <a href="#connect-your-agent">MCP setup</a> &nbsp;·&nbsp;
-  <a href="https://github.com/openflowkit/openflowkit/discussions">Discussions</a> &nbsp;·&nbsp;
-  <a href="https://github.com/openflowkit/openflowkit/issues">Issues</a>
+  <a href="https://github.com/hyperlab-sh/canvas-editor/discussions">Discussions</a> &nbsp;·&nbsp;
+  <a href="https://github.com/hyperlab-sh/canvas-editor/issues">Issues</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/openflowkit/openflowkit/actions/workflows/quality.yml"><img src="https://github.com/openflowkit/openflowkit/actions/workflows/quality.yml/badge.svg" alt="CI status"></a>
+  <a href="https://github.com/hyperlab-sh/canvas-editor/actions/workflows/quality.yml"><img src="https://github.com/hyperlab-sh/canvas-editor/actions/workflows/quality.yml/badge.svg" alt="CI status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
-  <a href="https://www.npmjs.com/package/@openflowkit/openflowkit-mcp"><img src="https://img.shields.io/npm/v/@openflowkit/openflowkit-mcp?label=mcp%20server" alt="MCP server version on npm"></a>
-  <a href="https://www.npmjs.com/package/openflowkit"><img src="https://img.shields.io/npm/v/openflowkit?label=cli" alt="CLI version on npm"></a>
+  <a href="https://www.npmjs.com/package/@hyperlab.sh/canvas-mcp"><img src="https://img.shields.io/npm/v/@hyperlab.sh/canvas-mcp?label=mcp%20server" alt="MCP server version on npm"></a>
+  <a href="https://www.npmjs.com/package/@hyperlab.sh/canvas"><img src="https://img.shields.io/npm/v/@hyperlab.sh/canvas?label=cli" alt="CLI version on npm"></a>
 </p>
 
 <p align="center">
-  <a href="https://www.producthunt.com/products/openflowkit"><picture>
+  <a href="https://www.producthunt.com/products/canvas"><picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://api.producthunt.com/widgets/embed-image/v1/top-post-topic-badge.svg?post_id=1081019&theme=dark&period=weekly&topic_id=44">
-    <img src="https://api.producthunt.com/widgets/embed-image/v1/top-post-topic-badge.svg?post_id=1081019&theme=light&period=weekly&topic_id=44" width="200" height="43" alt="OpenFlowKit: #4 Product of the Week in Design Tools on Product Hunt">
+    <img src="https://api.producthunt.com/widgets/embed-image/v1/top-post-topic-badge.svg?post_id=1081019&theme=light&period=weekly&topic_id=44" width="200" height="43" alt="Canvas: #4 Product of the Week in Design Tools on Product Hunt">
   </picture></a>
 </p>
 
 <p align="center">
-  <a href="https://app.openflowkit.com"><picture>
+  <a href="https://canvas.hyperlab.sh"><picture>
     <source media="(prefers-color-scheme: dark)" srcset="assets/readme/hero-dark.gif">
     <source media="(prefers-color-scheme: light)" srcset="assets/readme/hero-light.gif">
-    <img src="assets/readme/hero-light.gif" width="900" alt="An agent draws an architecture diagram on the OpenFlowKit canvas, live; the user drags a box, edits one line of text and regenerates">
+    <img src="assets/readme/hero-light.gif" width="900" alt="An agent draws an architecture diagram on the Canvas editor, live; the user drags a box, edits one line of text and regenerates">
   </picture></a>
 </p>
 
-## Why OpenFlowKit
+## Why Canvas
 
 ### 1. Your agent draws on your canvas, live
 
@@ -72,12 +72,12 @@ one undo step. Paste Mermaid, Structurizr or D2 and it converts.
 ### 3. Paste a GitHub repo, get its map
 
 Type `owner/repo` into the box on an empty canvas and press **Map repo**, or open
-`app.openflowkit.com/#/map/github/<owner>/<repo>`
-([try a sample](https://app.openflowkit.com/#/map/github/dockersamples/example-voting-app)).
+`canvas.hyperlab.sh/#/map/github/<owner>/<repo>`
+([try a sample](https://canvas.hyperlab.sh/#/map/github/dockersamples/example-voting-app)).
 Your browser reads the repo from GitHub and draws its parts. Boxes open in place, and every
 arrow lists the `file:line` behind it, linked to the code. No key and no install. For a private
-repo, add a read-only GitHub token on the page, or map a checkout: `npx openflowkit map . --html map.html`
-([private repos](https://docs.openflowkit.com/map-mode/#private-repos)).
+repo, add a read-only GitHub token on the page, or map a checkout: `npx @hyperlab.sh/canvas map . --html map.html`
+([private repos](https://docs.canvas.hyperlab.sh/map-mode/#private-repos)).
 
 <p align="center">
   <picture>
@@ -114,100 +114,100 @@ animate build 6s loop {
 ## Ten diagram types, one language
 
 Every type is the same short, forgiving text, with per-line errors that say how to fix them.
-Each picture below is the first example on its docs page, rendered by the `openflowkit` CLI.
+Each picture below is the first example on its docs page, rendered by the `canvas` CLI.
 
 <table>
   <tr>
-    <td width="50%"><a href="https://docs.openflowkit.com/diagram-architecture/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/architecture-dark.png"><img src="assets/readme/types/architecture-light.png" alt="Architecture diagram with Node.js and AWS Lambda icons"></picture></a><br><b>Architecture</b> · cloud icons, groups, a C4 model with views</td>
-    <td width="50%"><a href="https://docs.openflowkit.com/diagram-sequence/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/sequence-dark.png"><img src="assets/readme/types/sequence-light.png" alt="Sequence diagram of a login"></picture></a><br><b>Sequence</b> · alt / opt / loop, notes, activations</td>
+    <td width="50%"><a href="https://docs.canvas.hyperlab.sh/diagram-architecture/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/architecture-dark.png"><img src="assets/readme/types/architecture-light.png" alt="Architecture diagram with Node.js and AWS Lambda icons"></picture></a><br><b>Architecture</b> · cloud icons, groups, a C4 model with views</td>
+    <td width="50%"><a href="https://docs.canvas.hyperlab.sh/diagram-sequence/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/sequence-dark.png"><img src="assets/readme/types/sequence-light.png" alt="Sequence diagram of a login"></picture></a><br><b>Sequence</b> · alt / opt / loop, notes, activations</td>
   </tr>
   <tr>
-    <td><a href="https://docs.openflowkit.com/diagram-flowchart/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/flowchart-dark.png"><img src="assets/readme/types/flowchart-light.png" alt="Flowchart"></picture></a><br><b>Flowchart</b> · shapes, decisions, groups</td>
-    <td><a href="https://docs.openflowkit.com/diagram-erd/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/erd-dark.png"><img src="assets/readme/types/erd-light.png" alt="Entity-relationship diagram"></picture></a><br><b>ERD</b> · columns, keys, crow's-foot cardinality</td>
+    <td><a href="https://docs.canvas.hyperlab.sh/diagram-flowchart/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/flowchart-dark.png"><img src="assets/readme/types/flowchart-light.png" alt="Flowchart"></picture></a><br><b>Flowchart</b> · shapes, decisions, groups</td>
+    <td><a href="https://docs.canvas.hyperlab.sh/diagram-erd/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/erd-dark.png"><img src="assets/readme/types/erd-light.png" alt="Entity-relationship diagram"></picture></a><br><b>ERD</b> · columns, keys, crow's-foot cardinality</td>
   </tr>
   <tr>
-    <td><a href="https://docs.openflowkit.com/diagram-state/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/state-dark.png"><img src="assets/readme/types/state-light.png" alt="State machine"></picture></a><br><b>State</b> · start and end, composite states</td>
-    <td><a href="https://docs.openflowkit.com/diagram-class/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/class-dark.png"><img src="assets/readme/types/class-light.png" alt="Class diagram"></picture></a><br><b>Class</b> · members, stereotypes, relations</td>
+    <td><a href="https://docs.canvas.hyperlab.sh/diagram-state/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/state-dark.png"><img src="assets/readme/types/state-light.png" alt="State machine"></picture></a><br><b>State</b> · start and end, composite states</td>
+    <td><a href="https://docs.canvas.hyperlab.sh/diagram-class/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/class-dark.png"><img src="assets/readme/types/class-light.png" alt="Class diagram"></picture></a><br><b>Class</b> · members, stereotypes, relations</td>
   </tr>
   <tr>
-    <td><a href="https://docs.openflowkit.com/diagram-mindmap/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/mindmap-dark.png"><img src="assets/readme/types/mindmap-light.png" alt="Mind map"></picture></a><br><b>Mind map</b> · indentation is the tree</td>
-    <td><a href="https://docs.openflowkit.com/diagram-gitgraph/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/gitgraph-dark.png"><img src="assets/readme/types/gitgraph-light.png" alt="Git graph"></picture></a><br><b>Git graph</b> · branches, merges, tags</td>
+    <td><a href="https://docs.canvas.hyperlab.sh/diagram-mindmap/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/mindmap-dark.png"><img src="assets/readme/types/mindmap-light.png" alt="Mind map"></picture></a><br><b>Mind map</b> · indentation is the tree</td>
+    <td><a href="https://docs.canvas.hyperlab.sh/diagram-gitgraph/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/gitgraph-dark.png"><img src="assets/readme/types/gitgraph-light.png" alt="Git graph"></picture></a><br><b>Git graph</b> · branches, merges, tags</td>
   </tr>
   <tr>
-    <td><a href="https://docs.openflowkit.com/diagram-chart/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/chart-dark.png"><img src="assets/readme/types/chart-light.png" alt="Bar chart"></picture></a><br><b>Chart</b> · data written as text, editable in a table</td>
-    <td><a href="https://docs.openflowkit.com/diagram-wireframe/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/wireframe-dark.png"><img src="assets/readme/types/wireframe-light.png" alt="Phone wireframe"></picture></a><br><b>Wireframe</b> · 35 controls on phone, tablet or desktop screens</td>
+    <td><a href="https://docs.canvas.hyperlab.sh/diagram-chart/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/chart-dark.png"><img src="assets/readme/types/chart-light.png" alt="Bar chart"></picture></a><br><b>Chart</b> · data written as text, editable in a table</td>
+    <td><a href="https://docs.canvas.hyperlab.sh/diagram-wireframe/"><picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/types/wireframe-dark.png"><img src="assets/readme/types/wireframe-light.png" alt="Phone wireframe"></picture></a><br><b>Wireframe</b> · 35 controls on phone, tablet or desktop screens</td>
   </tr>
 </table>
 
 The language is versioned and written down in one file: **[src/dsl/grammar.md](src/dsl/grammar.md)**
-([docs](https://docs.openflowkit.com/openflow-dsl/)). The same text powers the code panel, the
+([docs](https://docs.canvas.hyperlab.sh/openflow-dsl/)). The same text powers the code panel, the
 assistant, the MCP tools and the CLI.
 
 ## Quick start
 
-**In the browser:** [app.openflowkit.com](https://app.openflowkit.com). Nothing to install, no account.
+**In the browser:** [canvas.hyperlab.sh](https://canvas.hyperlab.sh). Nothing to install, no account.
 
-**In a terminal:** `npx openflowkit` (Node 20.11+).
+**In a terminal:** `npx @hyperlab.sh/canvas` (Node 20.11+).
 
 **Run it locally** (Node 22.22+):
 
 ```bash
-git clone https://github.com/openflowkit/openflowkit.git
-cd openflowkit
+git clone https://github.com/hyperlab-sh/canvas-editor.git
+cd canvas
 npm install && npm run dev      # http://localhost:3000
 ```
 
 ### Connect your agent
 
-OpenFlowKit has one set of agent tools. Pick the row for where your agent runs:
+Canvas has one set of agent tools. Pick the row for where your agent runs:
 
 | Your agent runs… | How to connect | What it can do |
 | --- | --- | --- |
 | **On your computer**: Claude Code, Cursor, VS Code, Claude Desktop, Windsurf | The MCP server, below | Everything: draws on your open canvas (one undo step per change), edits `.openflow.json` files in your repo, maps a codebase, takes screenshots |
-| **In a chat app**: claude.ai, Claude Desktop, ChatGPT | Add a custom connector: `https://mcp.openflowkit.com/mcp`, choose **No sign-in** | Draws a diagram in the chat as a card, with **Open in OpenFlowKit**. Not on your open canvas |
-| **In your browser** (experimental) | Nothing to install: open a diagram in a browser whose agent supports [WebMCP](https://docs.openflowkit.com/webmcp/) | Reads and edits the diagram you have open |
+| **In a chat app**: claude.ai, Claude Desktop, ChatGPT | Add a custom connector: `https://mcp.canvas.hyperlab.sh/mcp`, choose **No sign-in** | Draws a diagram in the chat as a card, with **Open in Canvas**. Not on your open canvas |
+| **In your browser** (experimental) | Nothing to install: open a diagram in a browser whose agent supports [WebMCP](https://docs.canvas.hyperlab.sh/webmcp/) | Reads and edits the diagram you have open |
 
-<a href="https://cursor.com/en/install-mcp?name=openflowkit&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIm9wZW5mbG93a2l0IiwibWNwIl19"><img src="https://cursor.com/deeplink/mcp-install-dark.svg" height="32" alt="Add OpenFlowKit to Cursor"></a>
-<a href="https://insiders.vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522openflowkit%2522%252C%2522command%2522%253A%2522npx%2522%252C%2522args%2522%253A%255B%2522-y%2522%252C%2522openflowkit%2522%252C%2522mcp%2522%255D%257D"><img src="https://img.shields.io/badge/VS_Code-Install_OpenFlowKit-0098FF?logo=visualstudiocode&logoColor=white" height="32" alt="Install OpenFlowKit in VS Code"></a>
+<a href="https://cursor.com/en/install-mcp?name=canvas&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIm9wZW5mbG93a2l0IiwibWNwIl19"><img src="https://cursor.com/deeplink/mcp-install-dark.svg" height="32" alt="Add Canvas to Cursor"></a>
+<a href="https://insiders.vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522canvas%2522%252C%2522command%2522%253A%2522npx%2522%252C%2522args%2522%253A%255B%2522-y%2522%252C%2522canvas%2522%252C%2522mcp%2522%255D%257D"><img src="https://img.shields.io/badge/VS_Code-Install_Canvas-0098FF?logo=visualstudiocode&logoColor=white" height="32" alt="Install Canvas in VS Code"></a>
 
 For Claude Code, one line:
 
 ```bash
-claude mcp add -s user openflowkit -- npx -y openflowkit mcp
+claude mcp add -s user canvas -- npx -y @hyperlab.sh/canvas mcp
 ```
 
-For Codex: `codex mcp add openflowkit -- npx -y openflowkit mcp`.
+For Codex: `codex mcp add canvas -- npx -y @hyperlab.sh/canvas mcp`.
 
 For Claude Desktop, Windsurf and any other MCP client:
 
 ```json
 {
   "mcpServers": {
-    "openflowkit": { "command": "npx", "args": ["-y", "openflowkit", "mcp"] }
+    "canvas": { "command": "npx", "args": ["-y", "@hyperlab.sh/canvas", "mcp"] }
   }
 }
 ```
 
 Restart the agent, then click **Connect agent** in the app, or open
-[app.openflowkit.com/#/connect](https://app.openflowkit.com/#/connect). That panel has the steps for each client
+[canvas.hyperlab.sh/#/connect](https://canvas.hyperlab.sh/#/connect). That panel has the steps for each client
 and copies the same config with a pairing token. With no app open, the same tools edit `.openflow.json` files in
-your repo. Every client, step by step, with fixes: [Connect your agent](https://docs.openflowkit.com/connect-your-agent/).
+your repo. Every client, step by step, with fixes: [Connect your agent](https://docs.canvas.hyperlab.sh/connect-your-agent/).
 
 <details>
 <summary><b>Plugins: Claude Code and Codex</b> (server and skill in one install)</summary>
 
 ```bash
 # Claude Code
-claude plugin marketplace add openflowkit/openflowkit
-claude plugin install openflowkit@openflowkit
+claude plugin marketplace add hyperlab-sh/canvas-editor
+claude plugin install canvas@canvas
 
-# Codex: add the marketplace, then install OpenFlowKit from the Plugins Directory
-codex plugin marketplace add openflowkit/openflowkit
+# Codex: add the marketplace, then install Canvas from the Plugins Directory
+codex plugin marketplace add hyperlab-sh/canvas-editor
 ```
 
-The skill ([`skills/openflowkit/SKILL.md`](skills/openflowkit/SKILL.md)) tells an agent when a
+The skill ([`skills/canvas/SKILL.md`](skills/canvas/SKILL.md)) tells an agent when a
 diagram helps, how to write it, and to save it beside the code. Agents that read the web get the
-same text at `https://app.openflowkit.com/llms.txt`.
+same text at `https://canvas.hyperlab.sh/llms.txt`.
 </details>
 
 ## Working with agents
@@ -229,7 +229,7 @@ Things to ask for:
 - *"Draw the architecture of this repository."*
 - *"Make the boxes I selected red and add a cache in front of the API."*
 - *"Turn the Mermaid in our README into a diagram I can edit."*
-- *"Compare architecture.ofk with the code and tell me what drifted."*
+- *"Compare architecture.canvas with the code and tell me what drifted."*
 
 Your canvas edits are safe: if you moved, restyled or renamed something and the agent regenerates
 from text, `get_diagram` hands it the text that keeps each edit, and `update_diagram` reports
@@ -249,7 +249,7 @@ Fifteen for files, repositories and the local service: `openflow_create`, `openf
 `list_starter_templates`, `get_starter_template`, `analyze_codebase`, `discover_architecture`,
 `drift_report`, `explain_element`, `connect_diagram`, `disconnect_diagram`.
 
-Arguments and examples: [MCP server docs](https://docs.openflowkit.com/mcp-server/). The op
+Arguments and examples: [MCP server docs](https://docs.canvas.hyperlab.sh/mcp-server/). The op
 manifest is [`src/agent/manifest.ts`](src/agent/manifest.ts). Requires Node 20.11+.
 </details>
 
@@ -270,29 +270,29 @@ Mermaid pasted straight onto the canvas draws in place.
 | **D2** | shapes, connections and containers |
 
 Going back out, **Copy as Mermaid** writes a flowchart or sequence diagram as Mermaid text for a
-README or wiki. [Mermaid](https://docs.openflowkit.com/mermaid-import/) ·
-[coming from Structurizr](https://docs.openflowkit.com/coming-from-structurizr/)
+README or wiki. [Mermaid](https://docs.canvas.hyperlab.sh/mermaid-import/) ·
+[coming from Structurizr](https://docs.canvas.hyperlab.sh/coming-from-structurizr/)
 
 ## In your repo and CI
 
-The `openflowkit` CLI runs the same engine as the app, from any terminal or CI job:
+The `canvas` CLI runs the same engine as the app, from any terminal or CI job:
 
 ```bash
-npx openflowkit render diagram.ofk -o diagram.svg   # Mermaid, D2, Structurizr or DSL → SVG
-npx openflowkit validate diagram.ofk --strict       # exit 1 on an error
-npx openflowkit convert flow.mmd -o flow.openflow.json
-npx openflowkit discover . --out architecture.ofk   # draft a C4 model of this repo
-npx openflowkit drift .                             # exit 1 when the code moved on
+npx @hyperlab.sh/canvas render diagram.canvas -o diagram.svg   # Mermaid, D2, Structurizr or DSL → SVG
+npx @hyperlab.sh/canvas validate diagram.canvas --strict       # exit 1 on an error
+npx @hyperlab.sh/canvas convert flow.mmd -o flow.openflow.json
+npx @hyperlab.sh/canvas discover . --out architecture.canvas   # draft a C4 model of this repo
+npx @hyperlab.sh/canvas drift .                             # exit 1 when the code moved on
 ```
 
 <p align="center">
-  <img src="assets/readme/cli-welcome.png" width="720" alt="Running npx openflowkit: a welcome box, OPEN FLOWKIT in orange block letters, and three commands to try">
+  <img src="assets/readme/cli-welcome.png" width="720" alt="Running npx @hyperlab.sh/canvas: a welcome box, OPEN FLOWKIT in orange block letters, and three commands to try">
 </p>
 
-Commit `architecture.ofk` next to the code and `drift` keeps it honest in CI. The **PR diagrams
+Commit `architecture.canvas` next to the code and `drift` keeps it honest in CI. The **PR diagrams
 Action** comments on a pull request with how its diagrams changed: node and connector counts, the
-text diff, and drift for `.ofk` models.
-[CLI](https://docs.openflowkit.com/cli/) · [GitHub Action](https://docs.openflowkit.com/github-action/)
+text diff, and drift for `.canvas` models.
+[CLI](https://docs.canvas.hyperlab.sh/cli/) · [GitHub Action](https://docs.canvas.hyperlab.sh/github-action/)
 
 ## Exports and sharing
 
@@ -336,7 +336,7 @@ On Windows and Linux, <kbd>Ctrl</kbd> and <kbd>Alt</kbd> replace <kbd>⌘</kbd> 
   </picture>
 </p>
 
-<sub>This diagram is OpenFlowKit text too: <a href="assets/readme/how-it-works.ofk">how-it-works.ofk</a>, exported as an animated SVG with the pulse preset.</sub>
+<sub>This diagram is Canvas text too: <a href="assets/readme/how-it-works.canvas">how-it-works.canvas</a>, exported as an animated SVG with the pulse preset.</sub>
 
 You and your agent can also draw straight on the canvas; every edit, from text or by hand, is a
 command on the same document.
@@ -354,8 +354,8 @@ tour: **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 | `src/dsl/` | the language: grammar, parser, diagram families, compile and serialize, repo discovery |
 | `src/opencanvas/` | the editor: document model and commands, Pixi renderer, exporters, React UI |
 | `src/agent/` | the operations agents call, the bridge protocol, the op manifest |
-| `mcp-server/` | the published MCP server and `openflowkit` CLI |
-| `cli/` | `openflowkit` on npm: the short name for the CLI |
+| `mcp-server/` | the published MCP server and `canvas` CLI |
+| `cli/` | `@hyperlab.sh/canvas` on npm: the short name for the CLI |
 | `plugin/`, `skills/` | the Claude Code and Codex plugins, and the agent skill |
 | `action/` | the PR diagrams GitHub Action |
 | `worker/` | the share-link Worker (stores ciphertext only) |
@@ -366,18 +366,18 @@ tour: **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 ## Self-host
 
 ```bash
-docker build -t openflowkit . && docker run --rm -p 3045:3045 openflowkit   # http://localhost:3045
+docker build -t canvas . && docker run --rm -p 3045:3045 canvas   # http://localhost:3045
 ```
 
 The image is the static build behind nginx, with the same headers as the hosted app. Content
 security policy, AI providers on your own network, and share links:
-[self-hosting](https://docs.openflowkit.com/self-hosting/).
+[self-hosting](https://docs.canvas.hyperlab.sh/self-hosting/).
 
 ## Privacy
 
 Your diagrams stay in your browser. Something leaves it only when you choose: AI with your own key
 goes to that provider, a share link uploads an encrypted copy, a repo map reads from GitHub.
-No account needed. We collect basic usage stats to improve OpenFlowKit; turn them off in Settings.
+No account needed. We collect basic usage stats to improve Canvas; turn them off in Settings.
 Back up everything at once with **Download all diagrams** on Home; **Import** restores it in any browser.
 
 <details>
@@ -392,36 +392,37 @@ page. AI, share links and repo maps need the network. For no internet at all, se
 **Which browsers?** A current desktop browser with WebGL. The automated tests run in Chromium.
 
 **Can my team edit together?** Not in real time. A view-only link is a snapshot, an editable
-link hands each person their own copy, and `.openflow.json` and `.ofk` files live happily in git.
+link hands each person their own copy, and `.openflow.json` and `.canvas` files live happily in git.
 
-More: [FAQ](https://docs.openflowkit.com/faq/).
+More: [FAQ](https://docs.canvas.hyperlab.sh/faq/).
 </details>
 
 ## Contributing
 
 Issues, ideas and PRs are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) for setup and
 the checks, and [ARCHITECTURE.md](ARCHITECTURE.md) for how the code fits together. Questions go to
-[Discussions](https://github.com/openflowkit/openflowkit/discussions). What changed in each
+[Discussions](https://github.com/hyperlab-sh/canvas-editor/discussions). What changed in each
 version: [CHANGELOG.md](CHANGELOG.md).
 
 Report security issues privately, as [SECURITY.md](SECURITY.md) describes. MIT licensed, see
-[LICENSE](LICENSE).
+[LICENSE](LICENSE). Canvas began as a fork of [OpenFlowKit](https://github.com/openflowkit/openflowkit)
+by Varun, also MIT licensed.
 
-<a href="https://github.com/openflowkit/openflowkit/graphs/contributors"><img src="https://contrib.rocks/image?repo=openflowkit/openflowkit&max=100" alt="Contributors"></a>
+<a href="https://github.com/hyperlab-sh/canvas-editor/graphs/contributors"><img src="https://contrib.rocks/image?repo=hyperlab-sh/canvas-editor&max=100" alt="Contributors"></a>
 
 ---
 
 <p align="center">
-  <a href="https://app.openflowkit.com"><img src="public/Logo_openflowkit.svg" width="40" height="40" alt="OpenFlowKit logo"></a>
+  <a href="https://canvas.hyperlab.sh"><img src="public/logo-canvas.svg" width="40" height="40" alt="Canvas logo"></a>
 </p>
 <p align="center">
-  <b>If OpenFlowKit saved you a diagram, <a href="https://github.com/openflowkit/openflowkit">give it a ⭐ on GitHub</a>.</b><br>
+  <b>If Canvas saved you a diagram, <a href="https://github.com/hyperlab-sh/canvas-editor">give it a ⭐ on GitHub</a>.</b><br>
   <sub>It's how other people find it.</sub>
 </p>
 <p align="center">
-  <a href="https://app.openflowkit.com">Open the app</a> &nbsp;·&nbsp;
-  <a href="https://docs.openflowkit.com/">Docs</a> &nbsp;·&nbsp;
+  <a href="https://canvas.hyperlab.sh">Open the app</a> &nbsp;·&nbsp;
+  <a href="https://docs.canvas.hyperlab.sh/">Docs</a> &nbsp;·&nbsp;
   <a href="CONTRIBUTING.md">Contribute</a> &nbsp;·&nbsp;
-  <a href="https://github.com/openflowkit/openflowkit/discussions">Discussions</a> &nbsp;·&nbsp;
-  <a href="https://github.com/openflowkit/openflowkit/issues/new/choose">Report a bug</a>
+  <a href="https://github.com/hyperlab-sh/canvas-editor/discussions">Discussions</a> &nbsp;·&nbsp;
+  <a href="https://github.com/hyperlab-sh/canvas-editor/issues/new/choose">Report a bug</a>
 </p>

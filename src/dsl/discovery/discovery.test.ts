@@ -98,7 +98,7 @@ describe('acceptsArchitectureFile skip directories', () => {
 });
 
 describe('Cloudflare Workers', () => {
-  const toml = 'name = "openflowkit-share"\nmain = "index.ts"\n\n[[r2_buckets]]\nbinding = "SHARES"\nbucket_name = "openflowkit-shares"\n';
+  const toml = 'name = "canvas-share"\nmain = "index.ts"\n\n[[r2_buckets]]\nbinding = "SHARES"\nbucket_name = "canvas-shares"\n';
   const worker = [
     { path: 'worker/wrangler.toml', content: toml },
     { path: 'worker/index.ts', content: 'export default { fetch() {} };\n' },
@@ -107,9 +107,9 @@ describe('Cloudflare Workers', () => {
   it('a wrangler config makes its folder a Worker, and its R2 binding a store it uses', () => {
     const result = discoverArchitecture(worker, 'repo');
     const unit = result.units.find((entry) => entry.dir === 'worker')!;
-    expect(unit).toMatchObject({ kind: 'container', name: 'openflowkit-share', tech: 'Cloudflare Workers' });
+    expect(unit).toMatchObject({ kind: 'container', name: 'canvas-share', tech: 'Cloudflare Workers' });
     expect(unit.evidence[0]).toMatchObject({ file: 'worker/wrangler.toml', line: 1 });
-    const bucket = result.units.find((entry) => entry.name === 'openflowkit-shares')!;
+    const bucket = result.units.find((entry) => entry.name === 'canvas-shares')!;
     expect(bucket).toMatchObject({ kind: 'store', tech: 'R2' });
     const use = result.relations.find((relation) => relation.to === bucket.id)!;
     expect(use).toMatchObject({ from: unit.id, label: 'uses' });

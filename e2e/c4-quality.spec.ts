@@ -39,14 +39,14 @@ test('C4 starter, keyboard inspection, focused camera and visual flow authoring 
   await expect(page.getByRole('treeitem', { name: /^API/ })).toBeFocused();
   await page.getByLabel('Search architecture').fill('');
   const shopRow = page.getByRole('treeitem', { name: /^Shop/ });
-  await shopRow.locator('.ofk-tree-toggle').click(); // the chevron collapses
+  await shopRow.locator('.canvas-tree-toggle').click(); // the chevron collapses
   await expect(page.getByRole('treeitem', { name: /^Database/ })).toHaveCount(0);
   await shopRow.focus();
   await page.keyboard.press('ArrowRight'); // and Right expands
   await expect(page.getByRole('treeitem', { name: /^Database/ })).toHaveCount(1);
   await page.keyboard.press('Enter');
   await page.getByRole('button', { name: 'Open Container view', exact: true }).click();
-  await expect(page.locator('.ofk-v2-breadcrumb-current')).toHaveText('Services: Shop');
+  await expect(page.locator('.canvas-v2-breadcrumb-current')).toHaveText('Services: Shop');
   // Shop's card is still open after the drill.
   await expect(allElements).toBeVisible();
   await allElements.click();

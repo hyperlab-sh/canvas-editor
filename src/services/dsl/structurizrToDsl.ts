@@ -5,11 +5,11 @@ import { sortAttributes } from '../../dsl/vocabulary';
 import { quoted, readStatements, tagPredicate } from './structurizrSyntax';
 import { StructurizrResolver } from './structurizrResolver';
 import {
-  OFK_FAMILY_HEADER, STRUCTURIZR_KEYWORDS,
+  CANVAS_FAMILY_HEADER, STRUCTURIZR_KEYWORDS,
   type DraftElement, type DraftFlow, type DraftRule, type DraftView, type ResolvedRelation, type StructurizrConversion, type StructurizrConversionError,
 } from './structurizrTypes';
 
-// Structurizr DSL → OFK text (grammar §11.2). The reader, resolver and this emitter are one converter, a
+// Structurizr DSL → Canvas text (grammar §11.2). The reader, resolver and this emitter are one converter, a
 // class chain: each stage extends the one before it.
 export type { StructurizrConversion } from './structurizrTypes';
 
@@ -58,7 +58,7 @@ class StructurizrConverter extends StructurizrResolver {
 
   /** `id = kind Name`, or `kind Name` when the id is the label slug (grammar §6.2/§9.2). */
   protected elementHead(element: DraftElement): string {
-    const localId = element.parent ? element.ofkId.slice(element.parent.ofkId.length + 1) : element.ofkId;
+    const localId = element.parent ? element.canvasId.slice(element.parent.canvasId.length + 1) : element.canvasId;
     const name = element.instanceOf ? this.instanceRef(element.instanceOf) : quote(element.name);
     return slugifyDslId(element.name) === localId
       ? `${element.kind} ${name}`
@@ -91,7 +91,7 @@ class StructurizrConverter extends StructurizrResolver {
   }
 
   protected emit(relations: readonly ResolvedRelation[], flows: readonly { flow: DraftFlow; steps: Array<{ from: DraftElement; to: DraftElement; label?: string }> }[]): string {
-    const lines: string[] = ['%% ofk 1', 'architecture'];
+    const lines: string[] = ['%% canvas 1', 'architecture'];
     if (this.name) lines.push(`title: ${quote(this.name)}`);
     const body: string[] = [];
     this.emitModel(body, relations);
@@ -224,16 +224,16 @@ class StructurizrConverter extends StructurizrResolver {
 
 /** True when the text starts a Structurizr workspace (used for the paste banner). */
 export function looksLikeStructurizr(text: string): boolean {
-  if (/^\s*%%\s*ofk\b/m.test(text)) return false;
+  if (/^\s*%%\s*canvas\b/m.test(text)) return false;
   const stripped = text.replace(/^\s*#[^\n]*$/gm, '').replace(/\/\/[^\n]*/g, '');
   const first = stripped.split('\n').map((line) => line.trim()).find(Boolean);
-  if (first && OFK_FAMILY_HEADER.test(first)) return false;
+  if (first && CANVAS_FAMILY_HEADER.test(first)) return false;
   if (/^\s*workspace\b[^{\n]*\{/m.test(stripped)) return true;
   if (!/^\s*model\b[^{}\n]*\{/m.test(stripped)) return false;
   return STRUCTURIZR_KEYWORDS.test(stripped);
 }
 
-/** Structurizr DSL → OFK DSL, or an error explaining why it cannot be converted. */
+/** Structurizr DSL → Canvas DSL, or an error explaining why it cannot be converted. */
 export function structurizrToDsl(text: string): StructurizrConversion | StructurizrConversionError {
   const roots = readStatements(text);
   const headed = roots.some((statement) => ['workspace', 'model'].includes(statement.tokens[0]?.value ?? ''));

@@ -10,7 +10,7 @@ test('a new canvas appears whole when the loader leaves, never piece by piece @g
     const frames: { covered: boolean; welcome: boolean; bar: boolean }[] = [];
     (window as unknown as { __frames: typeof frames }).__frames = frames;
     const tick = () => {
-      const cover = document.querySelector('.ofk-loader[data-cover]');
+      const cover = document.querySelector('.canvas-loader[data-cover]');
       frames.push({
         covered: !!cover && !cover.hasAttribute('data-leaving'),
         welcome: !!document.querySelector('[data-testid="v2-welcome"]'),
@@ -25,7 +25,7 @@ test('a new canvas appears whole when the loader leaves, never piece by piece @g
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
   await page.goto('/');
   await expect(page.getByTestId('v2-welcome')).toBeVisible({ timeout: 20_000 });
-  await expect(page.locator('.ofk-loader[data-cover]')).toHaveCount(0);
+  await expect(page.locator('.canvas-loader[data-cover]')).toHaveCount(0);
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
   const frames = await page.evaluate(() => (window as unknown as { __frames: { covered: boolean; welcome: boolean; bar: boolean }[] }).__frames);
   // Once the editor is mounted, every uncovered frame shows the finished screen.

@@ -2,9 +2,9 @@ import { expect, test, type Page } from './test';
 
 // The Threads panel: every thread of the document in one list. It searches, filters, opens a thread on the canvas
 // (switching page and bringing the pin into view), tracks what is unread in this browser, and copies / follows links.
-// OFK_SHOTS_DIR=<dir> also writes screenshots.
+// CANVAS_SHOTS_DIR=<dir> also writes screenshots.
 
-const SHOTS = process.env.OFK_SHOTS_DIR;
+const SHOTS = process.env.CANVAS_SHOTS_DIR;
 const shot = async (page: Page, name: string) => { if (SHOTS) await page.screenshot({ path: `${SHOTS}/${name}.png` }); };
 
 interface Doc { id: string; pages: { id: string; name: string; nodes: { id: string; content: Record<string, unknown> }[]; threads?: unknown[] }[] }
@@ -189,7 +189,7 @@ test('a card switches page, brings its pin into view, opens the thread, and mark
   await expect(thread).toContainText('Rename the cache layer');
   const view = page.viewportSize()!;
   await expect.poll(async () => {
-    const box = await page.locator('.ofk-comment-pin[data-selected]').boundingBox();
+    const box = await page.locator('.canvas-comment-pin[data-selected]').boundingBox();
     return !!box && box.x >= 0 && box.y >= 0 && box.x + box.width <= view.width && box.y + box.height <= view.height;
   }).toBe(true);
 
@@ -208,7 +208,7 @@ test('a pin on the canvas highlights its card', async ({ page }) => {
   await card(page, 1).getByRole('button', { name: /Why is this a queue/ }).click();
   await page.getByTestId('v2-comment-thread').getByRole('button', { name: 'Close thread' }).click();
   await expect(card(page, 1)).not.toHaveAttribute('data-selected', 'true');
-  await page.locator('.ofk-comment-pin[aria-label^="Comment by User, 2 messages"]').click();
+  await page.locator('.canvas-comment-pin[aria-label^="Comment by User, 2 messages"]').click();
   await expect(page.getByTestId('v2-comment-thread')).toBeVisible();
   await expect(card(page, 1)).toHaveAttribute('data-selected', 'true');
 });
@@ -219,19 +219,19 @@ test('unread is per browser: an agent reply is unread until the thread opens, an
   // Never opened: the agent's reply is news; my own questions are not.
   await expect(card(page, 1)).toHaveAttribute('data-unread', 'true');
   await expect(card(page, 2)).not.toHaveAttribute('data-unread', 'true');
-  await expect(page.locator('.ofk-comment-pin[data-unread]')).toHaveCount(1);
+  await expect(page.locator('.canvas-comment-pin[data-unread]')).toHaveCount(1);
 
   await card(page, 1).hover();
   await card(page, 1).getByRole('button', { name: 'Thread actions' }).click();
   await page.getByRole('menuitem', { name: 'Mark as read' }).click();
   await expect(card(page, 1)).not.toHaveAttribute('data-unread', 'true');
-  await expect(page.locator('.ofk-comment-pin[data-unread]')).toHaveCount(0);
+  await expect(page.locator('.canvas-comment-pin[data-unread]')).toHaveCount(0);
 
   // Marked unread by hand, even a thread of my own: it stays so until opened, and survives a reload.
   await card(page, 2).getByRole('button', { name: 'Thread actions' }).click();
   await page.getByRole('menuitem', { name: 'Mark as unread' }).click();
   await expect(card(page, 2)).toHaveAttribute('data-unread', 'true');
-  await expect(page.locator('.ofk-comment-pin[data-unread]')).toHaveCount(1);
+  await expect(page.locator('.canvas-comment-pin[data-unread]')).toHaveCount(1);
   await page.reload();
   await page.waitForFunction(() => (window as unknown as { __V2__?: V2Api }).__V2__?.getState());
   await openPanel(page);
@@ -339,7 +339,7 @@ test('a pin drags to a new place with either tool: onto a node it follows it, on
   await page.getByRole('button', { name: 'Zoom to fit' }).click();
   await page.waitForTimeout(800); // the camera settles
   const nodeId = (await doc(page)).pages[0]!.nodes[0]!.id;
-  const pinOne = page.locator('.ofk-comment-pin[aria-label^="Comment by User, 2 messages"]');
+  const pinOne = page.locator('.canvas-comment-pin[aria-label^="Comment by User, 2 messages"]');
   // The pin's centre once the camera has stopped moving it.
   const centreOf = async () => {
     let last = '';
@@ -447,7 +447,7 @@ test('a click away from a box with text shakes it once instead of closing it; ty
   await box.fill('Half-written thought');
 
   await page.mouse.click(away.x, away.y);
-  await expect(composer.locator('.ofk-comment-card')).toHaveAttribute('data-wiggle', /.*/, { timeout: 300 });
+  await expect(composer.locator('.canvas-comment-card')).toHaveAttribute('data-wiggle', /.*/, { timeout: 300 });
   await expect(box).toHaveValue('Half-written thought');
   await expect(box).toBeFocused();
   // Typing resets: the next click away shakes again.
@@ -455,7 +455,7 @@ test('a click away from a box with text shakes it once instead of closing it; ty
   await box.pressSequentially('!');
   await page.waitForTimeout(400);
   await page.mouse.click(away.x, away.y);
-  await expect(composer.locator('.ofk-comment-card')).toHaveAttribute('data-wiggle', /.*/, { timeout: 300 });
+  await expect(composer.locator('.canvas-comment-card')).toHaveAttribute('data-wiggle', /.*/, { timeout: 300 });
   await expect(box).toHaveValue('Half-written thought!');
   // The second click without typing closes it, text and all.
   await page.mouse.click(away.x, away.y);
@@ -488,7 +488,7 @@ test('the reply box keeps its text through one click away, and under reduced mot
 });
 
 test('screenshot: the panel with a resolved, an agent-answered and an unread thread', async ({ page }) => {
-  test.skip(!SHOTS, 'OFK_SHOTS_DIR not set');
+  test.skip(!SHOTS, 'CANVAS_SHOTS_DIR not set');
   await open(page);
   await openPanel(page);
   await panel(page).getByRole('button', { name: 'Filter threads' }).click();

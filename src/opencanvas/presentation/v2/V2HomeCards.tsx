@@ -15,34 +15,34 @@ export type StartKind = 'blank' | 'assistant' | 'code' | 'agent';
 /** Small looping illustrations, one per way to start; decorative, still under reduced motion. */
 function StartHero({ kind }: { readonly kind: StartKind }): React.JSX.Element {
   return (
-    <svg className="ofk-home-start-hero" data-kind={kind} viewBox="0 0 120 64" fill="none" stroke="currentColor"
+    <svg className="canvas-home-start-hero" data-kind={kind} viewBox="0 0 120 64" fill="none" stroke="currentColor"
       strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {kind === 'blank' ? <>
-        <g className="ofk-home-dots">{[20, 44, 68, 92].flatMap((x) => [16, 32, 48].map((y) => <circle key={`${x}-${y}`} cx={x + 4} cy={y} r=".9" />))}</g>
-        <rect className="ofk-home-draw" x="34" y="18" width="52" height="28" rx="6" pathLength="1" />
-        <path className="ofk-home-cursor" d="M0 0 L0 11 L3 8 L6 13 L8 12 L5 7 L9 7 Z" />
+        <g className="canvas-home-dots">{[20, 44, 68, 92].flatMap((x) => [16, 32, 48].map((y) => <circle key={`${x}-${y}`} cx={x + 4} cy={y} r=".9" />))}</g>
+        <rect className="canvas-home-draw" x="34" y="18" width="52" height="28" rx="6" pathLength="1" />
+        <path className="canvas-home-cursor" d="M0 0 L0 11 L3 8 L6 13 L8 12 L5 7 L9 7 Z" />
       </> : kind === 'assistant' ? <>
-        <path className="ofk-home-spark" d="M18 22 Q19 30 26 31 Q19 32 18 40 Q17 32 10 31 Q17 30 18 22 Z" />
-        <rect className="ofk-home-pop ofk-home-pop-1" x="42" y="12" width="26" height="14" rx="4" />
-        <rect className="ofk-home-pop ofk-home-pop-2" x="42" y="38" width="26" height="14" rx="4" />
-        <rect className="ofk-home-pop ofk-home-pop-3" x="84" y="25" width="26" height="14" rx="4" />
-        <path className="ofk-home-link ofk-home-link-1" d="M68 19 C76 19 76 32 84 32" pathLength="1" />
-        <path className="ofk-home-link ofk-home-link-2" d="M68 45 C76 45 76 32 84 32" pathLength="1" />
+        <path className="canvas-home-spark" d="M18 22 Q19 30 26 31 Q19 32 18 40 Q17 32 10 31 Q17 30 18 22 Z" />
+        <rect className="canvas-home-pop canvas-home-pop-1" x="42" y="12" width="26" height="14" rx="4" />
+        <rect className="canvas-home-pop canvas-home-pop-2" x="42" y="38" width="26" height="14" rx="4" />
+        <rect className="canvas-home-pop canvas-home-pop-3" x="84" y="25" width="26" height="14" rx="4" />
+        <path className="canvas-home-link canvas-home-link-1" d="M68 19 C76 19 76 32 84 32" pathLength="1" />
+        <path className="canvas-home-link canvas-home-link-2" d="M68 45 C76 45 76 32 84 32" pathLength="1" />
       </> : kind === 'code' ? <>
         <path d="M14 16 L8 22 L14 28" /><path d="M30 16 L36 22 L30 28" />
-        <rect className="ofk-home-type ofk-home-type-1" x="8" y="36" width="34" height="3" rx="1.5" />
-        <rect className="ofk-home-type ofk-home-type-2" x="8" y="44" width="24" height="3" rx="1.5" />
-        <rect className="ofk-home-type ofk-home-type-3" x="8" y="52" width="30" height="3" rx="1.5" />
-        <path className="ofk-home-arrow" d="M50 32 H62 M58 28 L62 32 L58 36" />
-        <rect className="ofk-home-pop ofk-home-pop-1" x="72" y="12" width="36" height="14" rx="4" />
-        <rect className="ofk-home-pop ofk-home-pop-2" x="72" y="38" width="36" height="14" rx="4" />
-        <path className="ofk-home-link ofk-home-link-1" d="M90 26 V38" pathLength="1" />
+        <rect className="canvas-home-type canvas-home-type-1" x="8" y="36" width="34" height="3" rx="1.5" />
+        <rect className="canvas-home-type canvas-home-type-2" x="8" y="44" width="24" height="3" rx="1.5" />
+        <rect className="canvas-home-type canvas-home-type-3" x="8" y="52" width="30" height="3" rx="1.5" />
+        <path className="canvas-home-arrow" d="M50 32 H62 M58 28 L62 32 L58 36" />
+        <rect className="canvas-home-pop canvas-home-pop-1" x="72" y="12" width="36" height="14" rx="4" />
+        <rect className="canvas-home-pop canvas-home-pop-2" x="72" y="38" width="36" height="14" rx="4" />
+        <path className="canvas-home-link canvas-home-link-1" d="M90 26 V38" pathLength="1" />
       </> : <>
         <rect x="6" y="20" width="34" height="24" rx="5" />
         <path d="M13 29 L17 32 L13 35 M20 36 H26" />
-        <rect className="ofk-home-accent" x="80" y="20" width="34" height="24" rx="5" />
-        <path className="ofk-home-accent" d="M89 37 L95 27 L101 37 Z" />
-        <g className="ofk-home-flow"><circle cx="50" cy="32" r="2" /><circle cx="60" cy="32" r="2" /><circle cx="70" cy="32" r="2" /></g>
+        <rect className="canvas-home-accent" x="80" y="20" width="34" height="24" rx="5" />
+        <path className="canvas-home-accent" d="M89 37 L95 27 L101 37 Z" />
+        <g className="canvas-home-flow"><circle cx="50" cy="32" r="2" /><circle cx="60" cy="32" r="2" /><circle cx="70" cy="32" r="2" /></g>
       </>}
     </svg>
   );
@@ -56,11 +56,11 @@ export function StartCard({ kind, title, text, onStart }: {
   readonly onStart: () => void;
 }): React.JSX.Element {
   return (
-    <li className="ofk-home-start">
-      <button type="button" className="ofk-home-start-button" onClick={onStart}>
-        <span className="ofk-home-start-art"><StartHero kind={kind} /></span>
-        <span className="ofk-home-start-title">{title}</span>
-        <span className="ofk-home-start-text">{text}</span>
+    <li className="canvas-home-start">
+      <button type="button" className="canvas-home-start-button" onClick={onStart}>
+        <span className="canvas-home-start-art"><StartHero kind={kind} /></span>
+        <span className="canvas-home-start-title">{title}</span>
+        <span className="canvas-home-start-text">{text}</span>
       </button>
     </li>
   );
@@ -77,9 +77,9 @@ export function StartChip({ kind, title, hint, onStart }: {
 }): React.JSX.Element {
   return (
     <li>
-      <button type="button" className="ofk-home-chip" data-kind={kind} onClick={onStart}>
-        <span className="ofk-home-chip-icon"><Icon icon={CHIP_ICON[kind]} /></span>
-        <span className="ofk-home-chip-text"><span>{title}</span><span className="ofk-home-chip-hint">{hint}</span></span>
+      <button type="button" className="canvas-home-chip" data-kind={kind} onClick={onStart}>
+        <span className="canvas-home-chip-icon"><Icon icon={CHIP_ICON[kind]} /></span>
+        <span className="canvas-home-chip-text"><span>{title}</span><span className="canvas-home-chip-hint">{hint}</span></span>
       </button>
     </li>
   );
@@ -93,9 +93,9 @@ function DiagramPreview({ thumbnail, appearance }: {
   readonly appearance: 'light' | 'dark';
 }): React.JSX.Element {
   const src = useMemo(() => (thumbnail ? svgUrl(thumbnail[appearance]) : null), [thumbnail, appearance]);
-  if (src) return <img className="ofk-home-preview-image" src={src} alt="" decoding="async" />;
+  if (src) return <img className="canvas-home-preview-image" src={src} alt="" decoding="async" />;
   // Nothing drawn yet, or too big to keep: an empty canvas, not a monogram.
-  return <span className="ofk-home-placeholder" aria-hidden="true"><Icon icon={IconHierarchy2} /></span>;
+  return <span className="canvas-home-placeholder" aria-hidden="true"><Icon icon={IconHierarchy2} /></span>;
 }
 
 /** Multi-select on a card: a checkbox on hover, and ⌘/Ctrl- or Shift-click (any click once something is selected). */
@@ -126,7 +126,7 @@ export function HomeCard({ preview, title, meta, to, onOpen, menu, star, editing
   readonly onContextMenu?: (event: MouseEvent<HTMLLIElement>) => void;
 }): React.JSX.Element {
   const metaId = useId();
-  const label = <span className="ofk-home-card-title">{title}</span>;
+  const label = <span className="canvas-home-card-title">{title}</span>;
   const describedBy = meta ? metaId : undefined;
   const select = (event: MouseEvent) => {
     if (!selection || !(event.metaKey || event.ctrlKey || event.shiftKey || selection.active)) return;
@@ -134,23 +134,23 @@ export function HomeCard({ preview, title, meta, to, onOpen, menu, star, editing
     selection.onToggle(event.shiftKey);
   };
   return (
-    <li className="ofk-home-card" data-editing={editing ? '' : undefined} data-selected={selection?.selected || undefined}
+    <li className="canvas-home-card" data-editing={editing ? '' : undefined} data-selected={selection?.selected || undefined}
       data-selecting={selection?.active || undefined} onContextMenu={onContextMenu}>
-      <div className="ofk-home-preview">{preview}</div>
-      <div className="ofk-home-card-body">
+      <div className="canvas-home-preview">{preview}</div>
+      <div className="canvas-home-card-body">
         {editing ?? (to
-          ? <Link className="ofk-home-card-hit" to={to} data-doc-id={docId} aria-describedby={describedBy} onClick={select}>{label}</Link>
-          : <button type="button" className="ofk-home-card-hit" data-doc-id={docId} aria-describedby={describedBy}
+          ? <Link className="canvas-home-card-hit" to={to} data-doc-id={docId} aria-describedby={describedBy} onClick={select}>{label}</Link>
+          : <button type="button" className="canvas-home-card-hit" data-doc-id={docId} aria-describedby={describedBy}
             onClick={(event) => { select(event); if (!event.defaultPrevented) onOpen?.(); }}>{label}</button>)}
-        {meta ? <span className="ofk-home-card-meta" id={metaId}>{meta}</span> : null}
+        {meta ? <span className="canvas-home-card-meta" id={metaId}>{meta}</span> : null}
       </div>
       {selection && !editing ? (
         <button type="button" role="checkbox" aria-checked={selection.selected} aria-label={`Select ${title}`}
-          className="ofk-home-select" onClick={(event) => selection.onToggle(event.shiftKey)}>
+          className="canvas-home-select" onClick={(event) => selection.onToggle(event.shiftKey)}>
           <Icon icon={IconCheck} />
         </button>
       ) : null}
-      {star || menu ? <div className="ofk-home-card-actions">{star}{menu}</div> : null}
+      {star || menu ? <div className="canvas-home-card-actions">{star}{menu}</div> : null}
     </li>
   );
 }
@@ -173,7 +173,7 @@ function CardMenu({ name, open, at, onOpenChange, children }: {
           aria-haspopup="menu" aria-expanded={open} onClick={() => onOpenChange(!open)} />
       </Tooltip>
       {/* A zero-size anchor at the pointer, in the body so no card transform can offset it. */}
-      {open && at ? createPortal(<span ref={point} className="ofk-home-menu-point" style={{ left: at.x, top: at.y }} />, document.body) : null}
+      {open && at ? createPortal(<span ref={point} className="canvas-home-menu-point" style={{ left: at.x, top: at.y }} />, document.body) : null}
       <Menu open={open} anchorRef={at ? point : button} onClose={() => onOpenChange(false)} label={`${name} actions`}
         placement={at ? 'bottom-start' : 'bottom-end'}>
         {children}
@@ -229,10 +229,10 @@ export function DiagramCard({ summary, thumbnail, appearance, rename, renameRef,
       meta={<>
         <time dateTime={summary.savedAt} title={when.absolute}>{when.relative}</time>
         {summary.pageCount > 1 ? <span>{summary.pageCount} pages</span> : null}
-        {summary.id.startsWith('v1-') ? <span className="ofk-home-tag">From v1</span> : null}
+        {summary.id.startsWith('v1-') ? <span className="canvas-home-tag">From v1</span> : null}
       </>}
       editing={rename ? (
-        <input ref={renameRef} className="ofk-home-rename" aria-label={`Rename ${summary.name}`} maxLength={120}
+        <input ref={renameRef} className="canvas-home-rename" aria-label={`Rename ${summary.name}`} maxLength={120}
           value={rename.draft} onChange={(event) => rename.onChange(event.target.value)} onBlur={rename.onCommit}
           onKeyDown={(event) => {
             if (event.key === 'Enter') event.currentTarget.blur();
@@ -290,9 +290,9 @@ export function ArchivedCard({ summary, thumbnail, appearance, selection, onRest
 
 export function SkeletonCard(): React.JSX.Element {
   return (
-    <li className="ofk-home-card" aria-hidden="true">
-      <div className="ofk-home-preview"><Skeleton height="100%" radius={0} /></div>
-      <div className="ofk-home-card-body"><Skeleton width="62%" height={13} /><Skeleton width="38%" height={11} /></div>
+    <li className="canvas-home-card" aria-hidden="true">
+      <div className="canvas-home-preview"><Skeleton height="100%" radius={0} /></div>
+      <div className="canvas-home-card-body"><Skeleton width="62%" height={13} /><Skeleton width="38%" height={11} /></div>
     </li>
   );
 }
@@ -303,7 +303,7 @@ const NOTICE_ICON = { info: IconInfoCircle, success: IconCircleCheck, warning: I
 function StarToggle({ name, starred, onToggle }: { readonly name: string; readonly starred: boolean; readonly onToggle: () => void }): React.JSX.Element {
   return (
     <Tooltip content={starred ? 'Unstar' : 'Star'}>
-      <IconButton variant="quiet" className="ofk-home-star" data-on={starred || undefined} selected={starred}
+      <IconButton variant="quiet" className="canvas-home-star" data-on={starred || undefined} selected={starred}
         label={`Star ${name}`} icon={<Icon icon={starred ? IconStarFilled : IconStar} />} onClick={onToggle} />
     </Tooltip>
   );
@@ -312,7 +312,7 @@ function StarToggle({ name, starred, onToggle }: { readonly name: string; readon
 /** One-line notice above the list; failures interrupt (alert), everything else waits its turn (status). */
 export function HomeNoticeStrip({ notice, onDismiss }: { readonly notice: HomeNotice; readonly onDismiss: () => void }): React.JSX.Element {
   return (
-    <div className="ofk-home-notice" data-tone={notice.tone} role={notice.tone === 'danger' ? 'alert' : 'status'}>
+    <div className="canvas-home-notice" data-tone={notice.tone} role={notice.tone === 'danger' ? 'alert' : 'status'}>
       <Icon icon={NOTICE_ICON[notice.tone]} />
       <p><strong>{notice.notice}</strong>{notice.detail ? ` ${notice.detail}` : ''}</p>
       <IconButton variant="quiet" label="Dismiss" icon={<Icon icon={IconX} />} onClick={onDismiss} />

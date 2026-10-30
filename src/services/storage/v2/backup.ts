@@ -6,7 +6,7 @@ import { isV1Backup, openV1Backup } from './v1Import';
 import type { V2DocumentRepository } from './v2Repository';
 
 /** "Download all diagrams": every v2 document in one file, for the browser that may forget them (Safari after 7 idle days). */
-export const V2_BACKUP_FORMAT = 'openflowkit.backup';
+export const V2_BACKUP_FORMAT = 'canvas.backup';
 
 interface V2Backup {
   readonly format: typeof V2_BACKUP_FORMAT;
@@ -60,7 +60,7 @@ export function importSummary(report: ImportReport): string {
 }
 export const MAX_IMPORT_CHARS = 2_000_000;
 const withoutExtension = (name: string) => name.replace(/\.[^.]+$/, '');
-const SOURCE = /\.(mmd|mermaid|d2|dsl|ofk|txt)$/i;
+const SOURCE = /\.(mmd|mermaid|d2|dsl|canvas|txt)$/i;
 
 /**
  * The one way files open, from Home's Import and the editor's Open file…: our .json (one diagram, a v2 backup, a v1
@@ -107,7 +107,7 @@ export async function importFiles(files: readonly File[], repository: V2Document
       }
       if (isV2Backup(parsed)) {
         fromBackup = true;
-        if (parsed.version !== 1) { problems.push(`${file.name}: this backup was made by a newer OpenFlowKit`); continue; }
+        if (parsed.version !== 1) { problems.push(`${file.name}: this backup was made by a newer Canvas`); continue; }
         for (const entry of parsed.documents) {
           const opened = documentFromFileText(JSON.stringify(entry), mintId());
           if ('error' in opened) { problems.push(`${file.name}: ${opened.error}`); continue; }

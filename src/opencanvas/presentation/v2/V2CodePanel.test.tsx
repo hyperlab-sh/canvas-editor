@@ -12,7 +12,7 @@ describe('V2CodePanel', () => {
     const code = 'flowchart\r\nCafé 🚀 -> "Ship\tit"\r\nB [diamond]';
     const { container } = panel(code);
     const editor = screen.getByRole('textbox', { name: 'Diagram source' }) as HTMLTextAreaElement;
-    expect(container.querySelector('.ofk-v2-code-highlight')!.textContent!.replace(/\n$/, '')).toBe(editor.value.replace(/\r\n/g, '\n'));
+    expect(container.querySelector('.canvas-v2-code-highlight')!.textContent!.replace(/\n$/, '')).toBe(editor.value.replace(/\r\n/g, '\n'));
   });
 
   it('jumps to a diagnostic on its own line when the source has CRLF', () => {
@@ -74,7 +74,7 @@ describe('V2CodePanel', () => {
     expect(onGenerate).toHaveBeenCalledTimes(2);
   });
 
-  // The workspace drops OpenFlowKit's parse diagnostics for foreign text (U1-07, U2-12); what reaches the panel then
+  // The workspace drops Canvas's parse diagnostics for foreign text (U1-07, U2-12); what reaches the panel then
   // is the conversion's own report, and a failed Convert must say why (e2e mermaid-import: reserved family).
   it('foreign syntax keeps the banner and still shows a conversion error', () => {
     const diagnostics = [{ code: 'E003' as const, severity: 'error' as const, line: 1, col: 1, endCol: 1, message: 'journey diagrams are not supported yet', source: 'parse' as const }];

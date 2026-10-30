@@ -24,7 +24,7 @@ describe('AI settings', () => {
 });
 
 describe('carryOverV1Ai', () => {
-  const seed = 'https://app.openflowkit.com:Mozilla/5.0 Test:openflowkit-ai-settings-secret';
+  const seed = 'https://canvas.hyperlab.sh:Mozilla/5.0 Test:canvas-ai-settings-secret';
   // v1's own masking (main `aiSettingsPersistence.ts` maskSecret).
   const mask = (secret: string, withSeed = seed) => `v1:${btoa(unescape(encodeURIComponent(
     Array.from(secret, (char, index) => String.fromCharCode(char.charCodeAt(0) ^ withSeed.charCodeAt(index % withSeed.length))).join(''))))}`;

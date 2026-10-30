@@ -6,7 +6,7 @@ test('find on canvas steps through matches and Escape puts the selection back @g
   await page.waitForSelector('[data-testid="v2-canvas"]');
   await page.getByRole('toolbar', { name: 'Workspace', exact: true }).getByRole('button', { name: 'Diagram as code' }).click();
   const source = page.getByRole('textbox', { name: 'Diagram source' });
-  await source.fill('%% ofk 1\nflowchart down\nStart -> Alpha Build -> Beta Build -> Ship');
+  await source.fill('%% canvas 1\nflowchart down\nStart -> Alpha Build -> Beta Build -> Ship');
   await source.press('ControlOrMeta+Enter');
   await expect.poll(async () => (await state(page)).nodes.length).toBeGreaterThan(4);
   const labelOf = async (id: string) =>

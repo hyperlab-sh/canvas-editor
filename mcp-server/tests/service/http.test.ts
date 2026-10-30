@@ -70,7 +70,7 @@ describe('GET /health', () => {
     const { service } = await boot();
     const { status, json } = await call(service, 'GET', '/health');
     expect(status).toBe(200);
-    expect(json).toEqual({ ok: true, service: 'openflowkit-service', version: MCP_SERVER_VERSION, host: '127.0.0.1', port: service.port, projects: ['alpha', 'beta'], pid: process.pid });
+    expect(json).toEqual({ ok: true, service: 'canvas-service', version: MCP_SERVER_VERSION, host: '127.0.0.1', port: service.port, projects: ['alpha', 'beta'], pid: process.pid });
     expect(service.port).toBeGreaterThan(0);
   });
 });

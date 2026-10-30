@@ -1,9 +1,9 @@
 // The site's outbound and cross-page links, shared by the landing page, the
 // docs header and the footer so they cannot disagree.
-export const APP_URL = 'https://app.openflowkit.com';
-export const REPO_URL = 'https://github.com/openflowkit/openflowkit';
-export const NPM_URL = 'https://www.npmjs.com/package/openflowkit';
-export const MCP_COMMAND = 'npx -y openflowkit mcp';
+export const APP_URL = 'https://canvas.hyperlab.sh';
+export const REPO_URL = 'https://github.com/hyperlab-sh/canvas-editor';
+export const NPM_URL = 'https://www.npmjs.com/package/@hyperlab.sh/canvas';
+export const MCP_COMMAND = 'npx -y @hyperlab.sh/canvas mcp';
 /** A small public repo whose map shows services and their evidence well. */
 export const SAMPLE_MAP_URL = `${APP_URL}/#/map/github/dockersamples/example-voting-app`;
 
@@ -42,8 +42,8 @@ export const FOOTER_COLUMNS: readonly { readonly title: string; readonly links: 
       { label: 'Issues', href: `${REPO_URL}/issues` },
       { label: 'Discussions', href: `${REPO_URL}/discussions` },
       { label: 'npm', href: NPM_URL },
-      { label: 'X', href: 'https://x.com/openflowkit' },
-      { label: 'LinkedIn', href: 'https://www.linkedin.com/company/openflowkit/' },
+      { label: 'X', href: 'https://x.com/canvas' },
+      { label: 'LinkedIn', href: 'https://www.linkedin.com/company/canvas/' },
       { label: 'YouTube', href: 'https://www.youtube.com/channel/UC3vnYLzGo-0r9CB9T3i7nKw' },
     ],
   },

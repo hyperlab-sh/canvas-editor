@@ -23,7 +23,7 @@ test('v1 service worker unregisters itself and its caches once v2 is served @gat
     await navigator.serviceWorker.register('/sw.js', { scope: '/' });
     await navigator.serviceWorker.ready;
   });
-  await expect.poll(() => cacheNames(page)).toContain('openflowkit-app-shell-v1');
+  await expect.poll(() => cacheNames(page)).toContain('canvas-app-shell-v1');
   expect(await registrations(page)).toBe(1);
 
   // The deploy: the server's `/sw.js` is now the kill switch. A navigation makes the

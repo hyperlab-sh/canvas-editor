@@ -40,12 +40,12 @@ report**, rather than pretending the diagram is empty.
 ## Opening and importing files
 
 Home → **Import** (or dropping files on Home) takes `.json`, plus diagram text in `.mmd`,
-`.mermaid`, `.d2`, `.dsl`, `.ofk` and `.txt` files. A text file (one at a time) opens as a new
+`.mermaid`, `.d2`, `.dsl`, `.canvas` and `.txt` files. A text file (one at a time) opens as a new
 diagram; Mermaid, D2 and Structurizr are converted first. In the editor,
 the canvas menu's **Open file…** accepts a `.json` file:
 
 - our own export, any schema version the app still supports — it is migrated on open;
-- a V1 OpenFlowKit file (`{ nodes, edges }`), projected onto the 2.0 document model one time.
+- a V1 Canvas file (`{ nodes, edges }`), projected onto the 2.0 document model one time.
 
 A document written by a newer app version opens read-only: the app preserves it instead of
 migrating it backwards. Opening never overwrites the document it came from: the file is saved

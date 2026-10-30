@@ -12,15 +12,15 @@ const fixture = (name: string) => JSON.parse(readFileSync(`src/services/storage/
 function capturedV1Pages(): V1Page[] {
   type Doc = { pages: { diagramType?: string; content: V1Page }[] };
   const fromDocs = (docs: Doc[]) => docs.flatMap((doc) => doc.pages.map((page) => ({ ...page.content, diagramType: page.diagramType })));
-  const premarch = fixture('premarch-tabs.json').indexedDb.flowMetadata.find((row: { id: string }) => row.id === 'openflowkit-storage');
+  const premarch = fixture('premarch-tabs.json').indexedDb.flowMetadata.find((row: { id: string }) => row.id === 'canvas-storage');
   return [
     ...fromDocs(fixture('indexeddb.json').indexedDb.documents),
-    ...fromDocs(JSON.parse(fixture('localstorage-fallback.json').localStorage['openflowkit-documents-fallback'])),
+    ...fromDocs(JSON.parse(fixture('localstorage-fallback.json').localStorage['canvas-documents-fallback'])),
     ...JSON.parse(premarch.value).state.tabs,
   ];
 }
 
-const OPENS = 'OpenFlowKit opens the .json files it exports, from this version or the previous one.';
+const OPENS = 'Canvas opens the .json files it exports, from this version or the previous one.';
 
 describe('documentFromFileText', () => {
   it('opens every captured v1 page with every node and connector, each node sized', () => {
@@ -80,13 +80,13 @@ describe('documentFromFileText', () => {
   it('explains what it cannot open', () => {
     // Each reason says what the file is not and what does open.
     expect(documentFromFileText('{not json', 'x')).toEqual({ error: `It isn’t valid JSON. ${OPENS}` });
-    expect(documentFromFileText('[1,2]', 'x')).toEqual({ error: `It isn’t an OpenFlowKit diagram. ${OPENS}` });
-    expect(documentFromFileText(JSON.stringify({ format: 'openflowkit.scene', schemaVersion: 99, pages: [] }), 'x'))
+    expect(documentFromFileText('[1,2]', 'x')).toEqual({ error: `It isn’t a Canvas diagram. ${OPENS}` });
+    expect(documentFromFileText(JSON.stringify({ format: 'canvas.scene', schemaVersion: 99, pages: [] }), 'x'))
       .toMatchObject({ error: expect.stringContaining('newer') });
   });
 
   it('T13: a number too large to read is named, not reported as "not a diagram"', () => {
     const text = '{"nodes":[{"id":"a","type":"process","position":{"x":1e400,"y":0},"data":{}}],"edges":[]}';
-    expect(documentFromFileText(text, 'x')).toEqual({ error: `It has a number OpenFlowKit can’t read (nodes[0].position.x). ${OPENS}` });
+    expect(documentFromFileText(text, 'x')).toEqual({ error: `It has a number Canvas can’t read (nodes[0].position.x). ${OPENS}` });
   });
 });

@@ -3,7 +3,7 @@ import { expect, test } from './test';
 test('v2 workspace shell supports panels, view controls, and canvas creation @gate', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('v2-welcome')).toBeVisible();
-  await expect(page.getByRole('toolbar', { name: 'View', exact: true }).locator('.ofk-v2-divider')).toHaveCount(4);
+  await expect(page.getByRole('toolbar', { name: 'View', exact: true }).locator('.canvas-v2-divider')).toHaveCount(4);
   await expect(page.getByText('Canvas, layers & view', { exact: true })).toBeVisible();
   const workspace = page.getByRole('toolbar', { name: 'Workspace', exact: true });
   await workspace.getByRole('button', { name: 'AI assistant', exact: true }).click();
@@ -40,7 +40,7 @@ test('v2 workspace shell supports panels, view controls, and canvas creation @ga
   await expect(page.getByTestId('v2-welcome')).not.toBeVisible();
   await page.getByRole('button', { name: 'Layers', exact: true }).click();
   const layers = page.getByRole('complementary', { name: 'Layers' });
-  await expect(layers.locator('.ofk-v2-panel-badge')).toHaveText('Page 1');
+  await expect(layers.locator('.canvas-v2-panel-badge')).toHaveText('Page 1');
   await layers.getByRole('button', { name: /^Hide / }).click();
   await expect.poll(() => page.evaluate(() => (window as unknown as {
     __V2__?: { getDocument(): { pages: { nodes: { content: { sectionHidden?: boolean } }[] }[] } | null }
@@ -75,8 +75,8 @@ test('a welcome arrow that would run into the centre steps aside, and comes back
   await expect(page.getByTestId('v2-welcome')).toBeVisible();
   await page.getByTestId('v2-welcome').getByRole('button', { name: 'Connect agent' }).click();
   const clashes = () => page.evaluate(() => {
-    const centre = document.querySelector('.ofk-v2-welcome-center')!.getBoundingClientRect();
-    return [...document.querySelectorAll<HTMLElement>('.ofk-v2-guide')].filter((guide) => getComputedStyle(guide).visibility === 'visible'
+    const centre = document.querySelector('.canvas-v2-welcome-center')!.getBoundingClientRect();
+    return [...document.querySelectorAll<HTMLElement>('.canvas-v2-guide')].filter((guide) => getComputedStyle(guide).visibility === 'visible'
       && getComputedStyle(guide).display !== 'none').map((guide) => guide.getBoundingClientRect())
       .filter((box) => box.left < centre.right && box.right > centre.left && box.top < centre.bottom && box.bottom > centre.top).length;
   });

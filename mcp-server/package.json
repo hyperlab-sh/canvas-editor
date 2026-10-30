@@ -1,12 +1,12 @@
 {
-  "name": "@openflowkit/openflowkit-mcp",
+  "name": "@hyperlab.sh/canvas-mcp",
   "version": "0.2.4",
-  "mcpName": "io.github.openflowkit/openflowkit-mcp",
-  "description": "Local-first Model Context Protocol server for OpenFlowKit — pair the live editor or edit .openflow.json files: create/update/read diagrams from DSL, scene ops, icon search, export. No account, no cloud.",
+  "mcpName": "io.github.hyperlab-sh/canvas-mcp",
+  "description": "Local-first Model Context Protocol server for Canvas — pair the live editor or edit .openflow.json files: create/update/read diagrams from DSL, scene ops, icon search, export. No account, no cloud.",
   "keywords": [
     "mcp",
     "model-context-protocol",
-    "openflowkit",
+    "canvas",
     "diagram",
     "flowchart",
     "mermaid",
@@ -15,18 +15,18 @@
     "windsurf",
     "local-first"
   ],
-  "homepage": "https://github.com/openflowkit/openflowkit#readme",
-  "bugs": "https://github.com/openflowkit/openflowkit/issues",
+  "homepage": "https://github.com/hyperlab-sh/canvas-editor#readme",
+  "bugs": "https://github.com/hyperlab-sh/canvas-editor/issues",
   "repository": {
     "type": "git",
-    "url": "https://github.com/openflowkit/openflowkit.git",
+    "url": "https://github.com/hyperlab-sh/canvas-editor.git",
     "directory": "mcp-server"
   },
   "license": "MIT",
   "type": "module",
   "bin": {
-    "openflowkit-mcp": "./dist/index.js",
-    "openflowkit": "./dist/cli.js"
+    "canvas-mcp": "./dist/index.js",
+    "canvas": "./dist/cli.js"
   },
   "files": [
     "dist",

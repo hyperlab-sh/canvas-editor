@@ -15,7 +15,7 @@ export function ContextBar({
   const bounds = selection && { x: selection.x, y: selection.y, width: selection.width, height: selection.height };
   return (
     <PopoverAvoid.Provider value={bounds}>
-      <Toolbar {...props} label={label} className={`ofk-context ofk-floating ofk-enter ${className}`}>
+      <Toolbar {...props} label={label} className={`canvas-context canvas-floating canvas-enter ${className}`}>
         {children}
       </Toolbar>
     </PopoverAvoid.Provider>
@@ -23,7 +23,7 @@ export function ContextBar({
 }
 export function ContextGroup({ children, label }: { children: ReactNode; label?: string }) {
   return (
-    <div className="ofk-context-group" role="group" aria-label={label}>
+    <div className="canvas-context-group" role="group" aria-label={label}>
       {children}
     </div>
   );
@@ -31,8 +31,8 @@ export function ContextGroup({ children, label }: { children: ReactNode; label?:
 /** The one panel/popover header: a 14px title and a 32px close button (Panel draws the same row). */
 export function PopoverHeader({ title, onClose, closeLabel = 'Close panel' }: { title: string; onClose: () => void; closeLabel?: string }) {
   return (
-    <header className="ofk-popover-header">
-      <span className="ofk-popover-title">{title}</span>
+    <header className="canvas-popover-header">
+      <span className="canvas-popover-title">{title}</span>
       <IconButton variant="quiet" label={closeLabel} icon={<Icon icon={IconX} />} onClick={onClose} />
     </header>
   );

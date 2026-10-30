@@ -152,7 +152,7 @@ export function V2DocumentBar(props: V2DocumentBarProps): React.JSX.Element {
   useEffect(() => {
     if (!refocus.current) return;
     refocus.current = false;
-    crumbRef.current?.querySelector<HTMLElement>('.ofk-v2-breadcrumb-current')?.focus({ preventScroll: true });
+    crumbRef.current?.querySelector<HTMLElement>('.canvas-v2-breadcrumb-current')?.focus({ preventScroll: true });
   }, [crumbKey]);
 
   const toast = (title: string, tone: ToastItem['tone']): void =>
@@ -213,13 +213,13 @@ export function V2DocumentBar(props: V2DocumentBarProps): React.JSX.Element {
     toast('Preparing the v1 backup…', 'info');
     const backup = await buildV1Backup(window.indexedDB, localStorage);
     // ponytail: built and serialised on the main thread like the boot import; a worker if backups grow large.
-    downloadTextFile(`openflowkit-backup-${backup.exportedAt.slice(0, 10)}.json`, JSON.stringify(backup), 'application/json');
+    downloadTextFile(`canvas-backup-${backup.exportedAt.slice(0, 10)}.json`, JSON.stringify(backup), 'application/json');
   };
 
   return (
     <>
       <FloatingRegion slot="top-start">
-        <Toolbar label="Document" className="ofk-v2-document-bar">
+        <Toolbar label="Document" className="canvas-v2-document-bar">
           <Tooltip content="Canvas menu">
             <IconButton ref={settingsRef} variant="quiet" label="Canvas menu"
               icon={<Icon icon={IconMenu2} />}
@@ -227,7 +227,7 @@ export function V2DocumentBar(props: V2DocumentBarProps): React.JSX.Element {
               onClick={() => togglePanel('menu')} />
           </Tooltip>
           {editingTitle ? (
-            <input ref={titleRef} className="ofk-v2-document-title-input" value={titleDraft}
+            <input ref={titleRef} className="canvas-v2-document-title-input" value={titleDraft}
               aria-label="Diagram title" maxLength={120}
               onChange={(event) => setTitleDraft(event.target.value)}
               onBlur={() => finishRename(true)}
@@ -236,13 +236,13 @@ export function V2DocumentBar(props: V2DocumentBarProps): React.JSX.Element {
                 if (event.key === 'Escape') { event.preventDefault(); finishRename(false); }
               }} />
           ) : (
-            <Button variant="quiet" className="ofk-v2-document-title" title={props.document.name}
+            <Button variant="quiet" className="canvas-v2-document-title" title={props.document.name}
               onClick={startRename}>
-              <span className="ofk-v2-document-title-text">{props.document.name}</span>
+              <span className="canvas-v2-document-title-text">{props.document.name}</span>
             </Button>
           )}
           {props.mapMode ? (
-            <div className="ofk-v2-mode" role="group" aria-label="View mode">
+            <div className="canvas-v2-mode" role="group" aria-label="View mode">
               <Tooltip content="Draw and arrange freely">
                 <Button variant="quiet" selected={props.mapMode.mode === 'canvas'} aria-label="Canvas"
                   onClick={() => props.mapMode!.onChange('canvas')}>Canvas</Button>
@@ -253,27 +253,27 @@ export function V2DocumentBar(props: V2DocumentBarProps): React.JSX.Element {
               </Tooltip>
             </div>
           ) : null}
-          {crumbs.length > 0 ? <span className="ofk-v2-divider" aria-hidden="true" /> : null}
+          {crumbs.length > 0 ? <span className="canvas-v2-divider" aria-hidden="true" /> : null}
           {crumbs.length > 0 ? (
-            <nav ref={crumbRef} className="ofk-v2-breadcrumb" aria-label={inMap ? 'Map path' : 'Architecture level'}>
+            <nav ref={crumbRef} className="canvas-v2-breadcrumb" aria-label={inMap ? 'Map path' : 'Architecture level'}>
               {crumbs.map((crumb, index) => (
                 <Fragment key={`${crumb.key}-${index}`}>
-                  {index > 0 ? <span className="ofk-v2-breadcrumb-sep" aria-hidden="true">/</span> : null}
+                  {index > 0 ? <span className="canvas-v2-breadcrumb-sep" aria-hidden="true">/</span> : null}
                   {crumb.open ? (
-                    <button type="button" className="ofk-v2-breadcrumb-link" onClick={() => { refocus.current = true; window.setTimeout(() => { refocus.current = false; }, 600); crumb.open?.(); }}>{crumb.label}</button>
+                    <button type="button" className="canvas-v2-breadcrumb-link" onClick={() => { refocus.current = true; window.setTimeout(() => { refocus.current = false; }, 600); crumb.open?.(); }}>{crumb.label}</button>
                   ) : (
-                    <span className="ofk-v2-breadcrumb-current" tabIndex={-1} aria-current={inMap ? 'location' : 'page'}>{crumb.label}</span>
+                    <span className="canvas-v2-breadcrumb-current" tabIndex={-1} aria-current={inMap ? 'location' : 'page'}>{crumb.label}</span>
                   )}
                 </Fragment>
               ))}
             </nav>
           ) : null}
           {props.onEditShared ? (
-            <Button variant="primary" disabled={copying} onClick={editShared}>Edit in OpenFlowKit</Button>
+            <Button variant="primary" disabled={copying} onClick={editShared}>Edit in Canvas</Button>
           ) : null}
           {props.holder?.label ? (
-            <span className="ofk-v2-holder" data-testid="v2-holder">
-              <span className="ofk-v2-holder-label">{props.holder.label}</span>
+            <span className="canvas-v2-holder" data-testid="v2-holder">
+              <span className="canvas-v2-holder-label">{props.holder.label}</span>
               <Tooltip content="Disconnect this session from the diagram">
                 <Button variant="quiet" aria-label="Disconnect" onClick={props.holder.onDisconnect}>Disconnect</Button>
               </Tooltip>
@@ -287,11 +287,11 @@ export function V2DocumentBar(props: V2DocumentBarProps): React.JSX.Element {
             </Button>
           </Tooltip>
           <Tooltip content={props.readOnly ? 'Read-only' : save.text}>
-            <span className="ofk-v2-save-status" role="status" aria-atomic
+            <span className="canvas-v2-save-status" role="status" aria-atomic
               data-tone={props.readOnly ? 'neutral' : save.tone}
               data-busy={props.saveStatus.state === 'pending' || undefined}>
               <Icon icon={props.readOnly ? IconLock : save.icon} />
-              <span className="ofk-visually-hidden">{props.readOnly ? 'Read-only' : save.text}</span>
+              <span className="canvas-visually-hidden">{props.readOnly ? 'Read-only' : save.text}</span>
             </span>
           </Tooltip>
           {props.saveStatus.state === 'failed' && props.saveStatus.reason === 'invalid' ? (
@@ -306,7 +306,7 @@ export function V2DocumentBar(props: V2DocumentBarProps): React.JSX.Element {
           ) : null}
           {props.saveStatus.state === 'conflict' ? (
             <>
-              <span className="ofk-v2-conflict-note" title="Changed in another tab. Reload loses this tab’s last edits.">Changed in another tab. Reload loses this tab’s last edits.</span>
+              <span className="canvas-v2-conflict-note" title="Changed in another tab. Reload loses this tab’s last edits.">Changed in another tab. Reload loses this tab’s last edits.</span>
               <Button variant="quiet" onClick={props.onReload}>
                 Discard and reload
               </Button>

@@ -91,8 +91,8 @@ export function Tree({
             tabIndex={node.id === tabStop ? 0 : -1}
             data-muted={node.muted || undefined}
             onFocus={() => setFocusId(node.id)}
-            className="ofk-tree-row"
-            style={{ '--ofk-tree-level': level } as React.CSSProperties}
+            className="canvas-tree-row"
+            style={{ '--canvas-tree-level': level } as React.CSSProperties}
             onClick={() => onSelect(node.id)}
             onDoubleClick={() => onActivate?.(node.id)}
           >
@@ -100,7 +100,7 @@ export function Tree({
               type="button"
               tabIndex={-1}
               aria-hidden="true"
-              className="ofk-tree-toggle"
+              className="canvas-tree-toggle"
               data-expandable={expandable || undefined}
               data-expanded={expanded || undefined}
               onClick={(e) => {
@@ -111,16 +111,16 @@ export function Tree({
               {expandable && <Icon icon={IconChevronRight} />}
             </button>
             {node.icon && (
-              <span className="ofk-tree-icon" aria-hidden="true">
+              <span className="canvas-tree-icon" aria-hidden="true">
                 {node.icon}
               </span>
             )}
-            <span className="ofk-tree-label" title={node.label}>
+            <span className="canvas-tree-label" title={node.label}>
               {node.label}
-              {node.caption && <span className="ofk-caption"> · {node.caption}</span>}
+              {node.caption && <span className="canvas-caption"> · {node.caption}</span>}
             </span>
-            {node.meta && <span className="ofk-tree-meta">{node.meta}</span>}
-            {node.trailing && <span className="ofk-tree-trailing">{node.trailing}</span>}
+            {node.meta && <span className="canvas-tree-meta">{node.meta}</span>}
+            {node.trailing && <span className="canvas-tree-trailing">{node.trailing}</span>}
           </div>
           {expandable && expanded && <ul role="group">{render(node.children!, level + 1)}</ul>}
         </li>
@@ -128,7 +128,7 @@ export function Tree({
     });
   }
   return (
-    <ul ref={ref} role="tree" aria-label={label} className="ofk-tree" onKeyDown={onKeyDown}>
+    <ul ref={ref} role="tree" aria-label={label} className="canvas-tree" onKeyDown={onKeyDown}>
       {render(nodes, 1)}
     </ul>
   );

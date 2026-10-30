@@ -10,13 +10,13 @@ const run = async (terminal?: CliIo['terminal']) => {
   return { code, out: stripVTControlCharacters(out.join('\n')), err: err.join('\n') };
 };
 
-describe('bare openflowkit', () => {
+describe('bare canvas', () => {
   it('greets a person at a terminal and exits 0', async () => {
     const shown = await run({ columns: 100, color: true });
     expect(shown.code).toBe(0);
     expect(shown.out).toContain('██');
-    expect(shown.out).toContain('Welcome to OpenFlowKit');
-    expect(shown.out).toContain('openflowkit render');
+    expect(shown.out).toContain('Welcome to Canvas');
+    expect(shown.out).toContain('canvas render');
     expect(shown.err).toBe('');
   });
 
@@ -32,7 +32,7 @@ describe('welcome', () => {
   it('drops the big letters on a narrow terminal', () => {
     const narrow = welcome({ columns: 60, color: true, version: '1.0.0' });
     expect(narrow).not.toContain('██');
-    expect(narrow).toContain('OpenFlowKit');
+    expect(narrow).toContain('Canvas');
   });
 
   it('fits 80 columns and has no colour codes under NO_COLOR', () => {

@@ -11,7 +11,7 @@ export const USAGE_EVENTS = [
   'export_image', 'export_data', 'export_motion',
   'code_opened',
   'prompt_shown', 'prompt_answered',
-  /** A shared viewer pressed Edit in OpenFlowKit: the share loop turning a viewer into a user. */
+  /** A shared viewer pressed Edit in Canvas: the share loop turning a viewer into a user. */
   'shared_copied',
   /** Uncaught errors in the page: a quality signal, no message or stack is sent. */
   'app_error',
@@ -29,7 +29,7 @@ export type UsageEntry = (typeof USAGE_ENTRIES)[number];
  *  visibilitychange → hidden at most once per 5 minutes, so a user costs a few Worker requests a day. */
 export interface UsageBeacon {
   readonly v: 1;
-  /** Random 32-hex install id from localStorage `ofk.usage.id`; no personal data. Deleted when stats are turned off. */
+  /** Random 32-hex install id from localStorage `canvas.usage.id`; no personal data. Deleted when stats are turned off. */
   readonly uid: string;
   /** UTC day (YYYY-MM-DD) this browser was first seen: the retention cohort. */
   readonly firstSeen: string;
@@ -60,7 +60,7 @@ export interface FeedbackBody {
   readonly kind: 'feature' | 'product' | 'general' | 'pro';
   readonly feature?: FeedbackFeature;
   readonly rating?: 'up' | 'down';
-  /** "How would you feel if you could no longer use OpenFlowKit?" */
+  /** "How would you feel if you could no longer use Canvas?" */
   readonly pmf?: 'very' | 'somewhat' | 'not';
   readonly pay?: readonly PayOption[];
   readonly plan?: ProPlan;

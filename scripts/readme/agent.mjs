@@ -20,25 +20,25 @@ function portFree(port) {
 export async function connectAgent(page, port = Number(process.env.AGENT_PORT ?? 43147)) {
   if (!(await portFree(port))) throw new Error(`Port ${port} is taken; set AGENT_PORT to a free one.`);
   await page.getByRole('button', { name: 'Connect agent' }).first().click();
-  const panel = page.locator('.ofk-connection-panel');
+  const panel = page.locator('.canvas-connection-panel');
   const settings = panel.locator('summary', { hasText: 'Connection settings' });
   await settings.click();
-  await page.locator('#ofk-bridge-port').fill(String(port));
-  await page.locator('#ofk-bridge-port').blur();
+  await page.locator('#canvas-bridge-port').fill(String(port));
+  await page.locator('#canvas-bridge-port').blur();
   await settings.click();
-  const config = JSON.parse(await panel.locator('pre.ofk-v2-bridge-snippet').first().textContent());
-  const env = config.mcpServers.openflowkit.env;
-  if (env.OPENFLOWKIT_BRIDGE_PORT !== String(port)) throw new Error(`Panel kept port ${env.OPENFLOWKIT_BRIDGE_PORT}`);
+  const config = JSON.parse(await panel.locator('pre.canvas-v2-bridge-snippet').first().textContent());
+  const env = config.mcpServers.canvas.env;
+  if (env.CANVAS_BRIDGE_PORT !== String(port)) throw new Error(`Panel kept port ${env.CANVAS_BRIDGE_PORT}`);
   await panel.getByRole('button', { name: /^Connect$/ }).click();
   const transport = new StdioClientTransport({
     command: process.execPath, args: [SERVER], env: { ...process.env, ...env }, stderr: 'ignore',
   });
-  const client = new Client({ name: 'openflowkit-capture', version: '1' });
+  const client = new Client({ name: 'canvas-capture', version: '1' });
   await client.connect(transport);
   // The server's child process dies with this one, even on a crash or Ctrl+C.
   const kill = () => { try { process.kill(transport.pid); } catch { /* gone */ } };
   process.once('exit', kill);
-  await page.locator('.ofk-connection-panel[data-status="connected"]').waitFor({ timeout: 40_000 });
+  await page.locator('.canvas-connection-panel[data-status="connected"]').waitFor({ timeout: 40_000 });
   return {
     async call(name, args = {}) {
       const result = await client.callTool({ name, arguments: args });

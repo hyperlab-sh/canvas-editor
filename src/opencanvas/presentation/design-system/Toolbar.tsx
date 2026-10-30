@@ -70,7 +70,7 @@ export function Toolbar({
     <div
       {...props}
       ref={root}
-      className={`ofk-toolbar ${className}`}
+      className={`canvas-toolbar ${className}`}
       role="toolbar"
       aria-label={label}
       aria-orientation={orientation}

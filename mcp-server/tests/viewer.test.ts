@@ -131,12 +131,12 @@ describe('viewer: drawing while the model writes', () => {
     await wait(0);
     expect(live.hidden).toBe(false);
     const a = live.querySelector('[data-node-id="a"]')!;
-    expect(a.querySelector(':scope > g.ofk-pop')).not.toBeNull();
+    expect(a.querySelector(':scope > g.canvas-pop')).not.toBeNull();
     const paths = live.querySelectorAll('[data-connector-id="a-b"] path');
-    expect([...paths].every((path) => path.classList.contains('ofk-draw') && path.getAttribute('pathLength') === '1')).toBe(true);
+    expect([...paths].every((path) => path.classList.contains('canvas-draw') && path.getAttribute('pathLength') === '1')).toBe(true);
     // Connectors draw after their shapes appear.
     const delay = (el: Element | null) => parseFloat((el as HTMLElement).style.getPropertyValue('--d'));
-    expect(delay(paths[0]!)).toBeGreaterThan(delay(live.querySelector('[data-node-id="b"] > g.ofk-pop')));
+    expect(delay(paths[0]!)).toBeGreaterThan(delay(live.querySelector('[data-node-id="b"] > g.canvas-pop')));
     expect(card.$('meta').textContent).toBe('Drawing · 2 nodes · 1 connector');
 
     // Same count (a label still being typed): the picture on screen stays.
@@ -152,9 +152,9 @@ describe('viewer: drawing while the model writes', () => {
     card.answer(preview(3, 2, edge('a-b'), edge('b-c'), node('a'), node('b'), node('c')));
     await wait(0);
     expect(live.querySelector('[data-node-id="a"]')).toBe(a);
-    expect(live.querySelectorAll('[data-node-id="a"] g.ofk-pop')).toHaveLength(1);
-    expect(live.querySelector('[data-node-id="c"] > g.ofk-pop')).not.toBeNull();
-    expect(live.querySelector('[data-connector-id="b-c"] path.ofk-draw')).not.toBeNull();
+    expect(live.querySelectorAll('[data-node-id="a"] g.canvas-pop')).toHaveLength(1);
+    expect(live.querySelector('[data-node-id="c"] > g.canvas-pop')).not.toBeNull();
+    expect(live.querySelector('[data-connector-id="b-c"] path.canvas-draw')).not.toBeNull();
     // Order follows the server's picture.
     expect([...live.firstElementChild!.children].map((el) => el.getAttribute('data-node-id') ?? el.getAttribute('data-connector-id') ?? el.localName))
       .toEqual(['rect', 'frame', 'a-b', 'b-c', 'a', 'b', 'c']);

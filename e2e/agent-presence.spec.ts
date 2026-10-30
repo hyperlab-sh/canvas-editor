@@ -6,9 +6,9 @@ import { expect, test, type Page } from './test';
 // change builds in (pop in connector order, lines drawing on). Presentation only: the shapes are in the document, one
 // undo step, the moment the result is posted. The bridge is a real HTTP server with the MCP server's long-poll rules,
 // so the op travels the same path an MCP client's does (useV2AgentBridge → runLiveAgentOp → commit).
-// OFK_SHOTS_DIR=<dir> also writes the frames (light and dark).
+// CANVAS_SHOTS_DIR=<dir> also writes the frames (light and dark).
 
-const SHOTS = process.env.OFK_SHOTS_DIR;
+const SHOTS = process.env.CANVAS_SHOTS_DIR;
 const DSL = 'flowchart\n  Client -> API\n  API -> Queue\n  Queue -> Worker\n  Worker -> Database';
 
 interface Bridge { port: number; results: { id: string; ok: boolean; output?: { frameId?: string; base64?: string; mime?: string } }[]; send: (request: unknown) => void; close: () => Promise<void> }
@@ -53,7 +53,7 @@ async function bridge(): Promise<Bridge> {
 
 async function open(page: Page, port: number, theme: 'light' | 'dark'): Promise<void> {
   await page.addInitScript(({ port, theme }) => {
-    localStorage.setItem('openflowkit-v2-preferences', JSON.stringify({ theme, agentBridgeEnabled: true, bridgePort: port, bridgeToken: '' }));
+    localStorage.setItem('canvas-v2-preferences', JSON.stringify({ theme, agentBridgeEnabled: true, bridgePort: port, bridgeToken: '' }));
   }, { port, theme });
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto(`/d/presence-${theme}-${Date.now().toString(36)}`);
@@ -119,7 +119,7 @@ for (const theme of ['light', 'dark'] as const) {
       if (SHOTS) await expect(cursor).toHaveAttribute('data-state', 'resting', { timeout: 5000 });
       await shot(page, `${theme}-2-resting`);
       const box = (await cursor.boundingBox())!;
-      const under = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('.ofk-agent-cursor') !== null, { x: box.x + 30, y: box.y + 28 });
+      const under = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('.canvas-agent-cursor') !== null, { x: box.x + 30, y: box.y + 28 });
       expect(under).toBe(false);
       // It fades out after a quiet second and a half.
       await expect(cursor).toHaveAttribute('data-state', 'hidden', { timeout: 6000 });

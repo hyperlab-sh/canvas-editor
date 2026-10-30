@@ -140,17 +140,17 @@ export function ProposalReview({
     e.preventDefault();
   }
   return (
-    <section className="ofk-review ofk-overlay" aria-label={t.title}>
-      <header className="ofk-review-header">
+    <section className="canvas-review canvas-overlay" aria-label={t.title}>
+      <header className="canvas-review-header">
         <div>
           <Status live tone={failed ? 'danger' : stale ? 'warning' : 'info'}>
             {failed ? t.failed : stale ? t.stale : t.title}
           </Status>
-          <p className="ofk-caption">
+          <p className="canvas-caption">
             {scopeLabel} · {accepted.length}/{changes.length}
           </p>
         </div>
-        <div className="ofk-review-bulk">
+        <div className="canvas-review-bulk">
           <Button
             variant="quiet"
             onClick={() => changes.forEach((c) => onDecide(c.id, 'accepted'))}
@@ -167,7 +167,7 @@ export function ProposalReview({
       </header>
       <ul
         ref={list}
-        className="ofk-review-list"
+        className="canvas-review-list"
         onKeyDown={onKeyDown}
         onMouseLeave={() => onHighlight?.(null)}
       >
@@ -187,16 +187,16 @@ export function ProposalReview({
               onMouseEnter={() => onHighlight?.(change.id)}
               onBlur={() => onHighlight?.(null)}
             >
-              <span className="ofk-review-glyph" aria-hidden="true">
+              <span className="canvas-review-glyph" aria-hidden="true">
                 {glyph[change.kind]}
               </span>
-              <span className="ofk-review-body">
-                <span className="ofk-review-label">
-                  <span className="ofk-caption">{t[change.kind]}</span> {change.label}
+              <span className="canvas-review-body">
+                <span className="canvas-review-label">
+                  <span className="canvas-caption">{t[change.kind]}</span> {change.label}
                 </span>
-                {change.reason && <span className="ofk-caption">{change.reason}</span>}
+                {change.reason && <span className="canvas-caption">{change.reason}</span>}
               </span>
-              <span className="ofk-review-actions" role="group" aria-label={change.label}>
+              <span className="canvas-review-actions" role="group" aria-label={change.label}>
                 <IconButton
                   variant="quiet"
                   label={t.accept}
@@ -220,9 +220,9 @@ export function ProposalReview({
           );
         })}
       </ul>
-      <footer className="ofk-review-footer">
-        <Kbd keys={['J', 'K']} /> <span className="ofk-caption">navigate</span>
-        <span className="ofk-composer-spacer" />
+      <footer className="canvas-review-footer">
+        <Kbd keys={['J', 'K']} /> <span className="canvas-caption">navigate</span>
+        <span className="canvas-composer-spacer" />
         <Button variant="quiet" disabled={busy} onClick={onDiscard}>
           {t.discard}
         </Button>

@@ -1,7 +1,7 @@
 import type { Point2d, Size2d, Transform2d } from '../geometry/types';
 import type { JsonObject } from './json';
 
-export const SCENE_DOCUMENT_FORMAT = 'openflowkit.scene' as const;
+export const SCENE_DOCUMENT_FORMAT = 'canvas.scene' as const;
 export const SCENE_DOCUMENT_VERSION = 1 as const;
 
 export interface ScenePort {

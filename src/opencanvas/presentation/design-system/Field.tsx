@@ -15,7 +15,7 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
     .filter(Boolean)
     .join(' ');
   return (
-    <div className={`ofk-field ${className}`}>
+    <div className={`canvas-field ${className}`}>
       <label htmlFor={inputId}>{label}</label>
       <input
         {...props}

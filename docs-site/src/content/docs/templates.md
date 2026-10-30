@@ -4,7 +4,7 @@ description: Home lists your diagrams, imports files and offers twelve starter t
 ---
 
 Home is where your diagrams are listed. Open it from the canvas menu (☰) → **Back to home**, or
-go to `app.openflowkit.com/#/home`. Opening the app's address without a path takes you back to
+go to `canvas.hyperlab.sh/#/home`. Opening the app's address without a path takes you back to
 the last document you had open, or starts a new one.
 
 ## Ways in
@@ -46,7 +46,7 @@ change.
 This is the source of **Purchase approval**:
 
 ```openflow
-%% ofk 1
+%% canvas 1
 flowchart right
 title: Purchase approval
 

@@ -5,7 +5,7 @@ import { expect, test } from './test';
 // picker drives the timeline. Run headed:
 // npm run e2e:headed -- e2e/motion-dialog.spec.ts
 
-const DSL = `%% ofk 1
+const DSL = `%% canvas 1
 flowchart down
 
   Client [blue] -> API [green] : HTTPS
@@ -31,13 +31,13 @@ async function openAnimationExport(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: /Animate this page/ }).click();
   await expect(page.getByRole('img', { name: 'Animation preview' })).toBeVisible();
   // The panel opens playing; park the playhead at 0 so the checks are steady.
-  await page.locator('.ofk-motion-transport input[type="range"]').fill('0');
+  await page.locator('.canvas-motion-transport input[type="range"]').fill('0');
 }
 
 const srcLength = (page: import('@playwright/test').Page) =>
-  page.evaluate(() => (document.querySelector('.ofk-motion-preview img')?.getAttribute('src') ?? '').length);
+  page.evaluate(() => (document.querySelector('.canvas-motion-preview img')?.getAttribute('src') ?? '').length);
 const readout = (page: import('@playwright/test').Page) =>
-  page.evaluate(() => document.querySelector('.ofk-motion-transport output')?.textContent ?? '');
+  page.evaluate(() => document.querySelector('.canvas-motion-transport output')?.textContent ?? '');
 
 // @local: playback speed is asserted, and a software renderer (CI) is too slow.
 test('animation export previews, scrubs, plays and downloads', { tag: '@local' }, async ({ page }) => {
@@ -47,7 +47,7 @@ test('animation export previews, scrubs, plays and downloads', { tag: '@local' }
 
   // The scrubber re-renders the still: arrow keys jump whole steps.
   const first = await srcLength(page);
-  await page.locator('.ofk-motion-transport input[type="range"]').focus();
+  await page.locator('.canvas-motion-transport input[type="range"]').focus();
   await page.keyboard.press('ArrowRight');
   await expect.poll(() => srcLength(page)).not.toBe(first);
   expect(await readout(page)).toMatch(/^1\.7s/);
@@ -65,13 +65,13 @@ test('animation export previews, scrubs, plays and downloads', { tag: '@local' }
   // animated preview its keyframes.
   await page.getByRole('radio', { name: 'Walkthrough' }).check();
   await expect.poll(async () => page.evaluate(() => {
-    const src = document.querySelector('.ofk-motion-preview img')?.getAttribute('src') ?? '';
+    const src = document.querySelector('.canvas-motion-preview img')?.getAttribute('src') ?? '';
     return decodeURIComponent(src).includes('transform-box:view-box');
   })).toBe(true);
   await page.getByRole('button', { name: /Play/ }).click();
   await expect.poll(async () => page.evaluate(() => {
-    const src = document.querySelector('.ofk-motion-preview img')?.getAttribute('src') ?? '';
-    return decodeURIComponent(src).includes('ofk-camera');
+    const src = document.querySelector('.canvas-motion-preview img')?.getAttribute('src') ?? '';
+    return decodeURIComponent(src).includes('canvas-camera');
   })).toBe(true);
   await page.getByRole('button', { name: /Pause/ }).click();
 
@@ -85,7 +85,7 @@ test('animation export previews, scrubs, plays and downloads', { tag: '@local' }
   expect(text).toContain('@keyframes');
   expect(text).toContain('prefers-reduced-motion');
   expect(text).toContain('data-node-id=');
-  expect(text).not.toContain('ofk-camera');
+  expect(text).not.toContain('canvas-camera');
 });
 
 // An empty page is turned away before the dialog (2026-10-13 polish, V13): Animate is disabled like Download, and the
@@ -102,7 +102,7 @@ test('an empty page says so instead of failing', async ({ page }) => {
 test('the format hint follows the pick and steps stay a disclosure @gate', async ({ page }) => {
   await openAnimationExport(page);
   // The one-line hint under the format pick says where that file plays.
-  const hint = page.locator('.ofk-motion-format .ofk-caption');
+  const hint = page.locator('.canvas-motion-format .canvas-caption');
   await expect(hint).toHaveText('Animated vector; plays in GitHub READMEs, docs and Notion');
   await page.getByRole('radio', { name: 'GIF', exact: true }).check();
   await expect(hint).toHaveText('Plays everywhere: Slack, GitHub, X, email');
@@ -110,26 +110,26 @@ test('the format hint follows the pick and steps stay a disclosure @gate', async
 
   // Steps: the shared accordion, open while the sequence is short. Its row and
   // divider run the panel's full width, like the Connect agent accordions.
-  const steps = page.locator('details.ofk-motion-steps-disclosure');
+  const steps = page.locator('details.canvas-motion-steps-disclosure');
   await expect(steps).toHaveAttribute('open', '');
-  const panelBox = (await page.locator('.ofk-motion-panel').boundingBox())!;
+  const panelBox = (await page.locator('.canvas-motion-panel').boundingBox())!;
   const rowBox = (await steps.locator('summary').boundingBox())!;
   expect(Math.abs(rowBox.x - panelBox.x)).toBeLessThanOrEqual(1);
   expect(Math.abs(rowBox.x + rowBox.width - (panelBox.x + panelBox.width))).toBeLessThanOrEqual(1);
   await steps.locator('summary').click();
   await expect(steps).not.toHaveAttribute('open', '');
-  await expect(page.locator('.ofk-motion-chip').first()).toBeHidden();
+  await expect(page.locator('.canvas-motion-chip').first()).toBeHidden();
   await steps.locator('summary').click();
-  await expect(page.locator('.ofk-motion-chip').first()).toBeVisible();
+  await expect(page.locator('.canvas-motion-chip').first()).toBeVisible();
 });
 
 test('step chips write the animate block and read it back', async ({ page }) => {
   await openAnimationExport(page);
-  const chips = page.locator('.ofk-motion-chip');
+  const chips = page.locator('.canvas-motion-chip');
   await expect(chips).toHaveCount(5);
   await expect(chips.first()).toContainText('Client');
   // The export panel docks right, under Export; the code panel shares that side and opens only when asked.
-  const panelBox = (await page.locator('.ofk-motion-panel').boundingBox())!;
+  const panelBox = (await page.locator('.canvas-motion-panel').boundingBox())!;
   expect(panelBox.x + panelBox.width).toBeGreaterThan((page.viewportSize()?.width ?? 0) - 2);
 
   // Reorder: Alt+left moves a chip and rewrites the block.

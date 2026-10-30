@@ -85,7 +85,7 @@ export function CommandPalette({
   return (
     <dialog
       ref={dialog}
-      className="ofk-command ofk-overlay"
+      className="canvas-command canvas-overlay"
       aria-label={label}
       onCancel={(e) => {
         e.preventDefault();
@@ -93,7 +93,7 @@ export function CommandPalette({
       }}
       onClick={(e) => e.target === dialog.current && close()}
     >
-      <div className="ofk-command-input">
+      <div className="canvas-command-input">
         <Icon icon={IconSearch} />
         <input
           ref={input}
@@ -119,11 +119,11 @@ export function CommandPalette({
           }}
         />
       </div>
-      <div id={`${id}-list`} role="listbox" className="ofk-command-list" aria-label={label}>
-        {flat.length === 0 && <div className="ofk-command-empty ofk-caption">{emptyLabel}</div>}
+      <div id={`${id}-list`} role="listbox" className="canvas-command-list" aria-label={label}>
+        {flat.length === 0 && <div className="canvas-command-empty canvas-caption">{emptyLabel}</div>}
         {results.map(([group, list]) => (
           <div key={group} role="group" aria-label={group}>
-            <div className="ofk-menu-group-label" aria-hidden="true">
+            <div className="canvas-menu-group-label" aria-hidden="true">
               {group}
             </div>
             {list.map((c) => (
@@ -133,14 +133,14 @@ export function CommandPalette({
                 role="option"
                 aria-selected={c === current}
                 aria-disabled={c.disabled || undefined}
-                className="ofk-menu-item"
+                className="canvas-menu-item"
                 onMouseEnter={() => setActive(flat.indexOf(c))}
                 onClick={() => run(c)}
               >
-                <span className="ofk-menu-item-lead" aria-hidden="true">
+                <span className="canvas-menu-item-lead" aria-hidden="true">
                   {c.icon}
                 </span>
-                <span className="ofk-menu-item-label">{c.label}</span>
+                <span className="canvas-menu-item-label">{c.label}</span>
                 {c.shortcut && <Kbd keys={c.shortcut} />}
               </div>
             ))}

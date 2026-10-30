@@ -14,7 +14,7 @@ function nodeNamed(nodes: readonly SceneNode[], id: string): SceneNode {
 
 describe('appearance directive', () => {
   it('compiles with the default palette when none is authored', async () => {
-    const result = await compile(source('%% ofk 1'));
+    const result = await compile(source('%% canvas 1'));
     expect(nodeNamed(result.nodes, 'client').appearance.fill).toBe(paletteSwatch('blue', 'pastel').fill);
     expect(result.meta.appearance).toBeUndefined();
   });
@@ -39,14 +39,14 @@ describe('appearance directive', () => {
 
   it('writes the directive back and stays stable under a second round-trip', async () => {
     for (const palette of ['paper', 'builder', 'mono'] as const) {
-      const once = serialize(await compile(source(`%% ofk 1\nflowchart\nappearance: ${palette}`)));
+      const once = serialize(await compile(source(`%% canvas 1\nflowchart\nappearance: ${palette}`)));
       expect(once).toContain(`appearance: ${palette}`);
       expect(serialize(await compile(once))).toBe(once);
     }
   });
 
   it('keeps authored colour words as words under a non-default palette', async () => {
-    const text = serialize(await compile('%% ofk 1\nflowchart\nappearance: mono\n\nA [emerald] -> B [bold, violet]'));
+    const text = serialize(await compile('%% canvas 1\nflowchart\nappearance: mono\n\nA [emerald] -> B [bold, violet]'));
     // `green` and `blue` are the canonical words for the emerald / violet keys.
     expect(text).toContain('A [green]');
     expect(text).toContain('B [violet, bold]');

@@ -96,12 +96,12 @@ export function ColorPicker({
   const hueOnly = hsvaToHex({ h: hsva.h, s: 1, v: 1, a: 1 }, false);
   return (
     <div
-      className="ofk-color"
-      style={{ '--ofk-color-hue': hueOnly, '--ofk-color-solid': solid } as React.CSSProperties}
+      className="canvas-color"
+      style={{ '--canvas-color-hue': hueOnly, '--canvas-color-solid': solid } as React.CSSProperties}
     >
       <div
         ref={pad}
-        className="ofk-color-pad"
+        className="canvas-color-pad"
         role="slider"
         tabIndex={0}
         aria-label={t.saturation}
@@ -132,12 +132,12 @@ export function ColorPicker({
         }}
       >
         <span
-          className="ofk-color-thumb"
+          className="canvas-color-thumb"
           style={{ left: `${hsva.s * 100}%`, top: `${(1 - hsva.v) * 100}%` }}
         />
       </div>
-      <label className="ofk-color-slider ofk-color-hue">
-        <span className="ofk-visually-hidden">{t.hue}</span>
+      <label className="canvas-color-slider canvas-color-hue">
+        <span className="canvas-visually-hidden">{t.hue}</span>
         <input
           type="range"
           min={0}
@@ -156,8 +156,8 @@ export function ColorPicker({
         />
       </label>
       {allowAlpha && (
-        <label className="ofk-color-slider ofk-color-alpha">
-          <span className="ofk-visually-hidden">{t.alpha}</span>
+        <label className="canvas-color-slider canvas-color-alpha">
+          <span className="canvas-visually-hidden">{t.alpha}</span>
           <input
             type="range"
             min={0}
@@ -178,7 +178,7 @@ export function ColorPicker({
         </label>
       )}
       {presets.length > 0 && (
-        <div className="ofk-color-presets" role="group" aria-label={t.presets}>
+        <div className="canvas-color-presets" role="group" aria-label={t.presets}>
           {presets.map((p) => (
             <button
               key={p}
@@ -205,13 +205,13 @@ export function ColorPicker({
           ))}
         </div>
       )}
-      <div className="ofk-color-fields">
-        <label className="ofk-color-hex">
-          <span className="ofk-visually-hidden">{t.hex}</span>
+      <div className="canvas-color-fields">
+        <label className="canvas-color-hex">
+          <span className="canvas-visually-hidden">{t.hex}</span>
           <span aria-hidden="true">#</span>
           <input
             id={`${id}-hex`}
-            className="ofk-mono"
+            className="canvas-mono"
             value={hexText.replace(/^#/, '')}
             spellCheck={false}
             onChange={(e) => setHexText(e.target.value)}
@@ -228,10 +228,10 @@ export function ColorPicker({
           />
         </label>
         {allowAlpha && (
-          <label className="ofk-color-opacity">
-            <span className="ofk-visually-hidden">{t.opacity}</span>
+          <label className="canvas-color-opacity">
+            <span className="canvas-visually-hidden">{t.opacity}</span>
             <input
-              className="ofk-numeric"
+              className="canvas-numeric"
               inputMode="numeric"
               value={Math.round(hsva.a * 100)}
               onChange={(e) => {

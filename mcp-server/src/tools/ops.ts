@@ -97,7 +97,7 @@ async function insideWorkingDirectory(target: string): Promise<string> {
 
 /** openflow_save writes documents only: an agent steered by a shared diagram must not overwrite ~/.zshrc or a script. */
 async function savePathFor(target: string): Promise<string> {
-  if (!/\.(json|ofk)$/i.test(target)) throw new Error(`openflow_save writes .openflow.json, .ofk or .json files only; "${target}" is none of them. Rename it, e.g. "${basename(target)}.openflow.json".`);
+  if (!/\.(json|canvas)$/i.test(target)) throw new Error(`openflow_save writes .openflow.json, .canvas or .json files only; "${target}" is none of them. Rename it, e.g. "${basename(target)}.openflow.json".`);
   return insideWorkingDirectory(target);
 }
 
@@ -272,7 +272,7 @@ export function registerDocumentTools(server: McpServer, deps: DocumentToolDeps)
     title: 'Save to .openflow.json',
     description: 'Write a document to disk (svg: true also writes the first page as a .svg beside it). With a paired editor and no documentId, saves what the editor currently shows.',
     inputSchema: {
-      path: z.string().min(1).describe("Inside the server's working directory; .openflow.json, .ofk or .json only."),
+      path: z.string().min(1).describe("Inside the server's working directory; .openflow.json, .canvas or .json only."),
       documentId: z.string().min(1).optional().describe('File-mode document; omit to save the paired editor document (or, in file mode, the one opened or created last).'),
       svg: z.boolean().default(false).describe('Also write the first page as <same name>.svg next to the file.'),
     },
@@ -332,7 +332,7 @@ export function registerDocumentTools(server: McpServer, deps: DocumentToolDeps)
         : null,
       documents: deps.store.list().map(({ id, name }) => ({ documentId: id, name })),
       hint: health.connected
-        ? `Ops act on the paired editor${bridge.shared?.side === 'guest' ? `, through the OpenFlowKit server on port ${bridge.port} that other agent sessions share` : ''}. Pass documentId to target a file-mode document instead.`
+        ? `Ops act on the paired editor${bridge.shared?.side === 'guest' ? `, through the Canvas server on port ${bridge.port} that other agent sessions share` : ''}. Pass documentId to target a file-mode document instead.`
         : deps.bridge.unpairedReason ?? NOT_PAIRED,
     });
   });

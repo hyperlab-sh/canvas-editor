@@ -88,7 +88,7 @@ export interface BridgeThreadEvent {
   readonly body: string;
 }
 
-export const bridgeTokenHeader = 'x-openflowkit-token';
+export const bridgeTokenHeader = 'x-canvas-token';
 
 /** Browsers only: a present Origin must be the app or a local dev server. */
 export function isAllowedBridgeOrigin(origin: string | undefined | null): boolean {
@@ -97,7 +97,7 @@ export function isAllowedBridgeOrigin(origin: string | undefined | null): boolea
     const { hostname, protocol } = new URL(origin);
     if (protocol !== 'http:' && protocol !== 'https:') return false;
     return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]'
-      || hostname === 'app.openflowkit.com';
+      || hostname === 'canvas.hyperlab.sh';
   } catch {
     return false;
   }

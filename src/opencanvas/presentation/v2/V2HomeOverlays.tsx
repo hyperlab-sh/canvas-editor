@@ -17,11 +17,11 @@ interface HomeSelectionBarProps {
 
 export function HomeSelectionBar({ count, archive, allStarred, onRestore, onDelete, onStar, onArchive, onClear }: HomeSelectionBarProps): React.JSX.Element {
   return (
-    <div className="ofk-home-selectionbar" role="toolbar" aria-label="Selection">
-      <span className="ofk-home-selectionbar-count" role="status">{count} selected</span>
+    <div className="canvas-home-selectionbar" role="toolbar" aria-label="Selection">
+      <span className="canvas-home-selectionbar-count" role="status">{count} selected</span>
       {archive ? <>
         <Button variant="quiet" onClick={onRestore}><Icon icon={IconArrowBackUp} /> Restore</Button>
-        <Button variant="quiet" className="ofk-home-head-danger" onClick={onDelete}>
+        <Button variant="quiet" className="canvas-home-head-danger" onClick={onDelete}>
           <Icon icon={IconTrashX} /> Delete forever
         </Button>
       </> : <>
@@ -39,10 +39,10 @@ export function HomeSelectionBar({ count, archive, allStarred, onRestore, onDele
 
 export function HomeDropOverlay(): React.JSX.Element {
   return (
-    <div className="ofk-home-drop" aria-hidden="true">
+    <div className="canvas-home-drop" aria-hidden="true">
       <Icon icon={IconUpload} />
       <strong>Drop to import</strong>
-      <span>OpenFlowKit .json, Mermaid, D2, Structurizr or OpenFlow DSL</span>
+      <span>Canvas .json, Mermaid, D2, Structurizr or OpenFlow DSL</span>
     </div>
   );
 }
@@ -51,7 +51,7 @@ export function HomeKeysDialog({ open, onClose }: { readonly open: boolean; read
   return (
     <Dialog open={open} onClose={onClose} title="Keyboard shortcuts"
       actions={<Button variant="quiet" onClick={onClose}>Close</Button>}>
-      <dl className="ofk-home-keys">
+      <dl className="canvas-home-keys">
         {([
           [['N'], 'New diagram'], [[platformKeys('⌘K')], 'Find anything'], [['/'], 'Search this view'], [['↑', '↓', '←', '→'], 'Move between diagrams'],
           [[platformKeys('↵')], 'Open'], [['Space'], 'Select'], [[platformKeys('⇧↓')], 'Select a range'], [[platformKeys('⌘A')], 'Select all'],

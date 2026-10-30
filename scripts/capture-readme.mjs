@@ -59,7 +59,7 @@ const PARTS = {
  * compiles to, drawn by the CLI as SVG so it stays sharp at feed size. Needs a built mcp-server/dist.
  */
 async function ogCards(browser) {
-  const logo = readFileSync(root('docs-site/src/assets/Logo_openflowkit.svg'), 'utf8');
+  const logo = readFileSync(root('docs-site/src/assets/logo-canvas.svg'), 'utf8');
   // The checkout without its cache and title: five icons stay legible at feed size.
   const source = CHECKOUT.replace('architecture down', 'architecture right').replace(/^title:.*\n\n/m, '').replace(/^.*Cache.*\n/gm, '');
   const diagram = execFileSync(process.execPath, [root('mcp-server/dist/cli.js'), 'render', '-', '--theme', 'light'], { input: source, encoding: 'utf8' });
@@ -88,13 +88,13 @@ async function ogCards(browser) {
     .code .file { font: 600 14px/1 -apple-system, Inter, sans-serif; color: #a8a29e; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 14px; }
   </style></head><body>
     <div class="text">
-      <div class="brand">${logo}OpenFlowKit</div>
+      <div class="brand">${logo}Canvas</div>
       <h1>Architecture<br>diagrams <em>as code</em>,<br>with your agent.</h1>
       <div class="tags"><span>Free &amp; open source</span><span>Local-first</span><span>MCP</span></div>
     </div>
-    <div class="url">openflowkit.com</div>
+    <div class="url">canvas.hyperlab.sh</div>
     <div class="canvas">${diagram}</div>
-    <div class="code"><div class="file">checkout.ofk</div>${code}</div>
+    <div class="code"><div class="file">checkout.canvas</div>${code}</div>
   </body></html>`);
   await page.evaluate(() => document.fonts.ready);
   const card = await sharp(await page.screenshot()).resize(1200, 630).png({ compressionLevel: 9 }).toBuffer();
@@ -116,7 +116,7 @@ async function heroGif(browser, scheme) {
   await page.emulateMedia({ colorScheme: scheme });
   await page.waitForSelector('[data-testid="v2-canvas"]');
   // The welcome's arrows point at chrome the GIF never uses; at this size they only crowd the first second.
-  await page.addStyleTag({ content: '.ofk-v2-guide { display: none !important; }' });
+  await page.addStyleTag({ content: '.canvas-v2-guide { display: none !important; }' });
   await nameDocument(page);
   const agent = await connectAgent(page);
   await showPointer(page);

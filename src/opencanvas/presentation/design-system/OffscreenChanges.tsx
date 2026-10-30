@@ -43,20 +43,20 @@ export function OffscreenChanges({
     else buckets.set(key, { x, y, angle, count: 1 });
   }
   return (
-    <div className="ofk-offscreen">
+    <div className="canvas-offscreen">
       {[...buckets.entries()].map(([key, b]) => (
         <span
           key={key}
-          className="ofk-offscreen-arrow"
+          className="canvas-offscreen-arrow"
           aria-hidden="true"
-          style={{ left: b.x, top: b.y, '--ofk-angle': `${b.angle}deg` } as React.CSSProperties}
+          style={{ left: b.x, top: b.y, '--canvas-angle': `${b.angle}deg` } as React.CSSProperties}
         >
-          <span className="ofk-offscreen-count">{b.count}</span>
+          <span className="canvas-offscreen-count">{b.count}</span>
         </span>
       ))}
       <Button
         variant="secondary"
-        className="ofk-offscreen-show"
+        className="canvas-offscreen-show"
         onClick={onShow}
         aria-label={`${label} (${offscreen.length})`}
       >

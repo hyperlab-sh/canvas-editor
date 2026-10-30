@@ -33,7 +33,7 @@ export async function pickProject(service: ServiceClient, project?: string, list
     return project;
   }
   if (names.length === 1) return names[0]!;
-  if (!names.length) throw new Error('The service has no projects. Add one to its config file (~/.config/openflowkit/service.json).');
+  if (!names.length) throw new Error('The service has no projects. Add one to its config file (~/.config/canvas/service.json).');
   throw new Error(`Pass "project": the service has ${names.length} (${names.join(', ')}).`);
 }
 

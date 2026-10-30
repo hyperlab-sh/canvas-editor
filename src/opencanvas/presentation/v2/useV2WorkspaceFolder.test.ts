@@ -56,7 +56,7 @@ describe('useV2WorkspaceFolder write-back', () => {
     expect(workspace.writeWorkspace).toHaveBeenCalledWith(a, { dsl: 'edited model', document: edited });
   });
 
-  it('a box moved on a view writes its snap, and leaves architecture.ofk as the user wrote it', async () => {
+  it('a box moved on a view writes its snap, and leaves architecture.canvas as the user wrote it', async () => {
     const a = folder('a');
     const t = setup();
     await (await openLoaded(t, a))();
@@ -72,6 +72,6 @@ describe('useV2WorkspaceFolder write-back', () => {
     await act(() => t.hook.result.current.save('the open document\'s model', withSnap(0)));
     await act(() => t.hook.result.current.save('edited', withSnap(5)));
     expect(workspace.writeWorkspace).not.toHaveBeenCalled();
-    expect(t.onToast).toHaveBeenCalledWith(expect.stringContaining('architecture.ofk'), 'danger', expect.stringContaining('code panel'));
+    expect(t.onToast).toHaveBeenCalledWith(expect.stringContaining('architecture.canvas'), 'danger', expect.stringContaining('code panel'));
   });
 });

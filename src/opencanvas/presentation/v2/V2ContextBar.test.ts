@@ -40,12 +40,12 @@ describe('contextBarStyle', () => {
 
 describe('contextBarEdges (U4-18)', () => {
   it('clamps between the floating rails, not the raw viewport', () => {
-    document.body.innerHTML = '<div class="ofk-v2"><div role="toolbar" aria-label="Create"></div><div role="toolbar" aria-label="Workspace"></div></div>';
+    document.body.innerHTML = '<div class="canvas-v2"><div role="toolbar" aria-label="Create"></div><div role="toolbar" aria-label="Workspace"></div></div>';
     const [tools, rail] = document.querySelectorAll<HTMLElement>('[role="toolbar"]');
     tools!.getBoundingClientRect = () => new DOMRect(8, 80, 60, 400);
     rail!.getBoundingClientRect = () => new DOMRect(1372, 80, 52, 300);
     vi.stubGlobal('innerWidth', 1440);
-    expect(contextBarEdges(document.querySelector('.ofk-v2'))).toEqual({ left: 68, right: 1372 });
+    expect(contextBarEdges(document.querySelector('.canvas-v2'))).toEqual({ left: 68, right: 1372 });
     vi.unstubAllGlobals();
   });
 });

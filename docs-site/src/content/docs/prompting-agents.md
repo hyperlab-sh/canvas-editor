@@ -30,10 +30,10 @@ keeps each one, and `update_diagram` reports anything it had to drop (`discarded
 
 ## Give the agent the skill
 
-[`skills/openflowkit/SKILL.md`](https://github.com/openflowkit/openflowkit/blob/main/skills/openflowkit/SKILL.md)
+[`skills/canvas/SKILL.md`](https://github.com/hyperlab-sh/canvas-editor/blob/main/skills/canvas/SKILL.md)
 is one page an agent reads once: when a diagram is worth drawing, Mermaid or DSL, which tools
 to call, and to save a `.openflow.json` beside the code. In Claude Code, copy it into
-`~/.claude/skills/openflowkit/`. The app serves the same text at `/llms.txt`.
+`~/.claude/skills/canvas/`. The app serves the same text at `/llms.txt`.
 
 ## With a bring-your-own-key model
 

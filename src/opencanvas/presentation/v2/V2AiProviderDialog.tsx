@@ -29,7 +29,7 @@ const LOCAL_TEST_TIMEOUT_MS = 120_000;
 // A local model (directly, or behind this server's AI proxy) can take a while to load on the first call.
 const isLocal = (url: string): boolean => /^http:\/\/(localhost|127\.0\.0\.1|\[::1\])[:/]/.test(url) || viaServerProxy(url);
 const endpointHint = (definition: AiProviderDefinition, baseUrl: string): string => viaServerProxy(baseUrl)
-  ? 'Through this server’s AI proxy: your key passes through the server that hosts OpenFlowKit, which forwards it to the model server it is set up for and keeps no copy.'
+  ? 'Through this server’s AI proxy: your key passes through the server that hosts Canvas, which forwards it to the model server it is set up for and keeps no copy.'
   : definition.defaultBaseUrl ? `Default: ${definition.defaultBaseUrl}`
     : 'Required for a custom endpoint. Self-hosted with the AI proxy on? Use /ai-proxy.';
 // Thinking models spend part of any budget before they answer; 16 tokens came
@@ -49,7 +49,7 @@ const fetchedModels = new Map<string, readonly string[]>();
 
 /** A provider's mark, painted in the text colour so it reads in both themes. */
 function ProviderMark({ definition }: { readonly definition: AiProviderDefinition }) {
-  return <span className="ofk-v2-provider-mark" aria-hidden="true"
+  return <span className="canvas-v2-provider-mark" aria-hidden="true"
     style={{ '--mark': `url("${definition.logoPath}")` } as CSSProperties} />;
 }
 
@@ -150,7 +150,7 @@ export function V2AiProviderDialog({ open, settings, onSave, onClose }: V2AiProv
     <Dialog open={open} onClose={onClose} title="AI provider" closeLabel="Close AI provider"
       description="Bring your own key. It stays on this machine and is sent only to the provider you pick."
       actions={<>
-        <Button variant="quiet" className="ofk-v2-provider-clear"
+        <Button variant="quiet" className="canvas-v2-provider-clear"
           disabled={!key && !Object.values(settings.connections).some((stored) => stored?.apiKey)}
           onClick={() => {
             onSave(withoutKeys(settings));
@@ -160,10 +160,10 @@ export function V2AiProviderDialog({ open, settings, onSave, onClose }: V2AiProv
         <Button variant="secondary" onClick={onClose}>Cancel</Button>
         <Button variant="primary" disabled={!ready} onClick={save}>{saved ? 'Save' : 'Connect'}</Button>
       </>}>
-      <form className="ofk-v2-provider-form" onSubmit={(event) => { event.preventDefault(); if (ready) save(); }}>
-        <div className="ofk-v2-provider-grid" role="group" aria-label="Provider">
+      <form className="canvas-v2-provider-form" onSubmit={(event) => { event.preventDefault(); if (ready) save(); }}>
+        <div className="canvas-v2-provider-grid" role="group" aria-label="Provider">
           {AI_PROVIDERS.map((provider) => (
-            <button key={provider.id} type="button" className="ofk-v2-provider-tile"
+            <button key={provider.id} type="button" className="canvas-v2-provider-tile"
               aria-pressed={draft.provider === provider.id} aria-label={`Use ${provider.label}`}
               data-has-key={settings.connections[provider.id]?.apiKey ? '' : undefined}
               title={settings.connections[provider.id]?.apiKey ? `${provider.label} — key saved` : provider.label}
@@ -173,23 +173,23 @@ export function V2AiProviderDialog({ open, settings, onSave, onClose }: V2AiProv
             </button>
           ))}
         </div>
-        <div className="ofk-v2-provider-current">
+        <div className="canvas-v2-provider-current">
           <ProviderMark definition={definition} />
           <div>
-            <p className="ofk-v2-provider-current-name">
+            <p className="canvas-v2-provider-current-name">
               <strong>{definition.label}</strong>
-              <span className="ofk-v2-risk-badge" data-risk={definition.risk} title={RISK_DETAILS[definition.risk]}>
+              <span className="canvas-v2-risk-badge" data-risk={definition.risk} title={RISK_DETAILS[definition.risk]}>
                 {RISK_LABELS[definition.risk]}
               </span>
             </p>
-            <p className="ofk-v2-provider-hint">
+            <p className="canvas-v2-provider-hint">
               {providerHint(definition, window.location.origin)}
               {definition.consoleUrl ? <>
                 {' '}<a href={definition.consoleUrl} target="_blank" rel="noreferrer">
                   {definition.consoleName}<Icon icon={IconExternalLink} />
                 </a>
               </> : null}
-              {' '}<a href="https://docs.openflowkit.com/ai-generation/#troubleshooting" target="_blank" rel="noreferrer">
+              {' '}<a href="https://docs.canvas.hyperlab.sh/ai-generation/#troubleshooting" target="_blank" rel="noreferrer">
                 Troubleshooting<Icon icon={IconExternalLink} />
               </a>
             </p>
@@ -208,7 +208,7 @@ export function V2AiProviderDialog({ open, settings, onSave, onClose }: V2AiProv
         <datalist id={modelListId}>
           {models.map((id) => <option key={id} value={id} />)}
         </datalist>
-        <div className="ofk-v2-provider-test">
+        <div className="canvas-v2-provider-test">
           <Button variant="secondary" busy={test.state === 'testing'} disabled={!ready}
             onClick={() => { void testKey(); }}>Test key</Button>
           <p role="status" aria-live="polite" data-state={test.state} {...(test.cause ? { 'data-cause': test.cause } : {})}>
@@ -216,9 +216,9 @@ export function V2AiProviderDialog({ open, settings, onSave, onClose }: V2AiProv
             {test.message}
           </p>
         </div>
-        <details key={definition.id} className="ofk-connection-details" open={endpointOpen.current.get(definition.id) || undefined}>
+        <details key={definition.id} className="canvas-connection-details" open={endpointOpen.current.get(definition.id) || undefined}>
           <summary>Endpoint<Icon icon={IconChevronDown} /></summary>
-          <div className="ofk-v2-provider-advanced">
+          <div className="canvas-v2-provider-advanced">
             <Field label="Base URL" hint={endpointHint(definition, connection.baseUrl)} spellCheck={false}
               value={connection.baseUrl} placeholder={definition.defaultBaseUrl || 'https://your-endpoint.example/v1'}
               onChange={(event) => patch({ baseUrl: event.target.value })} />

@@ -89,7 +89,7 @@ describe('op tools', () => {
 
   it('ships the grammar without the internal prior-art notes', async () => {
     const target = await client();
-    const { contents } = await target.readResource({ uri: 'openflowkit://docs/grammar' });
+    const { contents } = await target.readResource({ uri: 'canvas://docs/grammar' });
     const grammar = String((contents[0] as { text?: string }).text);
     expect(grammar).toContain('## 1. Goals');
     expect(grammar).not.toContain('## 0. Prior art');
@@ -117,7 +117,7 @@ describe('op tools', () => {
     const documentId = created.id as string;
 
     const diagram = await run(target, 'create_diagram', {
-      documentId, dsl: '%% ofk 1\nflowchart\n\n  Client [blue] -> API [emerald]\n  API -> Store [cylinder, red]',
+      documentId, dsl: '%% canvas 1\nflowchart\n\n  Client [blue] -> API [emerald]\n  API -> Store [cylinder, red]',
     });
     expect(diagram).toMatchObject({ family: 'flowchart', nodes: 3, connectors: 2 });
     const frameId = diagram.frameId as string;
@@ -127,7 +127,7 @@ describe('op tools', () => {
     expect(String(read.dsl)).toContain('Client [blue]');
 
     const updated = await run(target, 'update_diagram', {
-      documentId, frameId, dsl: '%% ofk 1\nflowchart\n\n  Client -> API -> Store -> Cache',
+      documentId, frameId, dsl: '%% canvas 1\nflowchart\n\n  Client -> API -> Store -> Cache',
     });
     expect(updated).toMatchObject({ frameId, nodes: 4, connectors: 3 });
 
@@ -208,7 +208,7 @@ describe('op tools', () => {
     const created = await call(target, 'openflow_create', { name: 'Confined' });
     const dir = await mkdtemp(join(process.cwd(), '.tmp-ops-'));
     tempDirs.push(dir);
-    const outside = await mkdtemp(join(tmpdir(), 'openflowkit-outside-'));
+    const outside = await mkdtemp(join(tmpdir(), 'canvas-outside-'));
     tempDirs.push(outside);
     await symlink(outside, join(dir, 'link'));
 
@@ -218,9 +218,9 @@ describe('op tools', () => {
       .rejects.toThrow(/inside the server's working directory/);
     expect(existsSync(join(outside, 'x.openflow.json'))).toBe(false);
     await expect(call(target, 'openflow_save', { documentId: created.id, path: join(dir, '.zshrc') }))
-      .rejects.toThrow(/\.openflow\.json, \.ofk or \.json/);
+      .rejects.toThrow(/\.openflow\.json, \.canvas or \.json/);
     expect(existsSync(join(dir, '.zshrc'))).toBe(false);
-    for (const name of ['a.openflow.json', 'b.ofk', 'c.json']) {
+    for (const name of ['a.openflow.json', 'b.canvas', 'c.json']) {
       await call(target, 'openflow_save', { documentId: created.id, path: join(dir, name) });
       expect(existsSync(join(dir, name))).toBe(true);
     }
@@ -229,7 +229,7 @@ describe('op tools', () => {
   it('export path refuses a symlink that leads outside the working directory', async () => {
     const dir = await mkdtemp(join(process.cwd(), '.tmp-ops-'));
     tempDirs.push(dir);
-    const outside = await mkdtemp(join(tmpdir(), 'openflowkit-outside-'));
+    const outside = await mkdtemp(join(tmpdir(), 'canvas-outside-'));
     tempDirs.push(outside);
     await symlink(outside, join(dir, 'link'));
     const bridge = {
@@ -269,7 +269,7 @@ describe('op tools', () => {
 
   it('validates DSL with the real parser and reports diagnostics', async () => {
     const target = await client();
-    const good = await call(target, 'validate_openflow_dsl', { dsl: '%% ofk 1\nflowchart\n\n  A -> B\n' });
+    const good = await call(target, 'validate_openflow_dsl', { dsl: '%% canvas 1\nflowchart\n\n  A -> B\n' });
     expect(good).toMatchObject({ ok: true, family: 'flowchart', reservedFamily: false, statements: 1 });
 
     const empty = await call(target, 'validate_openflow_dsl', { dsl: '   ' });
@@ -319,7 +319,7 @@ describe('op tools', () => {
     const calls: { op: string; input: unknown }[] = [];
     const bridge = {
       connected: true,
-      health: () => ({ ok: true, protocol: 1, name: 'openflowkit', version: '0.0.0', connected: true, documentId: 'live-doc', documentName: 'Live', pageId: 'p1', pages: [{ pageId: 'p1', name: 'Page 1', nodes: 1, connectors: 0 }], lastSeenMs: 5 }),
+      health: () => ({ ok: true, protocol: 1, name: 'canvas', version: '0.0.0', connected: true, documentId: 'live-doc', documentName: 'Live', pageId: 'p1', pages: [{ pageId: 'p1', name: 'Page 1', nodes: 1, connectors: 0 }], lastSeenMs: 5 }),
       status: () => ({ port: 43119, state: 'paired' }),
       retryPort: async () => undefined,
       call: async (op: string, input: unknown) => { calls.push({ op, input }); return { frameId: 'dsl-live' }; },

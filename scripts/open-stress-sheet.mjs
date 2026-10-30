@@ -5,7 +5,7 @@ import path from 'node:path';
 import { chromium } from '@playwright/test';
 
 const URL = 'http://127.0.0.1:4173';
-const profileDir = path.join(os.tmpdir(), 'ofk-stress-profile');
+const profileDir = path.join(os.tmpdir(), 'canvas-stress-profile');
 
 const entries = [
   ['stress/everything.json', 'Everything — all shapes & diagram types'],

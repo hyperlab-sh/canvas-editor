@@ -46,8 +46,8 @@ interface V2AssistantOptions {
   readonly announce: (message: string) => void;
 }
 
-const STORE = 'openflowkit-v2-assistant:';
-const THINK = 'openflowkit-v2-assistant-think';
+const STORE = 'canvas-v2-assistant:';
+const THINK = 'canvas-v2-assistant-think';
 const HISTORY_TURNS = 12;
 // Characters of diagram text sent inline when the model can read the rest itself.
 const INLINE_DSL = 12_000;

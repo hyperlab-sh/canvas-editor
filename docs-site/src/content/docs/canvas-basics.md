@@ -1,6 +1,6 @@
 ---
 title: Canvas basics
-description: Select, move, resize, arrange and recover — the direct-manipulation half of OpenFlowKit.
+description: Select, move, resize, arrange and recover — the direct-manipulation half of Canvas.
 ---
 
 The canvas is direct manipulation: everything you can do with a mouse has a keyboard form,

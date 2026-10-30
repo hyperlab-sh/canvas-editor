@@ -25,7 +25,7 @@ async function write(root: string, relative: string, content: string): Promise<v
 }
 
 async function fixture(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), 'openflowkit-cli-'));
+  const root = await mkdtemp(join(tmpdir(), 'canvas-cli-'));
   tempDirs.push(root);
   await write(root, 'docker-compose.yml', 'services:\n  api:\n    image: fixture/api:1\n  db:\n    image: postgres:16\n');
   await write(root, 'api/package.json', JSON.stringify({ name: 'fixture-api', dependencies: { express: '^4' } }, null, 2));
@@ -34,7 +34,7 @@ async function fixture(): Promise<string> {
   return root;
 }
 
-describe('openflowkit CLI', () => {
+describe('canvas CLI', () => {
   it('discovers, writes a compiling model, and reports clean drift', async () => {
     const root = await fixture();
     const discover = capture();
@@ -43,7 +43,7 @@ describe('openflowkit CLI', () => {
     const workspace = await compileWorkspace(dsl);
     expect(workspace.views.flatMap((view) => view.result.diagnostics)).toEqual([]);
 
-    const modelPath = join(root, 'architecture.ofk');
+    const modelPath = join(root, 'architecture.canvas');
     const writeOut = capture();
     expect(await main(['discover', root, '--out', modelPath], writeOut.io)).toBe(0);
     expect(writeOut.out.join('\n')).toContain('wrote');
@@ -52,7 +52,7 @@ describe('openflowkit CLI', () => {
     expect(written).toMatch(/^\s*view container of /m);
 
     // --out creates missing folders instead of failing.
-    const nested = join(root, 'docs', 'architecture', 'workspace.ofk');
+    const nested = join(root, 'docs', 'architecture', 'workspace.canvas');
     expect(await main(['discover', root, '--out', nested], capture().io)).toBe(0);
     expect(await readFile(nested, 'utf8')).toContain('architecture');
 
@@ -63,7 +63,7 @@ describe('openflowkit CLI', () => {
 
   it('exits 1 on drift and 2 on usage or IO errors', async () => {
     const root = await fixture();
-    const modelPath = join(root, 'architecture.ofk');
+    const modelPath = join(root, 'architecture.canvas');
     await main(['discover', root, '--out', modelPath], capture().io);
 
     await write(root, 'docker-compose.yml', 'services:\n  api:\n    image: fixture/api:1\n  cache:\n    image: redis:7\n');
@@ -73,7 +73,7 @@ describe('openflowkit CLI', () => {
     expect(report.drift).toBe(true);
     expect(report.missing.map((finding) => finding.name)).toContain('cache');
 
-    expect(await main(['drift', root, '--model', join(root, 'missing.ofk')], capture().io)).toBe(2);
+    expect(await main(['drift', root, '--model', join(root, 'missing.canvas')], capture().io)).toBe(2);
     expect(await main(['build', join(root, 'nowhere')], capture().io)).toBe(2);
 
     const unknown = capture();
@@ -92,7 +92,7 @@ describe('openflowkit CLI', () => {
       const run = capture();
       expect(await main([command, '--help'], run.io), command).toBe(0);
       const text = run.out.join('\n');
-      expect(text, command).toContain(`openflowkit ${command}`);
+      expect(text, command).toContain(`canvas ${command}`);
       // Node's parseArgs text ("To specify a positional argument…") never leaks, and it is not the whole manual.
       expect(text, command).not.toMatch(/positional argument|Exit codes/);
       expect(run.err, command).toEqual([]);
@@ -100,12 +100,12 @@ describe('openflowkit CLI', () => {
     expect((await (async () => { const run = capture(); await main(['map', '--help'], run.io); return run.out.join('\n'); })())).toContain('--depth');
     const version = capture();
     expect(await main(['--version'], version.io)).toBe(0);
-    expect(version.out).toEqual([expect.stringMatching(/^openflowkit \d+\.\d+\.\d+$/)]);
+    expect(version.out).toEqual([expect.stringMatching(/^canvas \d+\.\d+\.\d+$/)]);
   });
 
   it('builds a self-contained site with views, model and flows', async () => {
     const root = await fixture();
-    const modelPath = join(root, 'architecture.ofk');
+    const modelPath = join(root, 'architecture.canvas');
     await main(['discover', root, '--out', modelPath], capture().io);
     const model = await readFile(modelPath, 'utf8');
     await writeFile(modelPath, `${model}\nflow "Checkout" {\n  step api -> db : write\n}\n`, 'utf8');
@@ -140,19 +140,19 @@ describe('openflowkit CLI', () => {
 
   it('discover --out writes the SVG beside the model by default, and --no-svg skips it', async () => {
     const root = await fixture();
-    const on = join(root, 'on', 'architecture.ofk');
+    const on = join(root, 'on', 'architecture.canvas');
     expect(await main(['discover', root, '--out', on], capture().io)).toBe(0);
     expect(await readFile(join(root, 'on', 'architecture.svg'), 'utf8')).toMatch(/^<svg /);
-    const off = join(root, 'off', 'architecture.ofk');
+    const off = join(root, 'off', 'architecture.canvas');
     expect(await main(['discover', root, '--out', off, '--no-svg'], capture().io)).toBe(0);
     expect(existsSync(off)).toBe(true);
     expect(existsSync(join(root, 'off', 'architecture.svg'))).toBe(false);
   });
 
   it('draws icon art in the built views, the way the editor does', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'openflowkit-cli-icons-'));
+    const root = await mkdtemp(join(tmpdir(), 'canvas-cli-icons-'));
     tempDirs.push(root);
-    await writeFile(join(root, 'architecture.ofk'), 'architecture\n  API [aws/lambda] -> Orders [postgres]\n', 'utf8');
+    await writeFile(join(root, 'architecture.canvas'), 'architecture\n  API [aws/lambda] -> Orders [postgres]\n', 'utf8');
     const outDir = join(root, 'site');
     expect(await main(['build', root, '--out', outDir], capture().io)).toBe(0);
     const [view] = await readdir(join(outDir, 'views'));

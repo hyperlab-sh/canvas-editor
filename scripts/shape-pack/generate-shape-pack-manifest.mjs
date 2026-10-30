@@ -68,7 +68,7 @@ async function main() {
   const packId = args[2] ?? 'official-pack-v1';
   const packName = args[3] ?? 'Official Pack';
   const packVersion = args[4] ?? '1.0.0';
-  const packAuthor = args[5] ?? 'OpenFlowKit';
+  const packAuthor = args[5] ?? 'Canvas';
 
   if (!sourceDir || !outputPath) {
     console.error(

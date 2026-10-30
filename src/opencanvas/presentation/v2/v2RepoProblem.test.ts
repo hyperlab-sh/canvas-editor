@@ -13,7 +13,7 @@ describe('describeRepoError', () => {
   it('a private repo the token cannot read asks for one that can, points at the CLI, and offers no plain retry', () => {
     const view = describeRepoError(new RepoError({ kind: 'private' }, 'The token cannot read it.'), 'discover');
     expect(view).toMatchObject({ retry: false, title: 'This repo is private.', askToken: true });
-    expect(view.detail).toContain('openflowkit discover .');
+    expect(view.detail).toContain('canvas discover .');
   });
 
   it('not found may be private: the address comes back and a token is one click away', () => {

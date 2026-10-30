@@ -184,7 +184,7 @@ describe('v2 document repository', () => {
     });
     const failure = await createV2Repository(indexedDB).loadDocument('document-1').catch((error: unknown) => error);
     expect(failure).toBeInstanceOf(V2StorageBlockedError);
-    expect(describeStorageFailure(failure).message).toContain('Close other OpenFlowKit tabs');
+    expect(describeStorageFailure(failure).message).toContain('Close other Canvas tabs');
     // Retry while it is still open says the same at once, instead of queueing behind the blocked open.
     await expect(createV2Repository(indexedDB).loadDocument('document-1')).rejects.toBeInstanceOf(V2StorageBlockedError);
     old.close();

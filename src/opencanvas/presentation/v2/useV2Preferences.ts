@@ -33,7 +33,7 @@ export interface V2Preferences {
   /** Per browser: comments (`documentId:commentId`) already sent to the agent. */
   threadSent: string[];
 }
-const KEY = 'openflowkit-v2-preferences';
+const KEY = 'canvas-v2-preferences';
 /** Pairing secret: the copied MCP config carries it, so the bridge is token-gated without typing. */
 function freshBridgeToken(): string {
   return Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => byte.toString(16).padStart(2, '0')).join('');

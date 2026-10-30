@@ -150,14 +150,14 @@ export function Dropdown({
   }
 
   return (
-    <div className={`ofk-dropdown ${className}`} data-hide-label={hideLabel || undefined}>
-      <span className="ofk-dropdown-label" id={`${listId}-label`}>
+    <div className={`canvas-dropdown ${className}`} data-hide-label={hideLabel || undefined}>
+      <span className="canvas-dropdown-label" id={`${listId}-label`}>
         {label}
       </span>
       <button
         ref={triggerRef}
         type="button"
-        className="ofk-dropdown-trigger"
+        className="canvas-dropdown-trigger"
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-labelledby={`${listId}-label ${listId}-trigger`}
@@ -172,13 +172,13 @@ export function Dropdown({
           }
         }}
       >
-        <span id={`${listId}-trigger`} className="ofk-dropdown-value" data-placeholder={selected ? undefined : true}>
+        <span id={`${listId}-trigger`} className="canvas-dropdown-value" data-placeholder={selected ? undefined : true}>
           {selected?.icon}
           {selected ? selected.label : placeholder}
         </span>
         <Icon icon={IconChevronDown} />
       </button>
-      <Popover open={open} anchorRef={triggerRef as RefObject<HTMLElement | null>} onClose={close} placement="bottom-start" className="ofk-dropdown-list-wrap">
+      <Popover open={open} anchorRef={triggerRef as RefObject<HTMLElement | null>} onClose={close} placement="bottom-start" className="canvas-dropdown-list-wrap">
         <div
           ref={listRef}
           role="listbox"
@@ -186,7 +186,7 @@ export function Dropdown({
           aria-label={label}
           aria-activedescendant={active ? `${listId}-${active}` : undefined}
           tabIndex={0}
-          className="ofk-dropdown-list"
+          className="canvas-dropdown-list"
           style={width ? { minWidth: width } : undefined}
           onKeyDown={onKeyDown}
           onMouseLeave={() => setActive(selected?.value ?? null)}
@@ -203,15 +203,15 @@ export function Dropdown({
               aria-selected={option.value === value}
               aria-disabled={option.disabled || undefined}
               data-active={option.value === active || undefined}
-              className="ofk-menu-item"
+              className="canvas-menu-item"
               onClick={() => commit(option.value)}
               onMouseEnter={() => !option.disabled && setActive(option.value)}
             >
-              <span className="ofk-menu-item-lead" aria-hidden="true">
+              <span className="canvas-menu-item-lead" aria-hidden="true">
                 {option.value === value ? <Icon icon={IconCheck} /> : (option.icon ?? null)}
               </span>
-              <span className="ofk-menu-item-label">{option.label}</span>
-              {option.hint && <span className="ofk-caption">{option.hint}</span>}
+              <span className="canvas-menu-item-label">{option.label}</span>
+              {option.hint && <span className="canvas-caption">{option.hint}</span>}
             </div>
           ))}
         </div>

@@ -321,7 +321,7 @@ describe('live bridge', () => {
     expect(instructions).toContain(CONNECT_URL);
     expect(instructions).toMatch(/live on that canvas/);
     expect(instructions).toMatch(/file mode: openflow_create/);
-    expect(NOT_PAIRED).toBe('No editor is paired. Ask the user to open https://app.openflowkit.com/#/connect and press Connect, then call again; or use file mode (openflow_create, or openflow_open with a .openflow.json path).');
+    expect(NOT_PAIRED).toBe('No editor is paired. Ask the user to open https://canvas.hyperlab.sh/#/connect and press Connect, then call again; or use file mode (openflow_create, or openflow_open with a .openflow.json path).');
   });
 });
 
@@ -360,7 +360,7 @@ function raw(port: number, method: string, path: string, headers: Record<string,
   });
 }
 
-const OLD_HEALTH = { ok: true, protocol: 1, name: 'openflowkit', version: '0.2.4', connected: false, documentId: null, documentName: null, pageId: null, pages: [], lastSeenMs: null };
+const OLD_HEALTH = { ok: true, protocol: 1, name: 'canvas', version: '0.2.4', connected: false, documentId: null, documentName: null, pageId: null, pages: [], lastSeenMs: null };
 
 // Audit F1 2026-10-13: every agent session starts a server; only the first got the port, the rest were file-only.
 describe('many agents, one canvas', () => {
@@ -372,7 +372,7 @@ describe('many agents, one canvas', () => {
     const port = await bridge.start();
     guest = new LiveBridge({ port, log: () => undefined });
     await expect(guest.start()).resolves.toBe(port);
-    expect(guest.status()).toEqual({ port, state: 'shared', shared: { side: 'guest', holder: 'openflowkit 0.2.4', editorPaired: false } });
+    expect(guest.status()).toEqual({ port, state: 'shared', shared: { side: 'guest', holder: 'canvas 0.2.4', editorPaired: false } });
     const tool = await agentOn(guest, 'cursor');
     // Nobody paired yet: the guest says what to do, like any server.
     expect(await tool('list_pages')).toEqual({ isError: true, text: NOT_PAIRED });

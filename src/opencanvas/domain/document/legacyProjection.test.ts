@@ -119,7 +119,7 @@ describe('legacy document projection', () => {
   it('leaves the input untouched and stores no copy of the v1 document', () => {
     const input = createLegacyDocument();
     const before = structuredClone(input);
-    const document = projectLegacyDocument(input, { ...options, pageExtensions: { 'openflowkit.legacy.document': input, keep: 1 } });
+    const document = projectLegacyDocument(input, { ...options, pageExtensions: { 'canvas.legacy.document': input, keep: 1 } });
 
     expect(input).toEqual(before);
     expect(document.extensions).toEqual({});
@@ -136,7 +136,7 @@ describe('legacy document projection', () => {
     );
     const node = document.pages[0].nodes[0];
 
-    expect(document.name).toBe('OpenFlowKit Diagram');
+    expect(document.name).toBe('Canvas Diagram');
     expect(document.createdAt).toBe(options.now);
     expect(node.kind).toBe('custom');
     expect(node.transform.translation).toEqual({ x: 0, y: 0 });

@@ -2,7 +2,7 @@
 -- so storage grows with people, not page loads, and a repeat beacon writes one row, no index entries. The day's first
 -- beacon keeps source, entry, version and country. `beacons` counts the requests. Also `usage_daily`: the cron
 -- (worker/index.ts pruneUsage) folds days past the 100-day window into one row each, then drops their detail rows.
--- Apply BEFORE deploying the Worker: npx wrangler d1 migrations apply openflowkit-data --remote
+-- Apply BEFORE deploying the Worker: npx wrangler d1 migrations apply canvas-data --remote
 CREATE TABLE sessions_by_day (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   received_at TEXT NOT NULL,

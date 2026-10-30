@@ -1,5 +1,5 @@
 // The boxes a reader left open on a Map-mode page, kept in this browser only (never in the document or undo).
-const openKey = (documentId: string, pageId: string): string => `ofk.map-open:${documentId}:${pageId}`;
+const openKey = (documentId: string, pageId: string): string => `canvas.map-open:${documentId}:${pageId}`;
 const MAX_OPEN_IDS = 2000;
 
 /** The saved open ids, or null when nothing usable is stored (missing, garbled, blocked storage). Unknown ids are pruned by the caller. */
@@ -16,7 +16,7 @@ export function saveOpen(documentId: string, pageId: string, open: ReadonlySet<s
 }
 
 // Canvas or Map, as the reader last chose it for a document: this browser only, never the document or undo.
-const modeKey = (documentId: string): string => `ofk.map-mode:${documentId}`;
+const modeKey = (documentId: string): string => `canvas.map-mode:${documentId}`;
 
 // A saved 'map' stays dormant while the document has no model (Map is not available there); it applies once one exists.
 export function savedMode(documentId: string): 'canvas' | 'map' | null {
@@ -31,7 +31,7 @@ export function saveMode(documentId: string, mode: 'canvas' | 'map'): void {
 }
 
 // The drawing a map was last left for: its Canvas goes back there after a reload too, not to whichever copy is newest.
-const drawingKey = (documentId: string, pageId: string): string => `ofk.map-drawing:${documentId}:${pageId}`;
+const drawingKey = (documentId: string, pageId: string): string => `canvas.map-drawing:${documentId}:${pageId}`;
 
 export function savedDrawing(documentId: string, pageId: string): string | null {
   try { return localStorage.getItem(drawingKey(documentId, pageId)); } catch { return null; }
@@ -41,7 +41,7 @@ export function saveDrawing(documentId: string, pageId: string, drawingId: strin
   try { localStorage.setItem(drawingKey(documentId, pageId), drawingId); } catch { /* storage blocked: this visit only */ }
 }
 
-const seenKey = (documentId: string): string => `ofk.map-seen:${documentId}`;
+const seenKey = (documentId: string): string => `canvas.map-seen:${documentId}`;
 
 /** True the first time a document's map is entered in this browser (then never again): its overview opens once. */
 export function firstMapVisit(documentId: string): boolean {

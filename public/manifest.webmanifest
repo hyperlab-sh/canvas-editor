@@ -1,6 +1,6 @@
 {
-  "name": "OpenFlowKit",
-  "short_name": "OpenFlowKit",
+  "name": "Canvas",
+  "short_name": "Canvas",
   "description": "Free, open-source architecture diagrams you draw, write as code, or hand to your AI agent.",
   "start_url": "/index.html#/home",
   "display": "standalone",
@@ -8,7 +8,7 @@
   "theme_color": "#e95420",
   "icons": [
     {
-      "src": "/Logo_openflowkit.svg",
+      "src": "/logo-canvas.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

@@ -67,7 +67,7 @@ async function markdownFiles(dir: string): Promise<string[]> {
 /** The same document shape the golden export test builds; nothing extra. */
 function documentFrom(compiled: CompileResult, id: string, name: string): SceneDocumentV1 {
   return {
-    format: 'openflowkit.scene', schemaVersion: 1, id, name,
+    format: 'canvas.scene', schemaVersion: 1, id, name,
     createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z',
     pages: [{
       id: 'page-1', name: 'Page 1', diagramKind: compiled.meta.family,

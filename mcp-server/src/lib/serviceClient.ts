@@ -26,7 +26,7 @@ export interface ServiceProject {
 }
 
 export interface ServiceOptions {
-  /** Service base URL; defaults to OPENFLOWKIT_SERVICE_URL, else http://127.0.0.1:43120. */
+  /** Service base URL; defaults to CANVAS_SERVICE_URL, else http://127.0.0.1:43120. */
   readonly url?: string;
   /** The MCP client's name, known only after initialize. */
   readonly clientName: () => string | undefined;
@@ -61,7 +61,7 @@ export class ServiceClient {
   private closed = false;
 
   constructor(options: ServiceOptions) {
-    this.url = (options.url ?? process.env.OPENFLOWKIT_SERVICE_URL ?? DEFAULT_SERVICE_URL).replace(/\/+$/, '');
+    this.url = (options.url ?? process.env.CANVAS_SERVICE_URL ?? DEFAULT_SERVICE_URL).replace(/\/+$/, '');
     this.clientName = options.clientName;
     this.log = options.log ?? ((message) => console.error(message));
   }
@@ -72,15 +72,15 @@ export class ServiceClient {
 
   /** What the operator reads when the port answers as something else (R-5). */
   private foreignMessage(): string {
-    return `Port ${this.port} is in use by something that is not the OpenFlowKit service. `
-      + `Change "port" in the service config (~/.config/openflowkit/service.json) and set OPENFLOWKIT_SERVICE_URL to match, or free the port.`;
+    return `Port ${this.port} is in use by something that is not the Canvas service. `
+      + `Change "port" in the service config (~/.config/canvas/service.json) and set CANVAS_SERVICE_URL to match, or free the port.`;
   }
 
   private async health(): Promise<Health> {
     try {
       const reply = await fetch(`${this.url}/health`, { signal: AbortSignal.timeout(2000) });
       const body = await reply.json() as { service?: unknown; pid?: unknown };
-      return body.service === 'openflowkit-service' && typeof body.pid === 'number' ? { state: 'up', pid: body.pid } : { state: 'foreign' };
+      return body.service === 'canvas-service' && typeof body.pid === 'number' ? { state: 'up', pid: body.pid } : { state: 'foreign' };
     } catch (error) {
       // A reply that is not JSON came from another program; no reply at all means nothing listens.
       return error instanceof SyntaxError ? { state: 'foreign' } : { state: 'down' };
@@ -94,10 +94,10 @@ export class ServiceClient {
       const child = spawn(command, args, { cwd, detached: true, stdio: 'ignore' });
       // `serve` exits 1 only for a port held by another program; any other code or a spawn error is a different problem.
       let failure: string | null = null;
-      child.once('error', (error) => { failure = `Could not start the OpenFlowKit service (${error.message}).`; });
+      child.once('error', (error) => { failure = `Could not start the Canvas service (${error.message}).`; });
       child.once('exit', (code) => {
         if (code === 1) failure = this.foreignMessage();
-        else if (code) failure = `The OpenFlowKit service exited with code ${code}. Run "openflowkit serve" to see why.`;
+        else if (code) failure = `The Canvas service exited with code ${code}. Run "canvas serve" to see why.`;
       });
       child.unref();
       const deadline = Date.now() + START_WAIT_MS;
@@ -108,7 +108,7 @@ export class ServiceClient {
         if (failure !== null) throw new Error(failure);
         await sleep(POLL_MS);
       }
-      throw new Error(`The OpenFlowKit service did not answer on ${this.url} within ${START_WAIT_MS / 1000} s. Run "openflowkit serve" to see why.`);
+      throw new Error(`The Canvas service did not answer on ${this.url} within ${START_WAIT_MS / 1000} s. Run "canvas serve" to see why.`);
     })().finally(() => { this.starting = null; });
     return this.starting;
   }
@@ -121,7 +121,7 @@ export class ServiceClient {
     let health = await this.health();
     if (health.state === 'foreign') throw new Error(this.foreignMessage());
     if (health.state === 'down') {
-      if (!start) throw new Error('The OpenFlowKit service is not running.');
+      if (!start) throw new Error('The Canvas service is not running.');
       await this.start();
       health = await this.health();
     }
@@ -205,7 +205,7 @@ export class ServiceClient {
       while (!this.closed && !controller.signal.aborted && this.sessionId === sessionId) {
         try {
           const reply = await fetch(`${this.url}/sessions/${sessionId}/events?wait=${EVENT_WAIT_S}`, { signal: controller.signal });
-          if (broken) this.log('openflowkit: service event stream is back.');
+          if (broken) this.log('canvas: service event stream is back.');
           broken = false;
           if (reply.status === 200) {
             const { events } = await reply.json() as { events: BridgeThreadEvent[] };
@@ -217,7 +217,7 @@ export class ServiceClient {
         } catch (error) {
           if (controller.signal.aborted) return;
           // Once per outage, not once per retry.
-          if (!broken) this.log(`openflowkit: service event stream broke: ${error instanceof Error ? error.message : String(error)}`);
+          if (!broken) this.log(`canvas: service event stream broke: ${error instanceof Error ? error.message : String(error)}`);
           broken = true;
           await sleep(RETRY_MS);
         }
