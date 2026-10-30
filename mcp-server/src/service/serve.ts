@@ -41,7 +41,7 @@ const isLoopback = (host: string): boolean => /^(127\.|::1$|::ffff:127\.)/i.test
 /** What a client on this machine types to reach a socket bound to `host`. */
 function urlHost(host: string): string {
   if (host === '0.0.0.0') return DEFAULT_HOST;
-  if (host === '::' ) return '[::1]';
+  if (host === '::') return '[::1]';
   return isIP(host) === 6 ? `[${host}]` : host;
 }
 
@@ -80,9 +80,9 @@ export async function startService(options: StartOptions): Promise<RunningServic
 }
 
 /** True when `/health` on the port answers as an OpenFlowKit service. */
-async function isOurService(port: number): Promise<boolean> {
+async function isOurService(host: string, port: number): Promise<boolean> {
   try {
-    const reply = await fetch(`http://127.0.0.1:${port}/health`, { signal: AbortSignal.timeout(2000) });
+    const reply = await fetch(`http://${urlHost(host)}:${port}/health`, { signal: AbortSignal.timeout(2000) });
     return ((await reply.json()) as { service?: unknown }).service === 'openflowkit-service';
   } catch {
     return false;
@@ -130,9 +130,14 @@ export async function runServe(args: readonly string[], io: CliIo, onStart?: (se
     onStart?.(service);
     return 0;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'EADDRINUSE') throw error;
-    if (await isOurService(port)) {
-      io.out(`${CLI_NAME} service is already running on http://127.0.0.1:${port}`);
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === 'EADDRNOTAVAIL' || code === 'EAFNOSUPPORT') {
+      io.err(`${CLI_NAME} serve: cannot bind ${host}: no interface on this machine has that address.`);
+      return 2;
+    }
+    if (code !== 'EADDRINUSE') throw error;
+    if (await isOurService(host, port)) {
+      io.out(`${CLI_NAME} service is already running on http://${urlHost(host)}:${port}`);
       return 0;
     }
     io.err(`${CLI_NAME} serve: port ${port} is in use by something that is not an OpenFlowKit service. Free it, or pick another with --port or the config file.`);

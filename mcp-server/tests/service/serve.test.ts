@@ -135,6 +135,8 @@ describe('openflowkit serve', () => {
 /** First non-loopback IPv4 address of this machine, if it has one. */
 const externalIp = Object.values(networkInterfaces()).flat().find((a) => a?.family === 'IPv4' && !a.internal)?.address;
 
+const hasIpv6 = Object.values(networkInterfaces()).flat().some((a) => a?.family === 'IPv6' && a.address === '::1');
+
 /** fetch forbids overriding Host; node:http does not. */
 function getHealth(ip: string, port: number, host: string): Promise<{ status: number; body: string }> {
   return new Promise((resolve, reject) => {
@@ -187,13 +189,15 @@ describe('openflowkit serve --host', () => {
   });
 
   it('binds the variable\'s address when there is no flag', async () => {
-    const { service, err } = await serveWith([], '0.0.0.0');
+    const { code, service, err } = await serveWith([], '0.0.0.0');
+    expect(code).toBe(0);
     expect(service!.address).toBe('0.0.0.0');
     expect(err).toHaveLength(1);
   });
 
   it('lets the flag win over the variable', async () => {
-    const { service, err } = await serveWith(['--host', '127.0.0.1'], '0.0.0.0');
+    const { code, service, err } = await serveWith(['--host', '127.0.0.1'], '0.0.0.0');
+    expect(code).toBe(0);
     expect(service!.address).toBe('127.0.0.1');
     expect(err).toEqual([]);
   });
@@ -215,6 +219,30 @@ describe('openflowkit serve --host', () => {
     const { code, err } = await serveWith(['--host']);
     expect(code).toBe(2);
     expect(err[0]).toContain('--host needs a value');
+  });
+
+  it('refuses Host: evil.example with 403 under a 0.0.0.0 bind and answers a loopback Host', async () => {
+    const { service } = await serveWith(['--host', '0.0.0.0']);
+    expect((await getHealth('127.0.0.1', service!.port, 'evil.example')).status).toBe(403);
+    const ok = await getHealth('127.0.0.1', service!.port, `127.0.0.1:${service!.port}`);
+    expect(ok.status).toBe(200);
+    expect(JSON.parse(ok.body).host).toBe('0.0.0.0');
+  });
+
+  it('exits 2 saying no interface has the address when it is not on this machine', async () => {
+    const { code, service, out, err } = await serveWith(['--host', '192.0.2.1']);
+    expect(code).toBe(2);
+    expect(service).toBeUndefined();
+    expect(out).toEqual([]);
+    expect(err).toEqual(['openflowkit serve: cannot bind 192.0.2.1: no interface on this machine has that address.']);
+  });
+
+  it.skipIf(!hasIpv6)('binds :: with a [::1] url and one warning', async () => {
+    const { code, service, err } = await serveWith(['--host', '::']);
+    expect(code).toBe(0);
+    expect(service!.address).toBe('::');
+    expect(service!.url).toBe(`http://[::1]:${service!.port}`);
+    expect(err).toHaveLength(1);
   });
 
   it.skipIf(!externalIp)('answers on a non-loopback interface for a loopback Host, and refuses any other Host with 403', async () => {

@@ -37,12 +37,12 @@ type Health = { readonly state: 'up'; readonly pid: number } | { readonly state:
 
 const sleep = (ms: number): Promise<void> => new Promise((done) => setTimeout(done, ms));
 
-/** `node <cli> serve`, from the compiled package or (in dev and tests) the TypeScript source through tsx. */
+/** `node <cli> serve`, always on loopback (the client polls 127.0.0.1), from the compiled package or (in dev and tests) the TypeScript source through tsx. */
 function serveCommand(port: string): { command: string; args: string[]; cwd: string } {
   const here = fileURLToPath(import.meta.url);
   const cli = resolve(dirname(here), '..', here.endsWith('.ts') ? 'cli.ts' : 'cli.js');
   const tsx = here.endsWith('.ts') ? ['--import', 'tsx'] : [];
-  return { command: process.execPath, args: [...tsx, cli, 'serve', '--port', port], cwd: resolve(dirname(here), '..', '..') };
+  return { command: process.execPath, args: [...tsx, cli, 'serve', '--port', port, '--host', '127.0.0.1'], cwd: resolve(dirname(here), '..', '..') };
 }
 
 export class ServiceClient {
