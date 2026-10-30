@@ -66,11 +66,11 @@ function rawGet(service: RunningService, path: string, headers: Record<string, s
 }
 
 describe('GET /health', () => {
-  it('names the service, version, bound port, projects and pid', async () => {
+  it('names the service, version, bound host and port, projects and pid', async () => {
     const { service } = await boot();
     const { status, json } = await call(service, 'GET', '/health');
     expect(status).toBe(200);
-    expect(json).toEqual({ ok: true, service: 'openflowkit-service', version: MCP_SERVER_VERSION, port: service.port, projects: ['alpha', 'beta'], pid: process.pid });
+    expect(json).toEqual({ ok: true, service: 'openflowkit-service', version: MCP_SERVER_VERSION, host: '127.0.0.1', port: service.port, projects: ['alpha', 'beta'], pid: process.pid });
     expect(service.port).toBeGreaterThan(0);
   });
 });
@@ -341,7 +341,7 @@ describe('request failures', () => {
     const sessions = createSessions();
     const store = { ...real, write: async (p: string, i: string) => ({ status: 'stale' as const, revision: 9, document: (await real.read(p, i)).document }) };
     const events = createEvents(store, sessions);
-    const server = createServer(createHandler({ config, store, sessions, events, appDir: '/nonexistent', port: () => 0 }));
+    const server = createServer(createHandler({ config, store, sessions, events, appDir: '/nonexistent', port: () => 0, host: () => '127.0.0.1' }));
     await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
     try {
       const { port } = server.address() as { port: number };

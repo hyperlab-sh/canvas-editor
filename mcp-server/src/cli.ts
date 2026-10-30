@@ -58,7 +58,7 @@ ${OP_USAGE}
   ${CLI_NAME} build <dir> [--out dist]
   ${CLI_NAME} map <dir> [--depth overview|detailed|everything] [--html out.html]
   ${CLI_NAME} mcp
-  ${CLI_NAME} serve [--port N] [--config path] [--app dir]
+  ${CLI_NAME} serve [--port N] [--host addr] [--config path] [--app dir]
 
 Commands:
 ${OP_COMMANDS}
@@ -80,6 +80,7 @@ Options:
   --name <name>   discover: system name (default: directory name)
   --max-files <n> discover/drift: cap on files scanned (default: 2000)
   --port <n>      serve: port (default: the config's, 43120)
+  --host <addr>   serve: bind address (default: OPENFLOWKIT_SERVICE_HOST, else 127.0.0.1); a non-loopback address has no authentication
   --config <path> serve: service config file (default: OPENFLOWKIT_SERVICE_CONFIG, else ~/.config/openflowkit/service.json)
   --app <dir>     serve: the built app to serve (default: OPENFLOWKIT_APP_DIR, else <repo>/dist)
   --help          this text; <command> --help for one command's

@@ -22,6 +22,8 @@ export interface ServiceDeps {
   readonly appDir: string;
   /** The port the server is bound to; read per request because port 0 is only known after listen. */
   readonly port: () => number;
+  /** The address the server is bound to. */
+  readonly host: () => string;
 }
 
 export interface RouteContext {
@@ -139,7 +141,7 @@ export function buildRoutes(): Route[] {
       method: 'GET', path: '/health',
       handle: async ({ deps }) => ({
         status: 200,
-        json: { ok: true, service: 'openflowkit-service', version: MCP_SERVER_VERSION, port: deps.port(), projects: deps.config.projects.map((p) => p.name), pid: process.pid },
+        json: { ok: true, service: 'openflowkit-service', version: MCP_SERVER_VERSION, host: deps.host(), port: deps.port(), projects: deps.config.projects.map((p) => p.name), pid: process.pid },
       }),
     },
     {
