@@ -86,7 +86,7 @@ export async function openStream(service: RunningService, id: string) {
 /** The service handler over an injected store, on a real listening socket: for races a plain store cannot produce. */
 export async function serveWith(config: ServiceConfig, store: Store, sessions = createSessions()) {
   const events = createEvents(store, sessions);
-  const server = createServer(createHandler({ config, store, sessions, events, appDir: '/nonexistent', port: () => 0 }));
+  const server = createServer(createHandler({ config, store, sessions, events, appDir: '/nonexistent', port: () => 0, host: () => '127.0.0.1' }));
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address() as { port: number };
   return {

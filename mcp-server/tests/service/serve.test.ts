@@ -1,6 +1,8 @@
 import { createServer, type Server, type Socket } from 'node:net';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { request } from 'node:http';
+import { networkInterfaces } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadConfig } from '../../src/service/config.js';
 import { runServe } from '../../src/service/serve.js';
@@ -115,7 +117,7 @@ describe('openflowkit serve', () => {
     for (const [args, message] of [
       [['--port', 'abc'], 'serve: --port must be an integer from 0 to 65535, got "abc".'],
       [['--port'], 'serve: --port needs a value.'],
-      [['--wat', '1'], 'serve: unknown argument "--wat". Usage: openflowkit serve [--port N] [--config path] [--app dir]'],
+      [['--wat', '1'], 'serve: unknown argument "--wat". Usage: openflowkit serve [--port N] [--host addr] [--config path] [--app dir]'],
     ] as const) {
       const { io: sink, err } = io();
       expect(await runServe(args, sink)).toBe(2);
@@ -127,5 +129,100 @@ describe('openflowkit serve', () => {
     const service = await startService({ port: 0, config: await loadConfig(await configFile()), appDir: '/nonexistent' });
     closers.push(service.close);
     expect(service.address).toBe('127.0.0.1');
+  });
+});
+
+/** First non-loopback IPv4 address of this machine, if it has one. */
+const externalIp = Object.values(networkInterfaces()).flat().find((a) => a?.family === 'IPv4' && !a.internal)?.address;
+
+/** fetch forbids overriding Host; node:http does not. */
+function getHealth(ip: string, port: number, host: string): Promise<{ status: number; body: string }> {
+  return new Promise((resolve, reject) => {
+    const req = request({ host: ip, port, path: '/health', headers: { host } }, (res) => {
+      let body = '';
+      res.on('data', (chunk) => { body += chunk; });
+      res.on('end', () => resolve({ status: res.statusCode ?? 0, body }));
+    });
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+async function serveWith(args: string[], env?: string) {
+  const saved = process.env.OPENFLOWKIT_SERVICE_HOST;
+  if (env === undefined) delete process.env.OPENFLOWKIT_SERVICE_HOST;
+  else process.env.OPENFLOWKIT_SERVICE_HOST = env;
+  closers.push(async () => {
+    if (saved === undefined) delete process.env.OPENFLOWKIT_SERVICE_HOST;
+    else process.env.OPENFLOWKIT_SERVICE_HOST = saved;
+  });
+  const sink = io();
+  let service: RunningService | undefined;
+  const code = await runServe(['--port', '0', '--config', await configFile(), '--app', '/nonexistent', ...args], sink.io, (s) => { service = s; closers.push(s.close); });
+  return { code, service, out: sink.out, err: sink.err };
+}
+
+describe('openflowkit serve --host', () => {
+  it('binds 127.0.0.1 and prints no warning without the flag or the variable', async () => {
+    const { code, service, err } = await serveWith([]);
+    expect(code).toBe(0);
+    expect(service!.address).toBe('127.0.0.1');
+    expect(err).toEqual([]);
+    expect((await (await fetch(`${service!.url}/health`)).json()).host).toBe('127.0.0.1');
+  });
+
+  it('binds an explicit loopback address with no warning', async () => {
+    const { service, err } = await serveWith(['--host', '127.0.0.1']);
+    expect(service!.address).toBe('127.0.0.1');
+    expect(err).toEqual([]);
+  });
+
+  it('binds all interfaces for --host 0.0.0.0, warns once, and reports the host in /health', async () => {
+    const { code, service, err } = await serveWith(['--host', '0.0.0.0']);
+    expect(code).toBe(0);
+    expect(service!.address).toBe('0.0.0.0');
+    expect(err).toHaveLength(1);
+    expect(err[0]).toContain('no authentication');
+    expect((await (await fetch(`${service!.url}/health`)).json()).host).toBe('0.0.0.0');
+  });
+
+  it('binds the variable\'s address when there is no flag', async () => {
+    const { service, err } = await serveWith([], '0.0.0.0');
+    expect(service!.address).toBe('0.0.0.0');
+    expect(err).toHaveLength(1);
+  });
+
+  it('lets the flag win over the variable', async () => {
+    const { service, err } = await serveWith(['--host', '127.0.0.1'], '0.0.0.0');
+    expect(service!.address).toBe('127.0.0.1');
+    expect(err).toEqual([]);
+  });
+
+  it('fails at start naming the bad address, with exit 2 and nothing listening', async () => {
+    for (const args of [['--host', 'not-an-address'], ['--host', '']]) {
+      const { code, service, out, err } = await serveWith(args);
+      expect(code).toBe(2);
+      expect(service).toBeUndefined();
+      expect(out).toEqual([]);
+      expect(err[0]).toContain('is not an IP address');
+    }
+    const fromEnv = await serveWith([], '999.1.1.1');
+    expect(fromEnv.code).toBe(2);
+    expect(fromEnv.err[0]).toContain('"999.1.1.1"');
+  });
+
+  it('needs a value after --host', async () => {
+    const { code, err } = await serveWith(['--host']);
+    expect(code).toBe(2);
+    expect(err[0]).toContain('--host needs a value');
+  });
+
+  it.skipIf(!externalIp)('answers on a non-loopback interface for a loopback Host, and refuses any other Host with 403', async () => {
+    const { service } = await serveWith(['--host', '0.0.0.0']);
+    const ok = await getHealth(externalIp!, service!.port, `127.0.0.1:${service!.port}`);
+    expect(ok.status).toBe(200);
+    expect(JSON.parse(ok.body).host).toBe('0.0.0.0');
+    for (const host of [`localhost:${service!.port}`, `[::1]:${service!.port}`]) expect((await getHealth(externalIp!, service!.port, host)).status).toBe(200);
+    for (const host of ['evil.example', `${externalIp}:${service!.port}`]) expect((await getHealth(externalIp!, service!.port, host)).status).toBe(403);
   });
 });

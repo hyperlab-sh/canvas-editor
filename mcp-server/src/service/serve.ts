@@ -1,4 +1,5 @@
 import { createServer, type Server } from 'node:http';
+import { isIP } from 'node:net';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { CliIo } from '../cli.js';
@@ -19,6 +20,8 @@ export interface RunningService {
 
 export interface StartOptions {
   readonly port: number;
+  /** Address to bind; 127.0.0.1 when absent. */
+  readonly host?: string;
   readonly config: ServiceConfig;
   readonly appDir: string;
   /** Extra route rows, tried after the API's and before the app fallback. */
@@ -30,7 +33,19 @@ export interface StartOptions {
 /** `<mcp-server>/../dist`, from either src/service or dist/service. */
 const defaultAppDir = (): string => resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'dist');
 
-/** Binds 127.0.0.1 only. Rejects with the listen error (EADDRINUSE included). */
+const DEFAULT_HOST = '127.0.0.1';
+
+/** An IP literal that reaches only this machine: 127.0.0.0/8, ::1 and its IPv4-mapped form. */
+const isLoopback = (host: string): boolean => /^(127\.|::1$|::ffff:127\.)/i.test(host);
+
+/** What a client on this machine types to reach a socket bound to `host`. */
+function urlHost(host: string): string {
+  if (host === '0.0.0.0') return DEFAULT_HOST;
+  if (host === '::' ) return '[::1]';
+  return isIP(host) === 6 ? `[${host}]` : host;
+}
+
+/** Binds `options.host` (127.0.0.1 by default). Rejects with the listen error (EADDRINUSE included). */
 export async function startService(options: StartOptions): Promise<RunningService> {
   const { config } = options;
   const store = createStore(config);
@@ -38,10 +53,11 @@ export async function startService(options: StartOptions): Promise<RunningServic
   const events = createEvents(store, sessions);
   let bound = options.port;
   const table = [...buildRoutes(), ...(options.routes ?? [])];
-  const server: Server = createServer(createHandler({ config, store, sessions, events, appDir: resolve(options.appDir), port: () => bound }, table));
+  let host = options.host ?? DEFAULT_HOST;
+  const server: Server = createServer(createHandler({ config, store, sessions, events, appDir: resolve(options.appDir), port: () => bound, host: () => host }, table));
   await new Promise<void>((resolveListen, reject) => {
     server.once('error', reject);
-    server.listen(options.port, '127.0.0.1', () => {
+    server.listen(options.port, host, () => {
       server.off('error', reject);
       resolveListen();
     });
@@ -49,10 +65,11 @@ export async function startService(options: StartOptions): Promise<RunningServic
   const address = server.address();
   if (!address || typeof address !== 'object') throw new Error('The service socket has no address.');
   bound = address.port;
+  host = address.address;
   return {
     port: bound,
     address: address.address,
-    url: `http://127.0.0.1:${bound}`,
+    url: `http://${urlHost(host)}:${bound}`,
     close: () => new Promise<void>((done) => {
       sessions.close();
       events.close();
@@ -72,19 +89,20 @@ async function isOurService(port: number): Promise<boolean> {
   }
 }
 
-function parseArgs(args: readonly string[]): { port?: number; config?: string; app?: string } | string {
-  const out: { port?: number; config?: string; app?: string } = {};
+function parseArgs(args: readonly string[]): { port?: number; host?: string; config?: string; app?: string } | string {
+  const out: { port?: number; host?: string; config?: string; app?: string } = {};
   for (let i = 0; i < args.length; i += 1) {
     const flag = args[i];
     const value = args[i + 1];
-    if (flag !== '--port' && flag !== '--config' && flag !== '--app') return `serve: unknown argument "${flag}". Usage: ${CLI_NAME} serve [--port N] [--config path] [--app dir]`;
+    if (flag !== '--port' && flag !== '--host' && flag !== '--config' && flag !== '--app') return `serve: unknown argument "${flag}". Usage: ${CLI_NAME} serve [--port N] [--host addr] [--config path] [--app dir]`;
     if (value === undefined) return `serve: ${flag} needs a value.`;
     i += 1;
     if (flag === '--port') {
       const port = Number(value);
       if (!Number.isInteger(port) || port < 0 || port > 65535) return `serve: --port must be an integer from 0 to 65535, got "${value}".`;
       out.port = port;
-    } else if (flag === '--config') out.config = resolve(value);
+    } else if (flag === '--host') out.host = value;
+    else if (flag === '--config') out.config = resolve(value);
     else out.app = resolve(value);
   }
   return out;
@@ -99,10 +117,16 @@ export async function runServe(args: readonly string[], io: CliIo, onStart?: (se
   if (typeof parsed === 'string') { io.err(parsed); return 2; }
   const config = await loadConfig(parsed.config);
   const port = parsed.port ?? config.port;
+  const host = parsed.host ?? (process.env.OPENFLOWKIT_SERVICE_HOST || DEFAULT_HOST);
+  if (isIP(host) === 0) {
+    io.err(`${CLI_NAME} serve: bind address "${host}" is not an IP address. Use --host or OPENFLOWKIT_SERVICE_HOST with e.g. 127.0.0.1, 0.0.0.0 or ::.`);
+    return 2;
+  }
   const appDir = parsed.app ?? process.env.OPENFLOWKIT_APP_DIR ?? defaultAppDir();
   try {
-    const service = await startService({ port, appDir, config });
+    const service = await startService({ port, host, appDir, config });
     io.out(`${CLI_NAME} service listening on ${service.url} (app: ${resolve(appDir)})`);
+    if (!isLoopback(service.address)) io.err(`${CLI_NAME} serve: warning: listening on ${service.address}, which other machines can reach; the service has no authentication.`);
     onStart?.(service);
     return 0;
   } catch (error) {
