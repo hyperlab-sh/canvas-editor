@@ -12,7 +12,7 @@ separately; its changes are listed under *For developers* in each release.
 ### Changed
 
 - **Renamed to Canvas (breaking).** OpenFlowKit is now Canvas, from hyperlab-sh/canvas-editor. Every name changed with no
-  fallback: diagram files are `*.canvas` (was `*.ofk`), the scene format is `canvas.scene`, env vars are `CANVAS_*`
+  fallback: DSL source files are `*.canvas` (was `*.ofk`; service diagrams stay `.openflow.json`), the scene format is `canvas.scene`, env vars are `CANVAS_*`
   (was `OPENFLOWKIT_*`), the service config lives in `~/.config/canvas/` and diagrams in `~/.local/share/canvas/`,
   `/health` reports `canvas-service`, the MCP channel source is `canvas`, the npm packages are `@hyperlab.sh/canvas-mcp`
   and `@hyperlab.sh/canvas`, and browser storage keys start with `canvas-`. Existing files, settings and browser data
