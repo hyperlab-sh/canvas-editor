@@ -33,20 +33,20 @@ describe('dslLink', () => {
     expect(inflateRawSync(Buffer.from(payload, 'base64url')).toString('utf8')).toBe(dsl);
   });
   it('builds the link on the app, never on the page it was made from', async () => {
-    const link = await dslLink('flowchart\na -> b', 'https://app.openflowkit.com/#/d/doc-1?page=2');
-    expect(link).toMatch(/^https:\/\/app\.openflowkit\.com\/#\/from\/dsl\?d=[A-Za-z0-9_-]+$/);
+    const link = await dslLink('flowchart\na -> b', 'https://canvas.hyperlab.sh/#/d/doc-1?page=2');
+    expect(link).toMatch(/^https:\/\/canvas\.hyperlab\.sh\/#\/from\/dsl\?d=[A-Za-z0-9_-]+$/);
   });
   it('carries the title beside the payload, and a link without one stays valid', async () => {
-    const link = await dslLink('flowchart\na -> b', 'https://app.openflowkit.com/', ' Café & Co ');
+    const link = await dslLink('flowchart\na -> b', 'https://canvas.hyperlab.sh/', ' Café & Co ');
     const query = new URLSearchParams(link!.split('?')[1]);
     expect(query.get('t')).toBe('Café & Co');
     expect(await decodeDslPayload(query.get('d'))).toBe('flowchart\na -> b');
-    expect(await dslLink('flowchart\na -> b', 'https://app.openflowkit.com/', '  ')).not.toContain('&t=');
+    expect(await dslLink('flowchart\na -> b', 'https://canvas.hyperlab.sh/', '  ')).not.toContain('&t=');
   });
   it('gives no link when the code would not survive being pasted', async () => {
     // Random-ish text barely compresses: well over the cap once deflated.
     const noisy = Array.from({ length: 60_000 }, (_, index) => ((index * 7919) % 9973).toString(36)).join(' ');
     expect((await encodeDslPayload(noisy)).length).toBeGreaterThan(MAX_LINK_PAYLOAD);
-    expect(await dslLink(noisy, 'https://app.openflowkit.com/')).toBeNull();
+    expect(await dslLink(noisy, 'https://canvas.hyperlab.sh/')).toBeNull();
   });
 });

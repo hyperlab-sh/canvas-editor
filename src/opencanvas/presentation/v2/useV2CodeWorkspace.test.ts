@@ -98,7 +98,7 @@ describe('useV2CodeWorkspace keeps what was typed', () => {
 });
 
 describe('looksLikeDiagramCode', () => {
-  it('takes Mermaid, D2, Structurizr and OpenFlowKit source, not prose', () => {
+  it('takes Mermaid, D2, Structurizr and Canvas source, not prose', () => {
     expect(looksLikeDiagramCode('graph TD\n  A --> B')).toBe(true);
     expect(looksLikeDiagramCode('workspace {\n  model {\n    u = person "U"\n  }\n}')).toBe(true);
     expect(looksLikeDiagramCode('x -> y: calls\ny: {\n  shape: cylinder\n}')).toBe(true);

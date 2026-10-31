@@ -22,7 +22,7 @@ async function openC4(page: Page): Promise<void> {
 async function openServicesShop(page: Page, inCanvas = true): Promise<void> {
   await page.getByRole('button', { name: /^Pages/ }).click();
   await page.getByRole('dialog', { name: 'Pages', exact: true }).getByRole('button', { name: /^Services: Shop/ }).click();
-  if (inCanvas) await expect(page.locator('.ofk-v2-breadcrumb-current')).toHaveText('Services: Shop');
+  if (inCanvas) await expect(page.locator('.canvas-v2-breadcrumb-current')).toHaveText('Services: Shop');
   await page.waitForTimeout(800); // the landing glide
 }
 

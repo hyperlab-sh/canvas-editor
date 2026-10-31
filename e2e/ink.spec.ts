@@ -78,7 +78,7 @@ test('pen draws one smoothed stroke per gesture, eraser removes it, one undo eac
   // Clearing the selection unmounts the bar it lived in: focus must come back
   // to the canvas or the next tool letter is typed into the void.
   await expect.poll(() => page.evaluate(() => document.activeElement?.className ?? ''))
-    .toContain('ofk-v2-canvas');
+    .toContain('canvas-v2-canvas');
   await page.keyboard.press('x');
   await expect.poll(async () => (await state(page)).tool).toBe('eraser');
   const highlightRect = (await nodeRect(page, highlight.id))!;

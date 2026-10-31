@@ -1,5 +1,5 @@
-// Entry of the one-file map (`openflowkit map <dir> --html`). The model and the repo's GitHub address are inlined in
-// <script type="application/json" id="ofk-map-data">; nothing is fetched. Imports nothing from src/services/map.
+// Entry of the one-file map (`canvas map <dir> --html`). The model and the repo's GitHub address are inlined in
+// <script type="application/json" id="canvas-map-data">; nothing is fetched. Imports nothing from src/services/map.
 import { useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 import { SystemRoot } from '../../opencanvas/presentation/design-system';
@@ -33,7 +33,7 @@ function Standalone({ data }: { data: MapData }): React.JSX.Element {
   );
 }
 
-const raw = document.getElementById('ofk-map-data')?.textContent;
+const raw = document.getElementById('canvas-map-data')?.textContent;
 const root = document.getElementById('root');
 if (raw && root) {
   const data = JSON.parse(raw) as MapData;

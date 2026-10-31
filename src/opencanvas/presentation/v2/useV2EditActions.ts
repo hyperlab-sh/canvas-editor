@@ -30,7 +30,7 @@ import {
 } from '../../domain/commands/sceneEdits';
 import { isModelPlacement } from '../../application/dsl/architectureCommands';
 
-const CLIPBOARD_FORMAT = 'openflowkit.selection';
+const CLIPBOARD_FORMAT = 'canvas.selection';
 
 function parseClipboard(text: string): ProductionClipboardSnapshot | null {
   try {

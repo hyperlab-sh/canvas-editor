@@ -5,24 +5,24 @@ import { loadConfig } from '../../src/service/config.js';
 import { tempDir } from './helpers.js';
 
 let home: string;
-const saved = { HOME: process.env.HOME, config: process.env.OPENFLOWKIT_SERVICE_CONFIG };
+const saved = { HOME: process.env.HOME, config: process.env.CANVAS_SERVICE_CONFIG };
 
 beforeEach(async () => {
   home = await tempDir();
   process.env.HOME = home;
-  delete process.env.OPENFLOWKIT_SERVICE_CONFIG;
+  delete process.env.CANVAS_SERVICE_CONFIG;
 });
 
 afterEach(() => {
   process.env.HOME = saved.HOME;
-  if (saved.config === undefined) delete process.env.OPENFLOWKIT_SERVICE_CONFIG;
-  else process.env.OPENFLOWKIT_SERVICE_CONFIG = saved.config;
+  if (saved.config === undefined) delete process.env.CANVAS_SERVICE_CONFIG;
+  else process.env.CANVAS_SERVICE_CONFIG = saved.config;
 });
 
 async function configWith(body: unknown): Promise<string> {
   const file = join(home, 'custom.json');
   await writeFile(file, typeof body === 'string' ? body : JSON.stringify(body));
-  process.env.OPENFLOWKIT_SERVICE_CONFIG = file;
+  process.env.CANVAS_SERVICE_CONFIG = file;
   return file;
 }
 
@@ -38,10 +38,10 @@ describe('loadConfig', () => {
 
   it('writes a default file with the scratch project when none exists', async () => {
     const config = await loadConfig();
-    const scratch = join(home, '.local', 'share', 'openflowkit', 'diagrams');
+    const scratch = join(home, '.local', 'share', 'canvas', 'diagrams');
     expect(config.port).toBe(43120);
     expect(config.projects).toEqual([{ name: 'scratch', path: scratch }]);
-    const file = join(home, '.config', 'openflowkit', 'service.json');
+    const file = join(home, '.config', 'canvas', 'service.json');
     expect(JSON.parse(await readFile(file, 'utf8'))).toEqual({ port: 43120, projects: [{ name: 'scratch', path: scratch }] });
   });
 

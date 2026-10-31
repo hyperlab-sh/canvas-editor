@@ -82,14 +82,14 @@ export const originOf = (url: string): string => {
 /** A same-origin endpoint (`/ai-proxy`): the self-hosted server's AI proxy, not the model server itself. */
 export const viaServerProxy = (url: string): boolean => url.trim().startsWith('/');
 
-const PROXY_SETUP = 'The AI proxy is on only where OpenFlowKit is self-hosted with OPENFLOWKIT_AI_UPSTREAM set.';
+const PROXY_SETUP = 'The AI proxy is on only where Canvas is self-hosted with CANVAS_AI_UPSTREAM set.';
 
 /** One sentence naming the cause, one naming the action. */
 export function describeCause(cause: AiFailureCause, context: FailureContext): string {
   const { definition } = context;
   if (viaServerProxy(context.endpoint)) {
     if (cause === 'provider-down' && (context.status === 502 || context.status === 504 || context.timedOut)) {
-      return `This server's AI proxy got no answer from the model server${context.status ? ` (${context.status})` : ''}. Check it is running and OPENFLOWKIT_AI_UPSTREAM points at it.`;
+      return `This server's AI proxy got no answer from the model server${context.status ? ` (${context.status})` : ''}. Check it is running and CANVAS_AI_UPSTREAM points at it.`;
     }
     // Off in the Docker image: a 503 whose own sentence (quoted after this one) says how to turn it on.
     if (cause === 'provider-down' && context.status === 503) return "This server's AI proxy answered 503: it is off, or the model server is busy.";
@@ -136,7 +136,7 @@ export function describeCause(cause: AiFailureCause, context: FailureContext): s
     case 'offline':
       return 'This browser is offline. Reconnect and try again.';
     case 'bad-response':
-      return 'The provider answered in a shape OpenFlowKit could not read. Try again, or choose another model.';
+      return 'The provider answered in a shape Canvas could not read. Try again, or choose another model.';
     case 'too-long':
       return `This request is too long for ${context.model}. Start a new chat, attach fewer or smaller images, or pick a model with a larger context.`;
     case 'not-configured':

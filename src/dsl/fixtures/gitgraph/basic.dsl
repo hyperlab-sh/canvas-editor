@@ -1,4 +1,4 @@
-%% ofk 1
+%% canvas 1
 gitgraph
 title: Release train
 

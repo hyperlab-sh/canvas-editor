@@ -16,7 +16,7 @@ const context: AssistantContext = {
 describe('grammar text helpers', () => {
   it('extracts the cheat-sheet appendix without its fence', () => {
     const appendix = grammarAppendix(grammar);
-    expect(appendix).toContain('OFK diagram language, v1');
+    expect(appendix).toContain('Canvas diagram language, v1');
     expect(appendix).not.toContain('```');
     expect(appendix.length).toBeLessThan(5000);
   });
@@ -39,7 +39,7 @@ describe('assistant prompt', () => {
     const system = assistantSystemPrompt(grammar);
     expect(system).toContain('Do not draw');
     expect(system).toContain('```openflow frame=<id>');
-    expect(system).toContain('OFK diagram language, v1');
+    expect(system).toContain('Canvas diagram language, v1');
   });
 
   it('with tools, writes go through the write tools and blocks are not taught', () => {

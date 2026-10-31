@@ -4,7 +4,7 @@ import { expect, test } from './test';
 // leaves nothing to settle the export promise, so the abort rejects it too.
 // Run headed: npm run e2e:headed -- e2e/motion-cancel.spec.ts
 
-const DSL = `%% ofk 1
+const DSL = `%% canvas 1
 flowchart down
 
   Client [blue] -> API [green] : HTTPS
@@ -28,7 +28,7 @@ test('cancelling an encode leaves the panel usable', async ({ page }) => {
   await page.getByRole('button', { name: 'Canvas menu' }).click();
   await page.getByRole('menuitem', { name: 'Export…' }).click();
   await page.getByRole('button', { name: /Animate this page/ }).click();
-  await page.locator('.ofk-motion-transport input[type="range"]').fill('0');
+  await page.locator('.canvas-motion-transport input[type="range"]').fill('0');
 
   // A long, big export so there is time to cancel mid-flight.
   const duration = page.getByRole('spinbutton', { name: 'Duration' });
@@ -45,6 +45,6 @@ test('cancelling an encode leaves the panel usable', async ({ page }) => {
   await cancel.click();
 
   // The claim under test: after cancelling, the panel is usable again.
-  await expect(page.locator('.ofk-motion-progress')).toBeHidden({ timeout: 10_000 });
+  await expect(page.locator('.canvas-motion-progress')).toBeHidden({ timeout: 10_000 });
   await expect(exportButton).toBeEnabled({ timeout: 10_000 });
 });

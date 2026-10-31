@@ -14,9 +14,9 @@ describe('V2AgentConnect', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('offers a Claude Code one-liner carrying the token (and the port when it is not the default)', async () => {
-    // User scope: the default (local) scope adds it to one project only, and the next repo has no OpenFlowKit (U3 2026-10-11).
-    expect(claudeCodeCommand(43119, 'tok')).toBe('claude mcp add -s user openflowkit -e OPENFLOWKIT_BRIDGE_TOKEN=tok -- npx -y openflowkit mcp');
-    expect(claudeCodeCommand(5000, '')).toBe('claude mcp add -s user openflowkit -e OPENFLOWKIT_BRIDGE_PORT=5000 -- npx -y openflowkit mcp');
+    // User scope: the default (local) scope adds it to one project only, and the next repo has no Canvas (U3 2026-10-11).
+    expect(claudeCodeCommand(43119, 'tok')).toBe('claude mcp add -s user canvas -e CANVAS_BRIDGE_TOKEN=tok -- npx -y @hyperlab.sh/canvas mcp');
+    expect(claudeCodeCommand(5000, '')).toBe('claude mcp add -s user canvas -e CANVAS_BRIDGE_PORT=5000 -- npx -y @hyperlab.sh/canvas mcp');
     const writeText = vi.fn(() => Promise.resolve());
     vi.stubGlobal('navigator', { clipboard: { writeText } });
     const onToggle = vi.fn();
@@ -68,10 +68,10 @@ describe('V2AgentConnect', () => {
   it('a command wraps at its spaces, never inside a flag', () => {
     render(<V2AgentConnect {...base} />);
     fireEvent.click(screen.getByRole('radio', { name: 'Terminal' }));
-    const command = document.querySelector('.ofk-connection-snippet')!;
-    const flags = [...command.querySelectorAll('.ofk-connection-flag')].map((flag) => flag.textContent);
+    const command = document.querySelector('.canvas-connection-snippet')!;
+    const flags = [...command.querySelectorAll('.canvas-connection-flag')].map((flag) => flag.textContent);
     expect(flags).toEqual(['-s', '-e', '--', '-y']);
-    expect(command.querySelector('.ofk-v2-bridge-snippet')?.textContent).toBe(claudeCodeCommand(43119, 'tok'));
+    expect(command.querySelector('.canvas-v2-bridge-snippet')?.textContent).toBe(claudeCodeCommand(43119, 'tok'));
   });
 
   it('says who is working, then offers Undo for its change', () => {
@@ -102,8 +102,8 @@ describe('V2AgentConnect', () => {
     expect(writeText).toHaveBeenLastCalledWith(mcpConfig(43119, 'tok'));
     pick('Codex', 'Terminal');
     fireEvent.click(screen.getByRole('button', { name: 'Copy command' }));
-    expect(writeText).toHaveBeenLastCalledWith('codex mcp add openflowkit --env OPENFLOWKIT_BRIDGE_TOKEN=tok -- npx -y openflowkit mcp');
-    expect(codexCommand(5000, '')).toBe('codex mcp add openflowkit --env OPENFLOWKIT_BRIDGE_PORT=5000 -- npx -y openflowkit mcp');
+    expect(writeText).toHaveBeenLastCalledWith('codex mcp add canvas --env CANVAS_BRIDGE_TOKEN=tok -- npx -y @hyperlab.sh/canvas mcp');
+    expect(codexCommand(5000, '')).toBe('codex mcp add canvas --env CANVAS_BRIDGE_PORT=5000 -- npx -y @hyperlab.sh/canvas mcp');
     pick('Cursor');
     expect(screen.getByRole('link', { name: 'Add to Cursor' }).getAttribute('href')).toBe(installLinks(43119, 'tok').cursor);
     fireEvent.click(screen.getByRole('radio', { name: 'Prompt' }));
@@ -127,13 +127,13 @@ describe('V2AgentConnect', () => {
     expect(onToggle).toHaveBeenCalledWith(true);
     expect(agentPrompt('claude-code', 43119, 'tok')).toContain(claudeCodeCommand(43119, 'tok'));
     expect(agentPrompt('codex', 5000, '')).toContain(codexCommand(5000, ''));
-    const server = { command: 'npx', args: ['-y', 'openflowkit', 'mcp'], env: { OPENFLOWKIT_BRIDGE_TOKEN: 'tok' } };
+    const server = { command: 'npx', args: ['-y', '@hyperlab.sh/canvas', 'mcp'], env: { CANVAS_BRIDGE_TOKEN: 'tok' } };
     for (const client of ['cursor', 'claude-desktop'] as const) {
       const json = agentPrompt(client, 43119, 'tok').match(/\n\n(\{[\s\S]*\})\n\n/)![1]!;
-      expect(JSON.parse(json)).toEqual({ openflowkit: server });
+      expect(JSON.parse(json)).toEqual({ canvas: server });
     }
     const vscode = agentPrompt('vscode', 43119, 'tok').match(/code --add-mcp '(.*)'/)![1]!;
-    expect(JSON.parse(vscode)).toEqual({ name: 'openflowkit', ...server });
+    expect(JSON.parse(vscode)).toEqual({ name: 'canvas', ...server });
     for (const client of ['claude-code', 'claude-desktop', 'cursor', 'vscode', 'codex'] as const) {
       expect(agentPrompt(client, 43119, 'tok')).toMatch(/Then tell me to /);
     }
@@ -157,13 +157,13 @@ describe('V2AgentConnect', () => {
 
   it('one-click links carry the same server and pairing env as the copied config', () => {
     const { cursor, vscode } = installLinks(5000, 'tok');
-    const server = { command: 'npx', args: ['-y', 'openflowkit', 'mcp'], env: { OPENFLOWKIT_BRIDGE_PORT: '5000', OPENFLOWKIT_BRIDGE_TOKEN: 'tok' } };
+    const server = { command: 'npx', args: ['-y', '@hyperlab.sh/canvas', 'mcp'], env: { CANVAS_BRIDGE_PORT: '5000', CANVAS_BRIDGE_TOKEN: 'tok' } };
     const cursorUrl = new URL(cursor);
     expect(cursorUrl.protocol).toBe('cursor:');
-    expect(cursorUrl.searchParams.get('name')).toBe('openflowkit');
+    expect(cursorUrl.searchParams.get('name')).toBe('canvas');
     expect(JSON.parse(atob(cursorUrl.searchParams.get('config')!))).toEqual(server);
     expect(vscode.startsWith('vscode:mcp/install?')).toBe(true);
-    expect(JSON.parse(decodeURIComponent(vscode.slice('vscode:mcp/install?'.length)))).toEqual({ name: 'openflowkit', ...server });
+    expect(JSON.parse(decodeURIComponent(vscode.slice('vscode:mcp/install?'.length)))).toEqual({ name: 'canvas', ...server });
     expect(JSON.parse(atob(new URL(installLinks(43119, '').cursor).searchParams.get('config')!))).not.toHaveProperty('env');
   });
 });

@@ -36,9 +36,9 @@ describe('motion schedule', () => {
   });
 
   it('sizes the canvas from the page aspect, even-sided for H.264', async () => {
-    const compiled = await compile('%% ofk 1\nflowchart\na -> b\n');
+    const compiled = await compile('%% canvas 1\nflowchart\na -> b\n');
     const document = {
-      format: 'openflowkit.scene', schemaVersion: 1, id: 'x', name: 'x',
+      format: 'canvas.scene', schemaVersion: 1, id: 'x', name: 'x',
       createdAt: '', updatedAt: '', metadata: {}, extensions: {},
       pages: [{
         id: 'p', name: 'P', diagramKind: 'flowchart',

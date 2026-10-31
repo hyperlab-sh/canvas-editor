@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OpenFlowKit diagram</title>
+<title>Canvas diagram</title>
 <style>
   :root { color-scheme: light dark; --bg: #fff; --fg: #1a1a1a; --muted: #666; --line: #d8d8d8; --panel: #f6f6f6; --accent: #111; --warn: #9a5b00; --brand: #e95420; }
   :root[data-theme="dark"] { --bg: #1b1b1c; --fg: #ececec; --muted: #a0a0a0; --line: #3a3a3c; --panel: #262628; --accent: #fff; --warn: #e5b25d; --brand: #f07443; }
@@ -25,20 +25,20 @@
   #live svg { display: block; border-radius: 8px; overflow: hidden; }
   /* While the model writes: the picture glides to fit as it grows, new shapes pop in, new connectors draw on. */
   #live.glide { transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
-  .ofk-pop { transform-box: fill-box; transform-origin: center; animation: ofk-pop .45s cubic-bezier(.2, .8, .2, 1) var(--d, 0s) both; }
-  .ofk-fade { animation: ofk-fade .45s ease-out var(--d, 0s) both; }
-  .ofk-draw { stroke-dasharray: 1; animation: ofk-draw .6s ease-out var(--d, 0s) both; }
-  @keyframes ofk-pop { from { opacity: 0; transform: scale(.88); } }
-  @keyframes ofk-fade { from { opacity: 0; } }
-  @keyframes ofk-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-  #drawing { width: 7px; height: 7px; border-radius: 50%; background: var(--brand); animation: ofk-pulse .9s ease-in-out infinite alternate; }
-  @keyframes ofk-pulse { from { opacity: .35; } }
+  .canvas-pop { transform-box: fill-box; transform-origin: center; animation: canvas-pop .45s cubic-bezier(.2, .8, .2, 1) var(--d, 0s) both; }
+  .canvas-fade { animation: canvas-fade .45s ease-out var(--d, 0s) both; }
+  .canvas-draw { stroke-dasharray: 1; animation: canvas-draw .6s ease-out var(--d, 0s) both; }
+  @keyframes canvas-pop { from { opacity: 0; transform: scale(.88); } }
+  @keyframes canvas-fade { from { opacity: 0; } }
+  @keyframes canvas-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  #drawing { width: 7px; height: 7px; border-radius: 50%; background: var(--brand); animation: canvas-pulse .9s ease-in-out infinite alternate; }
+  @keyframes canvas-pulse { from { opacity: .35; } }
   /* An older card steps back once a newer one is drawn in the same conversation; hover or focus brings it forward. */
   #badge { color: var(--muted); font-size: 11px; border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; }
   :root.superseded #stage, :root.superseded h1 { opacity: .5; filter: grayscale(1); transition: opacity .3s, filter .3s; }
   :root.superseded body:hover #stage, :root.superseded body:focus-within #stage, :root.superseded body:hover h1 { opacity: 1; filter: none; }
   @media (prefers-reduced-motion: reduce) {
-    .ofk-pop, .ofk-fade, .ofk-draw, #drawing { animation: none; }
+    .canvas-pop, .canvas-fade, .canvas-draw, #drawing { animation: none; }
     #live.glide, :root.superseded #stage, :root.superseded h1 { transition: none; }
   }
   #zoom { position: absolute; right: 8px; bottom: 8px; display: flex; gap: 4px; }
@@ -54,7 +54,7 @@
   <span id="badge" title="A newer diagram was drawn later in this conversation." hidden>Earlier version</span>
   <span id="drawing" aria-hidden="true" hidden></span>
   <span id="meta"></span>
-  <button id="open" class="primary" type="button">Open in OpenFlowKit</button>
+  <button id="open" class="primary" type="button">Open in Canvas</button>
   <button id="download" type="button" hidden>Download SVG</button>
   <button id="expand" type="button" hidden>Expand</button>
 </header>
@@ -125,8 +125,8 @@
 
   request('ui/initialize', {
     protocolVersion: '2026-01-26',
-    appInfo: { name: 'openflowkit-viewer', version: '1.0.0' },
-    clientInfo: { name: 'openflowkit-viewer', version: '1.0.0' },
+    appInfo: { name: 'canvas-viewer', version: '1.0.0' },
+    clientInfo: { name: 'canvas-viewer', version: '1.0.0' },
     appCapabilities: { availableDisplayModes: ['inline', 'fullscreen'] },
   }).then((result) => {
     host.caps = (result && result.hostCapabilities) || {};
@@ -168,7 +168,7 @@
     }
     data = sc;
     $('title').textContent = sc.title || 'Diagram';
-    document.title = sc.title || 'OpenFlowKit diagram';
+    document.title = sc.title || 'Canvas diagram';
     $('meta').textContent = `${plural(sc.nodes ?? 0, 'node')} · ${plural(sc.connectors ?? 0, 'connector')}`;
     const linkOk = typeof sc.openUrl === 'string' && OPEN_URL.test(sc.openUrl);
     joinElection(sc);
@@ -177,12 +177,12 @@
       $('download').hidden = true;
       img.removeAttribute('src');
       clearLive();
-      showHint(linkOk ? `${noPreview} Open it in OpenFlowKit to see it.` : noPreview);
+      showHint(linkOk ? `${noPreview} Open it in Canvas to see it.` : noPreview);
       return;
     }
     $('open').disabled = !linkOk;
     $('open').title = linkOk ? '' : 'No link: no valid editor address was provided for this diagram.';
-    showHint(linkOk ? '' : 'Open in OpenFlowKit is unavailable: no editor link was provided.');
+    showHint(linkOk ? '' : 'Open in Canvas is unavailable: no editor link was provided.');
     $('download').hidden = !host.download;
     const notes = noteLines(sc);
     $('notes').hidden = notes.length === 0;
@@ -287,7 +287,7 @@
     if (key.startsWith('node:') && key !== 'node:frame') {
       // The group carries its position as a transform attribute, which a CSS transform would replace: scale a wrapper.
       const pop = document.createElementNS(el.namespaceURI, 'g');
-      pop.setAttribute('class', 'ofk-pop');
+      pop.setAttribute('class', 'canvas-pop');
       pop.style.setProperty('--d', delay);
       pop.append(...el.childNodes);
       el.append(pop);
@@ -295,11 +295,11 @@
       for (const path of el.querySelectorAll('path, line, polyline')) {
         path.style.setProperty('--d', delay);
         // A dashed connector keeps its dashes: it fades in instead of drawing on.
-        if (path.hasAttribute('stroke-dasharray')) path.classList.add('ofk-fade');
-        else { path.setAttribute('pathLength', '1'); path.classList.add('ofk-draw'); }
+        if (path.hasAttribute('stroke-dasharray')) path.classList.add('canvas-fade');
+        else { path.setAttribute('pathLength', '1'); path.classList.add('canvas-draw'); }
       }
     } else {
-      el.classList.add('ofk-fade');
+      el.classList.add('canvas-fade');
       el.style.setProperty('--d', delay);
     }
   }
@@ -354,7 +354,7 @@
     if (election.id === null) election.id = (crypto.randomUUID && crypto.randomUUID()) || String(Math.random()).slice(2);
     election.key = { createdAt: sc.createdAt, seq: Number.isFinite(sc.seq) ? sc.seq : null };
     if (!election.channel) {
-      election.channel = new BroadcastChannel('openflowkit-card');
+      election.channel = new BroadcastChannel('canvas-card');
       election.channel.onmessage = (event) => {
         const peer = event.data;
         if (!peer || peer.id === election.id || !Number.isFinite(peer.createdAt) || !election.key) return;

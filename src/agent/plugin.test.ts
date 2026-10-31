@@ -24,8 +24,8 @@ describe('claude code and codex plugins', () => {
   it('launches the real package through npx', () => {
     expect(plugin.mcpServers).toBe('./.mcp.json');
     expect(codex.mcpServers).toBe('./.mcp.json');
-    // `openflowkit` (cli/) is the public name; `openflowkit mcp` runs the server from @openflowkit/openflowkit-mcp.
-    expect(mcp.mcpServers.openflowkit).toEqual({ command: 'npx', args: ['-y', alias.name, 'mcp'] });
+    // `canvas` (cli/) is the public name; `canvas mcp` runs the server from @hyperlab.sh/canvas-mcp.
+    expect(mcp.mcpServers.canvas).toEqual({ command: 'npx', args: ['-y', alias.name, 'mcp'] });
     expect(alias.dependencies[pkg.name]).toBe(pkg.version);
   });
 
@@ -33,6 +33,6 @@ describe('claude code and codex plugins', () => {
     expect(marketplace.plugins).toEqual([expect.objectContaining({ name: plugin.name, source: './plugin' })]);
     expect(codexMarketplace.plugins).toEqual([expect.objectContaining({ name: codex.name, source: { source: 'local', path: './plugin' } })]);
     for (const path of [codex.skills, codex.interface.composerIcon, codex.interface.logo]) expect(existsSync(`plugin/${path}`)).toBe(true);
-    expect(readFileSync('plugin/skills/openflowkit/SKILL.md', 'utf8')).toBe(readFileSync('skills/openflowkit/SKILL.md', 'utf8'));
+    expect(readFileSync('plugin/skills/canvas/SKILL.md', 'utf8')).toBe(readFileSync('skills/canvas/SKILL.md', 'utf8'));
   });
 });

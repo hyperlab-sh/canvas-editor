@@ -1,4 +1,4 @@
-// What bare `openflowkit` prints at a terminal: the name in block letters, then three
+// What bare `canvas` prints at a terminal: the name in block letters, then three
 // commands to try. Scripts and pipes never see it (cli.ts keeps the usage error there).
 
 const GLYPHS: Record<string, readonly string[]> = {
@@ -29,17 +29,17 @@ function blockWord(word: string, paint: (code: string, text: string) => string):
 
 export function welcome(options: { readonly columns: number; readonly color: boolean; readonly version: string }): string {
   const paint = (code: string, text: string) => (options.color ? `\x1b[${code}m${text}\x1b[0m` : text);
-  const title = `✻ Welcome to ${paint(BOLD, 'OpenFlowKit')} ${options.version}`;
-  const titleWidth = `✻ Welcome to OpenFlowKit ${options.version}`.length;
+  const title = `✻ Welcome to ${paint(BOLD, 'Canvas')} ${options.version}`;
+  const titleWidth = `✻ Welcome to Canvas ${options.version}`.length;
   const box = [
     paint(ORANGE, `╭${'─'.repeat(titleWidth + 2)}╮`),
     `${paint(ORANGE, '│')} ${title} ${paint(ORANGE, '│')}`,
     paint(ORANGE, `╰${'─'.repeat(titleWidth + 2)}╯`),
   ];
   const tries: readonly [string, string][] = [
-    ['openflowkit render flow.mmd -o flow.svg', 'Mermaid, D2 or Structurizr → SVG'],
-    ['openflowkit validate flow.ofk', 'errors per line; exit 1 for CI'],
-    ['openflowkit map . --html map.html', 'what this repo is made of, as a page'],
+    ['canvas render flow.mmd -o flow.svg', 'Mermaid, D2 or Structurizr → SVG'],
+    ['canvas validate flow.canvas', 'errors per line; exit 1 for CI'],
+    ['canvas map . --html map.html', 'what this repo is made of, as a page'],
   ];
   const wide = options.columns >= 80;
   const tryLines = tries.flatMap(([command, what]) => (wide
@@ -54,9 +54,9 @@ export function welcome(options: { readonly columns: number; readonly color: boo
     paint(BOLD, 'Try'),
     ...tryLines,
     '',
-    `${paint(BOLD, 'Agents')}  ${paint(DIM, 'claude mcp add openflowkit -- npx -y openflowkit mcp')}`,
-    `${paint(BOLD, 'Docs')}    ${paint(DIM, 'https://docs.openflowkit.com/cli/')}`,
+    `${paint(BOLD, 'Agents')}  ${paint(DIM, 'claude mcp add canvas -- npx -y @hyperlab.sh/canvas mcp')}`,
+    `${paint(BOLD, 'Docs')}    ${paint(DIM, 'https://docs.canvas.hyperlab.sh/cli/')}`,
     '',
-    paint(DIM, 'openflowkit --help lists every command.'),
+    paint(DIM, 'canvas --help lists every command.'),
   ].join('\n');
 }

@@ -9,7 +9,7 @@ import { isEditableTarget } from './pointerOperations';
 export type V2PromptOutcome = 'answered' | 'dismissed' | 'never';
 
 /** Open menus and dialogs, or a feature tip up; side panels the prompt steps aside from instead. */
-const BUSY = '.ofk-popover:not([data-passive]), dialog[open], .ofk-v2-tip';
+const BUSY = '.canvas-popover:not([data-passive]), dialog[open], .canvas-v2-tip';
 const NOT_IDLE_RETRY_MS = 2000;
 
 /**

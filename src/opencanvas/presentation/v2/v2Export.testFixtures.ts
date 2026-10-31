@@ -2,7 +2,7 @@ import { compile } from '../../../dsl/compile';
 import type { SceneDocumentV1 } from '../../domain/document/types';
 import { createEmptyV2Document } from './v2Document';
 
-const EXPORT_FIXTURE_DSL = '%% ofk 1\nflowchart\n\n  Client [blue] -> API [emerald, bold]\n  API -> Store [cylinder, red, bold]';
+const EXPORT_FIXTURE_DSL = '%% canvas 1\nflowchart\n\n  Client [blue] -> API [emerald, bold]\n  API -> Store [cylinder, red, bold]';
 
 /** A one-page document holding a real compiled diagram, for export tests. */
 export async function buildCanonicalFixtureDocument(name = 'Diagram'): Promise<SceneDocumentV1> {

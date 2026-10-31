@@ -38,7 +38,7 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
-      className="ofk-dialog ofk-overlay"
+      className="canvas-dialog canvas-overlay"
       data-variant={variant}
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
@@ -50,9 +50,9 @@ export function Dialog({
         if (event.target === ref.current) onClose(); // backdrop
       }}
     >
-      <div className="ofk-dialog-body">
-        <header className="ofk-dialog-header">
-          <h2 id={titleId} className="ofk-title">
+      <div className="canvas-dialog-body">
+        <header className="canvas-dialog-header">
+          <h2 id={titleId} className="canvas-title">
             {title}
           </h2>
           <IconButton
@@ -63,12 +63,12 @@ export function Dialog({
           />
         </header>
         {description && (
-          <p id={descriptionId} className="ofk-dialog-description">
+          <p id={descriptionId} className="canvas-dialog-description">
             {description}
           </p>
         )}
         {children}
-        {actions && <footer className="ofk-dialog-actions">{actions}</footer>}
+        {actions && <footer className="canvas-dialog-actions">{actions}</footer>}
       </div>
     </dialog>
   );

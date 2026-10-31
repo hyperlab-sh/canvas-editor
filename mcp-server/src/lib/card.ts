@@ -7,7 +7,7 @@ import { openUrl } from './openLink.js';
 import { toolError } from './errors.js';
 import { previewSvg, type LayoutPortLike } from '../remote/render.js';
 
-export const VIEWER_URI = 'ui://openflowkit/viewer.html';
+export const VIEWER_URI = 'ui://canvas/viewer.html';
 export const VIEWER_MIME = 'text/html;profile=mcp-app';
 // MCP Apps: `_meta.ui.resourceUri` (the flat "ui/resourceUri" key is deprecated).
 // ponytail: no `openai/outputTemplate` — neither the MCP Apps spec nor the Apps SDK docs ask for it; add it if ChatGPT fails to render.
@@ -34,7 +34,7 @@ export interface CardInput {
 export interface Card {
   readonly title: string;
   readonly svg?: string;
-  /** Set instead of `svg` when there is no picture to show; the viewer says it and keeps "Open in OpenFlowKit". */
+  /** Set instead of `svg` when there is no picture to show; the viewer says it and keeps "Open in Canvas". */
   readonly noPreview?: string;
   readonly dsl: string;
   readonly openUrl: string | null;
@@ -73,11 +73,11 @@ export function clientShowsApps(capabilities: { extensions?: Record<string, unkn
 }
 
 /**
- * True when the client declared `claude/channel` at initialize, or the operator set OPENFLOWKIT_CHANNEL=1 for a
+ * True when the client declared `claude/channel` at initialize, or the operator set CANVAS_CHANNEL=1 for a
  * session started with channels (D15): a client that listens for thread events does not always say so.
  */
 export function clientHasChannel(capabilities: { experimental?: Record<string, unknown> } | undefined): boolean {
-  return capabilities?.experimental?.['claude/channel'] !== undefined || process.env.OPENFLOWKIT_CHANNEL === '1';
+  return capabilities?.experimental?.['claude/channel'] !== undefined || process.env.CANVAS_CHANNEL === '1';
 }
 
 export const PREVIEW_TOOL = 'preview_diagram';

@@ -75,7 +75,7 @@ async function pressEvery(page: Page, floor: number, only?: string, mayDisable =
   const all = (await controls(page)).filter(({ disabled, toolbar }) => !disabled && (only === undefined || toolbar === only));
   // The create rail is 7 buttons since 2026-10-06 (was 12); the floor only catches broken discovery.
   expect(all.length, 'discovery found the toolbars').toBeGreaterThanOrEqual(floor);
-  const layers = page.locator('.ofk-popover:not([data-passive]), [role="dialog"][aria-modal="true"]');
+  const layers = page.locator('.canvas-popover:not([data-passive]), [role="dialog"][aria-modal="true"]');
   for (const control of all) {
     const { name } = control;
     const target = button(page, control);
@@ -111,7 +111,7 @@ test('every Map toolbar button presses without an error and Escape backs out of 
 async function tooltipEvery(page: Page, floor: number, only?: string): Promise<void> {
   const iconOnly = (await controls(page)).filter(({ text, toolbar }) => !text && (only === undefined || toolbar === only));
   expect(iconOnly.length, 'discovery found icon buttons').toBeGreaterThanOrEqual(floor);
-  await expect(page.locator('.ofk-tooltip-anchor [title]'), 'custom tooltips own every visible hint').toHaveCount(0);
+  await expect(page.locator('.canvas-tooltip-anchor [title]'), 'custom tooltips own every visible hint').toHaveCount(0);
   const tip = page.getByRole('tooltip');
   for (const control of iconOnly) {
     const { name } = control;

@@ -161,24 +161,24 @@ export function V2ChartDataPanel({ node, pageId, commit, onClose }: V2ChartDataP
   };
 
   return (
-    <Panel className="ofk-chart-panel ofk-v2-workspace-panel" title={isQuadrant ? 'Quadrant points' : 'Chart data'}
+    <Panel className="canvas-chart-panel canvas-v2-workspace-panel" title={isQuadrant ? 'Quadrant points' : 'Chart data'}
       onClose={onClose}>
-      <label className="ofk-chart-title">
-        <span className="ofk-visually-hidden">Chart title</span>
+      <label className="canvas-chart-title">
+        <span className="canvas-visually-hidden">Chart title</span>
         <input placeholder="Add a title" aria-label="Chart title"
           value={valueOf('title', typeof node.content.title === 'string' ? node.content.title : '')}
           onChange={(event) => setDraft((current) => ({ ...current, title: event.target.value }))}
           onBlur={() => commitDraft('title', (value) => writeContent({ title: value }, 'Edit chart title'))} />
       </label>
-      <div className="ofk-chart-panel-body">
+      <div className="canvas-chart-panel-body">
         {isQuadrant && quadrant ? (
-          <table className="ofk-chart-table">
+          <table className="canvas-chart-table">
             <thead>
               <tr>
                 <th scope="col">Point</th>
                 <th scope="col">x</th>
                 <th scope="col">y</th>
-                <th scope="col"><span className="ofk-visually-hidden">Remove</span></th>
+                <th scope="col"><span className="canvas-visually-hidden">Remove</span></th>
               </tr>
             </thead>
             <tbody>
@@ -203,7 +203,7 @@ export function V2ChartDataPanel({ node, pageId, commit, onClose }: V2ChartDataP
                       onBlur={() => commitDraft(`y:${index}`, (value) => setPoint(index, { y: numberIn(value, point.y) }))} />
                   </td>
                   <td>
-                    <IconButton className="ofk-chart-remove" variant="quiet" label={`Remove point ${index + 1}`}
+                    <IconButton className="canvas-chart-remove" variant="quiet" label={`Remove point ${index + 1}`}
                       icon={<Icon icon={IconX} />} disabled={quadrant.points.length <= 1}
                       onClick={() => removePoint(index)} />
                   </td>
@@ -212,18 +212,18 @@ export function V2ChartDataPanel({ node, pageId, commit, onClose }: V2ChartDataP
             </tbody>
           </table>
         ) : (
-        <table className="ofk-chart-table">
+        <table className="canvas-chart-table">
           <thead>
             <tr>
               <th scope="col">Category</th>
               {data.series.map((series, row) => (
                 <th scope="col" key={`head-${row}`}>
-                  <span className="ofk-chart-head-cell">
+                  <span className="canvas-chart-head-cell">
                     <input aria-label={`Series ${row + 1} name`}
                       value={valueOf(`series:${row}`, series.name)}
                       onChange={(event) => setDraft((current) => ({ ...current, [`series:${row}`]: event.target.value }))}
                       onBlur={() => commitDraft(`series:${row}`, (value) => setSeriesName(row, value))} />
-                    <IconButton className="ofk-chart-remove" variant="quiet" label={`Remove series ${row + 1}`}
+                    <IconButton className="canvas-chart-remove" variant="quiet" label={`Remove series ${row + 1}`}
                       icon={<Icon icon={IconX} />} disabled={data.series.length <= 1}
                       onClick={() => removeSeries(row)} />
                   </span>
@@ -235,12 +235,12 @@ export function V2ChartDataPanel({ node, pageId, commit, onClose }: V2ChartDataP
             {data.categories.map((category, row) => (
               <tr key={`row-${row}`}>
                 <th scope="row">
-                  <span className="ofk-chart-head-cell">
+                  <span className="canvas-chart-head-cell">
                     <input aria-label={`Category ${row + 1}`}
                       value={valueOf(`category:${row}`, category)}
                       onChange={(event) => setDraft((current) => ({ ...current, [`category:${row}`]: event.target.value }))}
                       onBlur={() => commitDraft(`category:${row}`, (value) => setCategory(row, value))} />
-                    <IconButton className="ofk-chart-remove" variant="quiet" label={`Remove row ${row + 1}`}
+                    <IconButton className="canvas-chart-remove" variant="quiet" label={`Remove row ${row + 1}`}
                       icon={<Icon icon={IconX} />} disabled={data.categories.length <= 1}
                       onClick={() => removeRow(row)} />
                   </span>
@@ -266,18 +266,18 @@ export function V2ChartDataPanel({ node, pageId, commit, onClose }: V2ChartDataP
         </table>
         )}
       </div>
-      <footer className="ofk-chart-panel-foot">
+      <footer className="canvas-chart-panel-foot">
         {isQuadrant ? (
           <Button variant="secondary" onClick={addPoint}><Icon icon={IconPlus} /> Point</Button>
         ) : (
           <>
             <Button variant="secondary" onClick={addRow}><Icon icon={IconPlus} /> Row</Button>
             <Button variant="secondary" onClick={addSeries}><Icon icon={IconPlus} /> Series</Button>
-            <span className="ofk-chart-hint">Paste rows from a spreadsheet</span>
+            <span className="canvas-chart-hint">Paste rows from a spreadsheet</span>
           </>
         )}
       </footer>
-      <p className="ofk-visually-hidden" aria-live="polite">
+      <p className="canvas-visually-hidden" aria-live="polite">
         {cell ? `Editing ${data.series[cell.row]?.name ?? ''} ${data.categories[cell.column] ?? ''}` : ''}
       </p>
     </Panel>

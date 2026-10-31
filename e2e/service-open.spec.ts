@@ -15,7 +15,7 @@ let diagramId: string;
 
 test.beforeAll(async () => {
   test.setTimeout(240_000);
-  scratch = mkdtempSync(join(tmpdir(), 'ofk-service-open-'));
+  scratch = mkdtempSync(join(tmpdir(), 'canvas-service-open-'));
   const project = join(scratch, 'demo');
   mkdirSync(project);
   writeFileSync(join(scratch, 'flow.mmd'), 'flowchart LR\n  A[Start] --> B[Finish]\n');
@@ -59,7 +59,7 @@ test('the tab bridge is off on a service diagram and on for a local one', async 
   const touched: string[] = [];
   page.on('request', (request) => { if (request.url().includes(`:${deadPort}`)) touched.push(request.url()); });
   await page.addInitScript((port) => {
-    localStorage.setItem('openflowkit-v2-preferences', JSON.stringify({ agentBridgeEnabled: true, bridgePort: port, bridgeToken: '' }));
+    localStorage.setItem('canvas-v2-preferences', JSON.stringify({ agentBridgeEnabled: true, bridgePort: port, bridgeToken: '' }));
   }, deadPort);
   const streamOpened = page.waitForRequest((request) => request.url().includes('/events?'));
   await page.goto(`${url}/#/p/demo/${diagramId}`);
@@ -81,7 +81,7 @@ test('an unknown service diagram is not found and nothing is written; a service 
   const writes: string[] = [];
   page.on('request', (request) => { if (request.method() !== 'GET' && request.url().includes('/projects/')) writes.push(`${request.method()} ${request.url()}`); });
   // Even the document this browser opened last is never made up when the service lacks it.
-  await page.addInitScript(() => { if (location.hash.includes('no-such-id')) localStorage.setItem('ofk:last-document', 'no-such-id'); });
+  await page.addInitScript(() => { if (location.hash.includes('no-such-id')) localStorage.setItem('canvas:last-document', 'no-such-id'); });
   await page.goto(`${url}/#/p/demo/no-such-id`);
   await expect(page.getByText('That diagram isn’t in this browser.')).toBeVisible();
   expect(writes).toEqual([]);

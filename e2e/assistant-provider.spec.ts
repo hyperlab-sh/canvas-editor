@@ -25,7 +25,7 @@ test('assistant asks for a provider on first send, then sends what was typed', a
   await expect(panel.getByRole('button', { name: /^AI provider: claude/ })).toBeVisible();
   await expect(panel.getByRole('textbox', { name: 'Ask AI assistant' })).toBeFocused();
   await expect(panel.getByRole('textbox', { name: 'Ask AI assistant' })).toHaveValue('');
-  await expect(panel.locator('.ofk-message[data-role="user"]')).toHaveText('Sketch a three-tier web architecture');
+  await expect(panel.locator('.canvas-message[data-role="user"]')).toHaveText('Sketch a three-tier web architecture');
   await expect(panel.getByText('Here is a plan.')).toBeVisible();
 });
 

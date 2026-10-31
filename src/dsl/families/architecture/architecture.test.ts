@@ -55,7 +55,7 @@ views {
 
 describe('architecture canonical text (grammar §14.16–14.20)', () => {
   it('context level', async () => {
-    expect(await format(CONTEXT)).toBe(`%% ofk 1
+    expect(await format(CONTEXT)).toBe(`%% canvas 1
 architecture
 
 model {
@@ -72,7 +72,7 @@ views {
   });
 
   it('container level keeps store: cylinder', async () => {
-    expect(await format(CONTAINER)).toBe(`%% ofk 1
+    expect(await format(CONTAINER)).toBe(`%% canvas 1
 architecture
 
 model {
@@ -101,7 +101,7 @@ views {
   view component of Shop.API { exclude * where tag is @deprecated }
 }
 `;
-    expect(await format(text)).toBe(`%% ofk 1
+    expect(await format(text)).toBe(`%% canvas 1
 architecture
 
 model {
@@ -134,7 +134,7 @@ deployment Prod {
 }
 views { view deployment of Shop in Prod }
 `;
-    expect(await format(text)).toBe(`%% ofk 1
+    expect(await format(text)).toBe(`%% canvas 1
 architecture
 
 model {

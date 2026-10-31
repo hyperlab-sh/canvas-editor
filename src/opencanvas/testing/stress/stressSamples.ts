@@ -8,7 +8,7 @@ export interface FamilySample {
 export const FAMILY_SAMPLES: readonly FamilySample[] = [
   {
     key: 'flowchart',
-    text: `%% ofk 1
+    text: `%% canvas 1
 flowchart down
 title: Flowchart — release decision
 
@@ -27,7 +27,7 @@ Ship -> Done
   },
   {
     key: 'flowchart-groups',
-    text: `%% ofk 1
+    text: `%% canvas 1
 flowchart right
 title: Flowchart — groups, notes & flags
 
@@ -51,7 +51,7 @@ note Gateway : notes render as stickies
   },
   {
     key: 'architecture',
-    text: `%% ofk 1
+    text: `%% canvas 1
 architecture right
 title: Architecture — AWS pipeline
 
@@ -69,7 +69,7 @@ Resize --> Events : publish result
   },
   {
     key: 'sequence',
-    text: `%% ofk 1
+    text: `%% canvas 1
 sequence
 title: Sequence — payment retries
 
@@ -95,7 +95,7 @@ note over Gateway : audit logged
   },
   {
     key: 'state',
-    text: `%% ofk 1
+    text: `%% canvas 1
 state
 title: State — order lifecycle
 
@@ -110,7 +110,7 @@ Done -> [*]
   },
   {
     key: 'state-controls',
-    text: `%% ofk 1
+    text: `%% canvas 1
 state
 title: State — fork, join & choice
 
@@ -129,7 +129,7 @@ Two -> [*]
   },
   {
     key: 'erd',
-    text: `%% ofk 1
+    text: `%% canvas 1
 erd
 title: ERD — shop schema
 
@@ -156,7 +156,7 @@ orders }o--|| products : references
   },
   {
     key: 'class',
-    text: `%% ofk 1
+    text: `%% canvas 1
 class down
 title: Class — shop domain
 
@@ -188,7 +188,7 @@ Order ..> Money : depends
   },
   {
     key: 'mindmap',
-    text: `%% ofk 1
+    text: `%% canvas 1
 mindmap
 title: Mindmap — product strategy
 
@@ -207,7 +207,7 @@ central: Product
   },
   {
     key: 'gitgraph',
-    text: `%% ofk 1
+    text: `%% canvas 1
 gitgraph
 title: Git graph — release train
 
@@ -222,7 +222,7 @@ merge feature [label: "Merge feature"]
   },
   {
     key: 'wireframe',
-    text: `%% ofk 1
+    text: `%% canvas 1
 wireframe
 title: Wireframe — shop app
 
@@ -247,7 +247,7 @@ screen Settings [window] {
   },
   {
     key: 'chart',
-    text: `%% ofk 1
+    text: `%% canvas 1
 chart bar
 title: Chart family — monthly revenue
 
@@ -257,7 +257,7 @@ Costs: Jan 8, Feb 9, Mar 7, Apr 11, May 12
   },
 ];
 
-export const C4_WORKSPACE = `%% ofk 1
+export const C4_WORKSPACE = `%% canvas 1
 architecture
 title: C4 — shop platform
 

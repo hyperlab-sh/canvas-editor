@@ -103,7 +103,7 @@ export function OpenCanvasSemanticSceneTree(
   };
 
   return (
-    <nav className="ofk-visually-hidden" aria-label="Canvas semantic scene">
+    <nav className="canvas-visually-hidden" aria-label="Canvas semantic scene">
       <p aria-live="polite">
         Objects {items.length === 0 ? 0 : startIndex + 1}–{
           Math.min(items.length, startIndex + pageItems.length)

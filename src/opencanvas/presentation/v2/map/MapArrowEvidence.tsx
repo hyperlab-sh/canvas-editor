@@ -17,19 +17,19 @@ function Direction({ from, to, kind, total, evidence, link }: {
   const shown = evidence.slice(0, CAP);
   return (
     <section>
-      <p className="ofk-v2-model-hint">{from} {VERB[kind]} {to} · {total}</p>
-      <ul className="ofk-v2-model-list" aria-label={`Evidence: ${from} to ${to}`}>
+      <p className="canvas-v2-model-hint">{from} {VERB[kind]} {to} · {total}</p>
+      <ul className="canvas-v2-model-list" aria-label={`Evidence: ${from} to ${to}`}>
         {shown.map((e, i) => {
           const href = link(e.file, e.line);
           const where = `${e.file}:${e.line}`;
-          return <li key={i} className="ofk-v2-map-ev">
-            {href ? <a className="ofk-v2-map-link" href={href} target="_blank" rel="noopener noreferrer">{where}</a> : <span>{where}</span>}
+          return <li key={i} className="canvas-v2-map-ev">
+            {href ? <a className="canvas-v2-map-link" href={href} target="_blank" rel="noopener noreferrer">{where}</a> : <span>{where}</span>}
             {/* Repo text is untrusted: React text only. */}
-            <code className="ofk-v2-map-src">{e.text}</code>
+            <code className="canvas-v2-map-src">{e.text}</code>
           </li>;
         })}
       </ul>
-      {total > shown.length ? <p className="ofk-v2-model-hint">and {total - shown.length} more</p> : null}
+      {total > shown.length ? <p className="canvas-v2-model-hint">and {total - shown.length} more</p> : null}
     </section>
   );
 }
@@ -39,7 +39,7 @@ export function MapArrowEvidence({ arrow: { edge, link, name } }: { readonly arr
   const a = name(edge.from);
   const b = name(edge.to);
   return (
-    <div className="ofk-v2-model-detail">
+    <div className="canvas-v2-model-detail">
       <strong>{a} {edge.both ? '⇄' : '→'} {b}</strong>
       <Direction from={a} to={b} kind={edge.kind} total={edge.forward} evidence={edge.evidence} link={link} />
       {edge.reverse > 0 ? <Direction from={b} to={a} kind={edge.kind} total={edge.reverse} evidence={edge.reverseEvidence} link={link} /> : null}

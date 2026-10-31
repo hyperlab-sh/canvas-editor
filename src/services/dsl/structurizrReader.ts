@@ -196,7 +196,7 @@ export class StructurizrReader {
       parent,
       children: [],
       tags: [],
-      ofkId: '',
+      canvasId: '',
       ...(env ? { env } : {}),
     };
     if (element.explicitSid) {
@@ -226,7 +226,7 @@ export class StructurizrReader {
       parent,
       children: [],
       tags: [],
-      ofkId: '',
+      canvasId: '',
       env,
     };
     parent?.children.push(element);
@@ -364,7 +364,7 @@ export class StructurizrReader {
       .replace(/\s*\|\|\s*/g, ' || ')
       .trim();
     const unsupported = (): DraftRule[] => {
-      this.loss(statement.line, `view expression "${body}" has no OFK equivalent; kept verbatim`);
+      this.loss(statement.line, `view expression "${body}" has no Canvas equivalent; kept verbatim`);
       return [{ op, raw }];
     };
     if (!body) return unsupported();

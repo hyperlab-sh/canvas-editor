@@ -23,7 +23,7 @@ test('Layers follows the canvas: hidden parents, selection both ways, rename, re
   await expect.poll(async () => (await nodes()).length).toBe(5);
   await page.getByRole('button', { name: 'Layers', exact: true }).click();
   const layers = page.getByRole('complementary', { name: 'Layers' });
-  const row = (name: string) => layers.locator('.ofk-object-row', { has: page.getByRole('button', { name, exact: true }) });
+  const row = (name: string) => layers.locator('.canvas-object-row', { has: page.getByRole('button', { name, exact: true }) });
   // An unlabeled connection reads as the shapes it joins.
   await expect(layers.getByRole('button', { name: 'Client → API', exact: true })).toBeVisible();
 
@@ -62,7 +62,7 @@ test('Layers follows the canvas: hidden parents, selection both ways, rename, re
   await expect(layers.getByRole('button', { name: 'Browser → API', exact: true })).toBeVisible();
 
   // Reorder from the row menu.
-  const order = () => layers.locator('.ofk-object-select').allTextContents();
+  const order = () => layers.locator('.canvas-object-select').allTextContents();
   expect((await order()).indexOf('DB')).toBeLessThan((await order()).indexOf('API'));
   await layers.getByRole('button', { name: 'Actions for DB', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Reorder' }).click();
@@ -73,7 +73,7 @@ test('Layers follows the canvas: hidden parents, selection both ways, rename, re
   await layers.getByRole('button', { name: 'Actions for API', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Duplicate' }).click();
   await expect.poll(async () => (await nodes()).filter((node) => node.content.label === 'API').map((node) => node.parentId)).toEqual(['backend', 'backend']);
-  await expect(layers.locator('.ofk-object-row[data-selected]')).toHaveCount(1);
+  await expect(layers.locator('.canvas-object-row[data-selected]')).toHaveCount(1);
 });
 
 test('dragging a row reorders, drops into a section (inside its box), refuses its own child, and Escape cancels @gate', async ({ page }) => {
@@ -96,7 +96,7 @@ test('dragging a row reorders, drops into a section (inside its box), refuses it
   await canvas.focus();
   await page.keyboard.press(`${mod}+Alt+g`);
   await expect(layers.getByRole('button', { name: 'Section', exact: true })).toBeVisible();
-  const order = () => layers.locator('.ofk-object-select').allTextContents();
+  const order = () => layers.locator('.canvas-object-select').allTextContents();
   const idOf = async (label: string) => (await nodes()).find((node) => node.content.label === label)!.id;
   /** Presses `from`, drags past the threshold to `share` of the `to` row's height, and returns the drop indicator shown. */
   async function dragRow(from: string, to: string, share: number, finish: 'drop' | 'escape' = 'drop') {

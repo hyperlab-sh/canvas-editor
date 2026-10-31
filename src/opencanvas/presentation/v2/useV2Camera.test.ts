@@ -12,7 +12,7 @@ afterEach(() => {
 
 it('centres an off-origin element at capped zoom inside the canvas left by panels', () => {
   document.body.innerHTML =
-    '<div class="ofk-v2" data-workspace-open="true" style="--v2-panel-width:320px"></div>';
+    '<div class="canvas-v2" data-workspace-open="true" style="--v2-panel-width:320px"></div>';
   vi.stubGlobal('innerWidth', 1440);
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
   const bounds = { x: 1600, y: 1100, width: 180, height: 100 };
@@ -126,7 +126,7 @@ it('an agent edit off screen lands readable, not at a fit too small to draw labe
 
 it('fit lands in the canvas the floating chrome leaves, never under a rail or the bars (U4-06, U1-09)', () => {
   vi.stubGlobal('innerWidth', 1440);
-  document.body.innerHTML = '<div class="ofk-v2">' + ['Create', 'Workspace', 'Document', 'View']
+  document.body.innerHTML = '<div class="canvas-v2">' + ['Create', 'Workspace', 'Document', 'View']
     .map((label) => `<div role="toolbar" aria-label="${label}"></div>`).join('') + '</div>';
   const rects: Record<string, DOMRect> = {
     Create: new DOMRect(8, 80, 60, 400), Workspace: new DOMRect(1372, 80, 52, 300),

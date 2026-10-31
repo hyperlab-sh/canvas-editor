@@ -124,7 +124,7 @@ for (const theme of ['light', 'dark'] as const) {
     await font.click();
     await expect(page.getByRole('listbox', { name: 'Font family' })).toBeVisible();
     await page.keyboard.press('Escape');
-    const glyphColor = await bar.locator('.ofk-style-glyph').evaluate((el) => getComputedStyle(el).color);
+    const glyphColor = await bar.locator('.canvas-style-glyph').evaluate((el) => getComputedStyle(el).color);
     const themeColor = await bar.evaluate((el) => getComputedStyle(el).color);
     expect(glyphColor).toBe(themeColor);
     await panel.getByRole('radio', { name: 'White', exact: true }).focus();

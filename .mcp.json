@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "openflowkit": {
+    "canvas": {
       "command": "node",
       "args": ["./mcp-server/dist/index.js"]
     }

@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - '**/*.openflow.json'
-      - '**/*.ofk'
+      - '**/*.canvas'
 
 permissions:
   contents: write

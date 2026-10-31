@@ -55,7 +55,7 @@ function Toast({ toast, onDismiss, dismissLabel }: { toast: ToastItem; onDismiss
   const mark = toast.tone ? TONE_ICON[toast.tone] : undefined;
   return (
     <div
-      className="ofk-toast ofk-overlay"
+      className="canvas-toast canvas-overlay"
       data-tone={toast.tone ?? 'neutral'}
       onPointerEnter={() => setHovered(true)}
       onPointerLeave={() => setHovered(false)}
@@ -63,8 +63,8 @@ function Toast({ toast, onDismiss, dismissLabel }: { toast: ToastItem; onDismiss
       onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(false); }}
     >
       {/* The tone is the icon's colour; a neutral note is just words. */}
-      {mark ? <span className="ofk-toast-mark" aria-hidden="true"><Icon icon={mark} /></span> : null}
-      <div className="ofk-toast-text">
+      {mark ? <span className="canvas-toast-mark" aria-hidden="true"><Icon icon={mark} /></span> : null}
+      <div className="canvas-toast-text">
         <strong>{toast.title}</strong>
         {toast.description && <p>{toast.description}</p>}
       </div>
@@ -91,7 +91,7 @@ export function ToastRegion({
   children?: ReactNode;
 }) {
   return (
-    <div className="ofk-toasts" role="region" aria-label="Notifications">
+    <div className="canvas-toasts" role="region" aria-label="Notifications">
       <div role="status" aria-live="polite" aria-atomic="false">
         {items.map((t) => <Toast key={t.id} toast={t} onDismiss={onDismiss} dismissLabel={dismissLabel} />)}
       </div>

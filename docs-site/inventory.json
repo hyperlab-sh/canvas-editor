@@ -805,10 +805,10 @@
     },
     {
       "id": "cli",
-      "name": "openflowkit CLI",
+      "name": "canvas CLI",
       "status": "shipped",
       "evidence": "mcp-server/src/cli.ts",
-      "notes": "render, convert, validate, op, ops, discover, drift, build, map, mcp; on npm as openflowkit (and @openflowkit/openflowkit-mcp).",
+      "notes": "render, convert, validate, op, ops, discover, drift, build, map, mcp; on npm as @hyperlab.sh/canvas (and @hyperlab.sh/canvas-mcp).",
       "page": "cli"
     },
     {
@@ -816,7 +816,7 @@
       "name": "PR diagrams GitHub Action",
       "status": "shipped",
       "evidence": "action/action.yml",
-      "notes": "Comments on a PR with node/connector counts, the DSL diff and drift; refreshes stale SVGs. Use openflowkit/openflowkit/action@v2.1.0 or a later release tag; the default CLI is the one pinned in that tag's action.yml.",
+      "notes": "Comments on a PR with node/connector counts, the DSL diff and drift; refreshes stale SVGs. Use hyperlab-sh/canvas-editor/action@v2.1.0 or a later release tag; the default CLI is the one pinned in that tag's action.yml.",
       "page": "github-action"
     },
     {
@@ -824,7 +824,7 @@
       "name": "Remote MCP Apps endpoint",
       "status": "partial",
       "evidence": "mcp-server/src/http.ts",
-      "notes": "Deployed at https://mcp.openflowkit.com/mcp (Cloudflare Worker, mcp-server/src/worker.ts); npm run start:http self-hosts the same. Serves render_diagram and get_syntax (plus the card's app-only preview_diagram) over Streamable HTTP on /, /mcp and /mcp/, and stores nothing; the preview tool and the extra paths ship with the next Worker deploy. Setup steps per chat app are on connect-your-agent. How each chat host renders the card is not checked here.",
+      "notes": "Deployed at https://mcp.canvas.hyperlab.sh/mcp (Cloudflare Worker, mcp-server/src/worker.ts); npm run start:http self-hosts the same. Serves render_diagram and get_syntax (plus the card's app-only preview_diagram) over Streamable HTTP on /, /mcp and /mcp/, and stores nothing; the preview tool and the extra paths ship with the next Worker deploy. Setup steps per chat app are on connect-your-agent. How each chat host renders the card is not checked here.",
       "page": "mcp-server"
     },
     {
@@ -848,7 +848,7 @@
       "name": "Claude Code and Codex plugins",
       "status": "shipped",
       "evidence": "plugin/.claude-plugin/plugin.json",
-      "notes": "The MCP server plus the diagram skill. Claude Code: claude plugin marketplace add openflowkit/openflowkit, then claude plugin install openflowkit@openflowkit (marketplace in .claude-plugin/marketplace.json); Codex: .agents/plugins/marketplace.json.",
+      "notes": "The MCP server plus the diagram skill. Claude Code: claude plugin marketplace add hyperlab-sh/canvas-editor, then claude plugin install canvas@canvas (marketplace in .claude-plugin/marketplace.json); Codex: .agents/plugins/marketplace.json.",
       "page": "mcp-server"
     },
     {
@@ -891,7 +891,7 @@
       "name": "Workspace folder",
       "status": "shipped",
       "evidence": "src/services/workspace/workspaceFolder.ts",
-      "notes": "File System Access API only (Chrome/Edge): architecture.ofk + views/*.snap + adr/*.md, written back to disk. Not git-aware beyond plain files.",
+      "notes": "File System Access API only (Chrome/Edge): architecture.canvas + views/*.snap + adr/*.md, written back to disk. Not git-aware beyond plain files.",
       "page": "architecture-workspace"
     },
     {

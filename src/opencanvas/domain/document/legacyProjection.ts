@@ -15,7 +15,7 @@ import {
   type ScenePort,
 } from './types';
 
-const LEGACY_SNAPSHOT_KEY = 'openflowkit.legacy.document';
+const LEGACY_SNAPSHOT_KEY = 'canvas.legacy.document';
 
 export interface LegacyProjectionOptions {
   readonly documentId: string;
@@ -302,7 +302,7 @@ export function projectLegacyDocument(
     ? options.layers.map((layer) => ({ ...layer }))
     : [createDefaultSceneLayer()];
   const name =
-    typeof value.name === 'string' && value.name.length > 0 ? value.name : 'OpenFlowKit Diagram';
+    typeof value.name === 'string' && value.name.length > 0 ? value.name : 'Canvas Diagram';
   const createdAt = typeof value.createdAt === 'string' ? value.createdAt : options.now;
   const connectors = value.edges.map(projectConnector);
   const nodes = addReferencedPorts(

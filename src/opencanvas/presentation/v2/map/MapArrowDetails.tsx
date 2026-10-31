@@ -24,22 +24,22 @@ export function MapArrowDetails({ model, arrow, onSelectElement }: MapArrowDetai
   }, [model, arrow.relationIds]);
   const nameOf = (id: string) => names.get(id) ?? id;
   const link = (id: string) => (
-    <button type="button" className="ofk-v2-model-relation-link" aria-label={`Inspect ${nameOf(id)}`}
+    <button type="button" className="canvas-v2-model-relation-link" aria-label={`Inspect ${nameOf(id)}`}
       onClick={() => onSelectElement(id)}>{nameOf(id)}</button>
   );
   const note = (relation: ArchRelation) => `${relation.label ?? 'Unlabelled relationship'}${relation.tech ? ` · ${relation.tech}` : ''}`;
 
   return (
-    <div className="ofk-v2-model-detail">
+    <div className="canvas-v2-model-detail">
       <strong>{nameOf(arrow.from)} {arrow.both ? '⇄' : '→'} {nameOf(arrow.to)}</strong>
       {relations.length === 0
-        ? <p role="status" className="ofk-v2-model-hint">No relations found for this arrow.</p>
+        ? <p role="status" className="canvas-v2-model-hint">No relations found for this arrow.</p>
         : <>
-          <p className="ofk-v2-model-hint">{relations.length === 1 ? '1 relation' : `${relations.length} relations`}</p>
-          <ul className="ofk-v2-model-list ofk-v2-model-relationships" aria-label={`Relations behind ${nameOf(arrow.from)} to ${nameOf(arrow.to)}`}>
+          <p className="canvas-v2-model-hint">{relations.length === 1 ? '1 relation' : `${relations.length} relations`}</p>
+          <ul className="canvas-v2-model-list canvas-v2-model-relationships" aria-label={`Relations behind ${nameOf(arrow.from)} to ${nameOf(arrow.to)}`}>
             {relations.map((relation) => <li key={relation.id}>
               <span>{link(relation.from)} → {link(relation.to)}</span>
-              <span className="ofk-v2-model-hint">{note(relation)}</span>
+              <span className="canvas-v2-model-hint">{note(relation)}</span>
             </li>)}
           </ul>
         </>}

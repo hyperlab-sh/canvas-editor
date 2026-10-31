@@ -5,7 +5,7 @@ export function useV2DocumentTitle(documentName: string | undefined): void {
   useEffect(() => {
     if (!documentName) return;
     const previous = document.title;
-    document.title = `${documentName} · OpenFlowKit`;
+    document.title = `${documentName} · Canvas`;
     return () => { document.title = previous; };
   }, [documentName]);
 }

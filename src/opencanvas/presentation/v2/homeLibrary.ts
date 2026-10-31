@@ -13,7 +13,7 @@ interface HomeState {
   readonly newsSeen: string;
 }
 
-const KEY = 'openflowkit-v2-home';
+const KEY = 'canvas-v2-home';
 const DEFAULTS: HomeState = { starred: [], sort: 'edited', layout: 'grid', newsSeen: '' };
 
 export function readHomeState(raw: string | null): HomeState {
@@ -71,9 +71,9 @@ export function gridStep(index: number, count: number, columns: number, key: str
 export function importKind(fileName: string): 'json' | 'source' | null {
   const extension = fileName.toLowerCase().split('.').pop() ?? '';
   if (extension === 'json') return 'json';
-  return ['mmd', 'mermaid', 'd2', 'dsl', 'ofk', 'txt'].includes(extension) ? 'source' : null;
+  return ['mmd', 'mermaid', 'd2', 'dsl', 'canvas', 'txt'].includes(extension) ? 'source' : null;
 }
-export const IMPORT_ACCEPT = '.json,.mmd,.mermaid,.d2,.dsl,.ofk,.txt,application/json,text/plain';
+export const IMPORT_ACCEPT = '.json,.mmd,.mermaid,.d2,.dsl,.canvas,.txt,application/json,text/plain';
 
 const byName = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
 

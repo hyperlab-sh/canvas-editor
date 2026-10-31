@@ -19,7 +19,7 @@ self.addEventListener('activate', (event) => {
     // query makes it a real load; v2 strips the param on boot.
     await Promise.all(tabs.map((tab) => {
       const url = new URL(tab.url);
-      url.searchParams.set('ofk-reload', '1');
+      url.searchParams.set('canvas-reload', '1');
       return tab.navigate(url.href).catch(() => undefined);
     }));
   })());

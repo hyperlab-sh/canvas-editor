@@ -35,7 +35,7 @@ async function fakeBridge({ tabAware, token = '' }: { tabAware: boolean; token?:
     const url = new URL(request.url ?? '/', 'http://127.0.0.1');
     const tab = url.searchParams.get('tab') ?? '(none)';
     if (request.method === 'OPTIONS') { reply(response, 204); return; }
-    if (token && url.searchParams.get('token') !== token) { reply(response, 401, { error: 'Missing or wrong x-openflowkit-token.' }); return; }
+    if (token && url.searchParams.get('token') !== token) { reply(response, 401, { error: 'Missing or wrong x-canvas-token.' }); return; }
     if (url.pathname === '/hello') { latest = tab; request.resume(); request.on('end', () => reply(response, 200, { ok: true, protocol: 1, channel: true })); return; }
     if (url.pathname === '/result') {
       let body = '';
@@ -71,7 +71,7 @@ const bridgeStatus = (page: Page) => page.getByRole('toolbar', { name: 'Workspac
 
 async function openTab(page: Page, port: number, { theme = 'light', enabled = true, path = '/' } = {}): Promise<void> {
   await page.addInitScript(({ bridgePort, theme, enabled }) => {
-    localStorage.setItem('openflowkit-v2-preferences', JSON.stringify({ theme, agentBridgeEnabled: enabled, bridgePort, bridgeToken: '' }));
+    localStorage.setItem('canvas-v2-preferences', JSON.stringify({ theme, agentBridgeEnabled: enabled, bridgePort, bridgeToken: '' }));
   }, { bridgePort: port, theme, enabled });
   await page.goto(path);
   await expect(page.getByTestId('v2-editor')).toBeVisible({ timeout: 30_000 });
@@ -108,7 +108,7 @@ for (const tabAware of [false, true]) {
       await second.waitForTimeout(500);
       bridge.send({ id: 'r1', op: 'add_shape', input: { kind: 'rectangle', id: 'from-agent' }, client: 'claude-code' });
       await expect.poll(() => bridge.results.length, { timeout: 15_000 }).toBe(1);
-      const owner = await second.evaluate(() => sessionStorage.getItem('ofk-agent-tab'));
+      const owner = await second.evaluate(() => sessionStorage.getItem('canvas-agent-tab'));
       expect(bridge.results[0].tab).toBe(owner);
       expect(JSON.parse(bridge.results[0].body)).toMatchObject({ id: 'r1', ok: true });
       await expect(panel.getByRole('status').filter({ hasText: 'Claude Code added a rectangle' })).toBeVisible();
@@ -123,7 +123,7 @@ test('a tab replaced from another browser stops polling, and Use this tab takes 
   test.setTimeout(90_000);
   const bridge = await fakeBridge({ tabAware: true });
   const elsewhere = await browser.newContext({ baseURL: 'http://127.0.0.1:4173' });
-  const tabOf = (page: Page) => page.evaluate(() => sessionStorage.getItem('ofk-agent-tab') ?? '');
+  const tabOf = (page: Page) => page.evaluate(() => sessionStorage.getItem('canvas-agent-tab') ?? '');
   try {
     const first = await context.newPage();
     await openTab(first, bridge.port);
@@ -136,7 +136,7 @@ test('a tab replaced from another browser stops polling, and Use this tab takes 
     await bridgeStatus(first).click();
     const panel = first.getByRole('complementary', { name: 'Connect agent' });
     // Not "Connect is on in another tab": the tab that has it is in another browser.
-    await expect(panel.getByText('Another OpenFlowKit tab has the agent connection.')).toBeVisible();
+    await expect(panel.getByText('Another Canvas tab has the agent connection.')).toBeVisible();
     const firstTab = await tabOf(first);
     const stopped = bridge.polls.get(firstTab) ?? 0;
     await first.waitForTimeout(3000);
@@ -161,9 +161,9 @@ async function closedPort(): Promise<number> {
 }
 
 const connectPanel = (page: Page) => page.getByRole('complementary', { name: 'Connect agent' });
-// OFK_SHOTS_DIR=<dir> keeps a light and a dark screenshot of every panel state, for review.
+// CANVAS_SHOTS_DIR=<dir> keeps a light and a dark screenshot of every panel state, for review.
 const shot = async (page: Page, name: string, theme: string) => {
-  if (process.env.OFK_SHOTS_DIR) await connectPanel(page).screenshot({ animations: 'disabled', path: `${process.env.OFK_SHOTS_DIR}/${name}-${theme}.png` });
+  if (process.env.CANVAS_SHOTS_DIR) await connectPanel(page).screenshot({ animations: 'disabled', path: `${process.env.CANVAS_SHOTS_DIR}/${name}-${theme}.png` });
 };
 
 // The link an agent hands out when no editor is paired: the tab it opens takes the bridge, even from an older tab (review 2 #2).
@@ -235,7 +235,7 @@ for (const theme of ['light', 'dark']) {
     await panel.getByRole('button', { name: 'Copy command' }).click();
     await expect(panel).toHaveAttribute('data-status', 'waiting');
     await expect(panel.getByRole('alert')).toHaveCount(0);
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/^claude mcp add -s user openflowkit -e OPENFLOWKIT_BRIDGE_PORT=\d+ -e OPENFLOWKIT_BRIDGE_TOKEN=\w+ -- npx -y openflowkit mcp$/);
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(/^claude mcp add -s user canvas -e CANVAS_BRIDGE_PORT=\d+ -e CANVAS_BRIDGE_TOKEN=\w+ -- npx -y @hyperlab\.sh\/canvas mcp$/);
     await shot(page, '07-waiting', theme);
     await panel.getByRole('button', { name: 'Stop waiting' }).click();
 
@@ -243,8 +243,8 @@ for (const theme of ['light', 'dark']) {
     const strict = await fakeBridge({ tabAware: true, token: 'not-this-one' });
     try {
       await panel.locator('summary', { hasText: 'Connection settings' }).click();
-      await page.locator('#ofk-bridge-port').fill(String(strict.port));
-      await page.locator('#ofk-bridge-port').blur();
+      await page.locator('#canvas-bridge-port').fill(String(strict.port));
+      await page.locator('#canvas-bridge-port').blur();
       await panel.getByRole('button', { name: 'Connect', exact: true }).click();
       await expect(panel.getByRole('alert')).toContainText('did not accept this token');
       await shot(page, '08-token-rejected', theme);
@@ -258,9 +258,9 @@ for (const theme of ['light', 'dark']) {
     const bridge = await fakeBridge({ tabAware: true });
     try {
       // Leaving the error state closes the settings it opened.
-      if (!await panel.locator('details.ofk-connection-details[open]').count()) await panel.locator('summary', { hasText: 'Connection settings' }).click();
-      await page.locator('#ofk-bridge-port').fill(String(bridge.port));
-      await page.locator('#ofk-bridge-port').blur();
+      if (!await panel.locator('details.canvas-connection-details[open]').count()) await panel.locator('summary', { hasText: 'Connection settings' }).click();
+      await page.locator('#canvas-bridge-port').fill(String(bridge.port));
+      await page.locator('#canvas-bridge-port').blur();
       await panel.getByRole('button', { name: 'Connect', exact: true }).click();
       await expect(panel).toHaveAttribute('data-status', 'connected');
       await page.waitForTimeout(300);

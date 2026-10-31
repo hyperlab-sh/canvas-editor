@@ -1,7 +1,7 @@
 import type { DslDiagnostic, DslDirection } from '../../dsl/ast';
 import type { ElementKind } from '../../dsl/model/types';
 
-// Structurizr DSL → OFK text (grammar §11.2). Structurizr files are line-oriented
+// Structurizr DSL → Canvas text (grammar §11.2). Structurizr files are line-oriented
 // with `{}` blocks; every construct the DSL cannot express is reported as a W180
 // `source: 'import'` diagnostic and never throws (mermaidToDsl conventions).
 
@@ -31,9 +31,9 @@ export interface StStatement {
 export const THEME_TAG = /^(amazon web services|microsoft azure|google cloud platform) - (.+)$/i;
 export const THEME_PROVIDER: Readonly<Record<string, string>> = { 'amazon web services': 'aws', 'microsoft azure': 'azure', 'google cloud platform': 'gcp' };
 
-/** Structurizr keywords that do not exist in OFK; used by the detector. */
+/** Structurizr keywords that do not exist in Canvas; used by the detector. */
 export const STRUCTURIZR_KEYWORDS = /\b(?:person|softwareSystem|container|component|deploymentEnvironment|containerInstance|infrastructureNode|systemLandscape|systemContext)\b|\bdynamic\s|!identifiers|!include|!impliedRelationships/;
-export const OFK_FAMILY_HEADER = /^\s*(architecture|flowchart|sequence|state|erd|class|mindmap|gitgraph)\b/m;
+export const CANVAS_FAMILY_HEADER = /^\s*(architecture|flowchart|sequence|state|erd|class|mindmap|gitgraph)\b/m;
 
 export const KIND_BY_WORD: Readonly<Record<string, ElementKind>> = {
   person: 'person',
@@ -77,7 +77,7 @@ export const DEFAULT_TAGS: Readonly<Record<string, string>> = {
   softwaresysteminstance: 'Software System Instance',
 };
 
-/** Structurizr shape names → OFK shape vocabulary (grammar §5.1). */
+/** Structurizr shape names → Canvas shape vocabulary (grammar §5.1). */
 export const SHAPE_WORDS: Readonly<Record<string, string>> = {
   box: 'rect',
   roundedbox: 'rounded',
@@ -98,11 +98,11 @@ export const SHAPE_WORDS: Readonly<Record<string, string>> = {
   hexagon: 'hexagon',
 };
 
-/** Structurizr shapes OFK draws as something close but not the same; each is reported. */
+/** Structurizr shapes Canvas draws as something close but not the same; each is reported. */
 export const APPROXIMATE_SHAPES = new Set(['pipe', 'bucket', 'folder', 'mobiledevicelandscape']);
 
 /**
- * Structurizr's conventional tags that name an OFK kind (`External` system → `external`,
+ * Structurizr's conventional tags that name an Canvas kind (`External` system → `external`,
  * `Database` container → `store`). Only leaves change: these kinds hold no children.
  */
 export const KIND_BY_TAG: Readonly<Record<string, Readonly<Record<string, ElementKind>>>> = {
@@ -127,7 +127,7 @@ export interface DraftElement {
   color?: string;
   icon?: string;
   env?: string;
-  ofkId: string;
+  canvasId: string;
   dropped?: boolean;
   /** A deployment instance's model element; its reference is written once ids exist. */
   instanceOf?: DraftElement;
@@ -174,7 +174,7 @@ export type RulePart =
 export interface DraftRule {
   readonly op: 'include' | 'exclude';
   readonly parts?: readonly RulePart[];
-  /** Source line kept verbatim when the expression has no OFK equivalent. */
+  /** Source line kept verbatim when the expression has no Canvas equivalent. */
   readonly raw?: string;
 }
 

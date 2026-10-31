@@ -14,5 +14,5 @@ export function FloatingRegion({
   className = '',
   ...props
 }: HTMLAttributes<HTMLDivElement> & { slot: FloatingSlot; ref?: React.Ref<HTMLDivElement> }) {
-  return <div {...props} className={`ofk-floating-region ${className}`} data-slot={slot} />;
+  return <div {...props} className={`canvas-floating-region ${className}`} data-slot={slot} />;
 }

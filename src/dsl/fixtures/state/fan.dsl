@@ -1,4 +1,4 @@
-%% ofk 1
+%% canvas 1
 state right
 title: Wide state machine
 

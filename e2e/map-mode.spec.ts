@@ -200,7 +200,7 @@ test('another page of the model keeps the map where it is; leaving Map lands on 
   const before = (await rect(page, 'customer'))!;
   await page.getByRole('button', { name: /^Pages/ }).click();
   const list = page.getByRole('dialog', { name: 'Pages', exact: true });
-  const other = list.locator('.ofk-v2-page-select:not([aria-current="page"])').first();
+  const other = list.locator('.canvas-v2-page-select:not([aria-current="page"])').first();
   const name = (await other.innerText()).trim();
   await other.click();
   await page.getByRole('button', { name: 'Close pages' }).click();
@@ -293,17 +293,17 @@ test('the Canvas | Map switch sits right after the title and never moves; the pa
   const crumbs = page.getByRole('navigation', { name: 'Architecture level' });
   // The first page of a C4 workspace is its top view, by the name "Landscape".
   await expect(crumbs).toBeVisible();
-  await expect(page.locator('.ofk-v2-breadcrumb-current')).toHaveText('Landscape');
+  await expect(page.locator('.canvas-v2-breadcrumb-current')).toHaveText('Landscape');
   const bar = page.getByRole('toolbar', { name: 'Document', exact: true });
   const modes = bar.getByRole('group', { name: 'View mode' });
-  const [navBox, divider, modesBox] = [await crumbs.boundingBox(), await bar.locator('.ofk-v2-divider').boundingBox(), await modes.boundingBox()];
+  const [navBox, divider, modesBox] = [await crumbs.boundingBox(), await bar.locator('.canvas-v2-divider').boundingBox(), await modes.boundingBox()];
   expect(modesBox!.x + modesBox!.width).toBeLessThanOrEqual(divider!.x);
   expect(divider!.x + divider!.width).toBeLessThanOrEqual(navBox!.x);
   await enterMap(page);
   // Nothing selected: no path, and no divider for it.
   await expect(page.getByRole('navigation', { name: 'Map path' })).toHaveCount(0);
   await expect(crumbs).toHaveCount(0);
-  await expect(bar.locator('.ofk-v2-divider')).toHaveCount(0);
+  await expect(bar.locator('.canvas-v2-divider')).toHaveCount(0);
   expect((await modes.boundingBox())!.x).toBe(modesBox!.x);
   await canvasButton(page).click();
   await expect(crumbs).toBeVisible();
@@ -314,13 +314,13 @@ for (const width of [1440, 700]) test(`the switch is under the same point in Can
   await openC4(page, width);
   await page.getByRole('button', { name: /^Pages/ }).click();
   await page.getByRole('dialog', { name: 'Pages', exact: true }).getByRole('button', { name: /^Services: Shop/ }).click();
-  await expect(page.locator('.ofk-v2-breadcrumb-current')).toHaveText('Services: Shop');
+  await expect(page.locator('.canvas-v2-breadcrumb-current')).toHaveText('Services: Shop');
   const before = (await mapButton(page).boundingBox())!;
   await enterMap(page);
   await click(page, 'shop.api');
   const path = page.getByRole('navigation', { name: 'Map path' });
   await expect(path).toBeVisible();
-  await expect(path.locator('.ofk-v2-breadcrumb-current')).toHaveText('API');
+  await expect(path.locator('.canvas-v2-breadcrumb-current')).toHaveText('API');
   const inMap = (await mapButton(page).boundingBox())!;
   expect(inMap.x).toBe(before.x);
   expect(inMap.width).toBe(before.width);
@@ -328,9 +328,9 @@ for (const width of [1440, 700]) test(`the switch is under the same point in Can
   await expect(path.getByRole('button', { name: 'API' })).toHaveCount(0);
   await path.getByRole('button', { name: 'Shop', exact: true }).click();
   await expect.poll(async () => (await state(page)).selectedNodes).toEqual(['shop']);
-  await expect(path.locator('.ofk-v2-breadcrumb-current')).toHaveText('Shop');
+  await expect(path.locator('.canvas-v2-breadcrumb-current')).toHaveText('Shop');
   // The button the keyboard was on became the current crumb: focus follows it.
-  await expect(path.locator('.ofk-v2-breadcrumb-current')).toBeFocused();
+  await expect(path.locator('.canvas-v2-breadcrumb-current')).toBeFocused();
   await expect(path.locator('[aria-current="location"]')).toHaveCount(1);
   // The Map segment is a segmented control, not a toggle: pressing it again stays in Map (the M key toggles).
   await mapButton(page).click();
@@ -401,7 +401,7 @@ test('with reduced motion the focus is shown and the arrows do not march @gate',
 
 test('an arrow between boxes that call each other is two-way, and its focus marches both ways @gate', async ({ page }) => {
   test.setTimeout(60_000);
-  const dsl = '%% ofk 1\narchitecture\ntitle: Two ways\nmodel {\n system Web\n system Api\n system Db\n Web -> Api : asks\n Api -> Web : answers\n Api -> Db : saves\n}\nviews {\n view landscape\n}\n';
+  const dsl = '%% canvas 1\narchitecture\ntitle: Two ways\nmodel {\n system Web\n system Api\n system Db\n Web -> Api : asks\n Api -> Web : answers\n Api -> Db : saves\n}\nviews {\n view landscape\n}\n';
   const { deflateRawSync } = await import('node:zlib');
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`/#/from/dsl?d=${deflateRawSync(Buffer.from(dsl, 'utf8')).toString('base64url')}`);

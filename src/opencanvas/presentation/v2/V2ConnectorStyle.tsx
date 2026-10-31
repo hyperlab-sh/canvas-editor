@@ -36,17 +36,17 @@ const MARKER_HEADS: Readonly<Record<string, React.JSX.Element>> = {
 const markerOptions = (side: 'start' | 'end') => MARKER_NAMES.map(([value, name]) => ({
   value, title: name,
   label: <>
-    <svg className="ofk-marker-glyph" viewBox="0 0 24 12" aria-hidden="true" data-side={side}>
+    <svg className="canvas-marker-glyph" viewBox="0 0 24 12" aria-hidden="true" data-side={side}>
       <path d={value === 'none' ? 'M2 6 H22' : value === 'arrow' ? 'M2 6 H20' : 'M2 6 H14'} fill="none" />
       {MARKER_HEADS[value]}
     </svg>
-    <span className="ofk-visually-hidden">{name}</span>
+    <span className="canvas-visually-hidden">{name}</span>
   </>,
 }));
 const START_MARKERS = markerOptions('start');
 const END_MARKERS = markerOptions('end');
 const WIDTH_PRESETS = [1, 2, 3, 4].map((value) => ({
-  value, label: <span className="ofk-width-glyph" style={{ height: value }} />, title: `${value}px`,
+  value, label: <span className="canvas-width-glyph" style={{ height: value }} />, title: `${value}px`,
 }));
 const INK = [
   { id: '#ffffff', label: 'White', color: '#ffffff', border: '#cbd5e1' },
@@ -88,7 +88,7 @@ export function V2ConnectorStyle({ page, connectorId, commit, onCommitted }: V2C
   return (
     <>
       <StyleButton label="Line" open={open === 'line'} onToggle={() => toggle('line')} onClose={close}
-        preview={<span className="ofk-style-line" style={{ borderTopColor: presentation.stroke.color, borderTopWidth: Math.min(4, presentation.stroke.width),
+        preview={<span className="canvas-style-line" style={{ borderTopColor: presentation.stroke.color, borderTopWidth: Math.min(4, presentation.stroke.width),
           borderTopStyle: dashValue(presentation.stroke.dash) === 'solid' ? 'solid' : dashValue(presentation.stroke.dash) }} />}>
         <PanelRow label="Color">
           <SwatchGrid label="Line colour" options={INK} selected={presentation.stroke.color.toLowerCase()}
@@ -120,7 +120,7 @@ export function V2ConnectorStyle({ page, connectorId, commit, onCommitted }: V2C
       </StyleButton>
 
       <StyleButton label="Ends" open={open === 'ends'} onToggle={() => toggle('ends')} onClose={close}
-        preview={<span className="ofk-style-text">{markerValue(presentation.sourceMarkers) === 'none' ? '—' : '←'}{markerValue(presentation.targetMarkers) === 'none' ? '—' : '→'}</span>}>
+        preview={<span className="canvas-style-text">{markerValue(presentation.sourceMarkers) === 'none' ? '—' : '←'}{markerValue(presentation.targetMarkers) === 'none' ? '—' : '→'}</span>}>
         <PanelRow label="Start">
           <Segmented<ConnectorMarkerEnd | ''> label="Start marker" value={markerValue(presentation.sourceMarkers)}
             onChange={(marker) => { if (marker) apply({ markerStart: marker }); }} options={START_MARKERS} />
@@ -137,13 +137,13 @@ export function V2ConnectorStyle({ page, connectorId, commit, onCommitted }: V2C
       </StyleButton>
 
       <StyleButton label="Label" open={open === 'label'} onToggle={() => toggle('label')} onClose={close}
-        preview={<span className="ofk-style-glyph" style={{ textDecorationColor: label.textColor }}>A</span>}>
+        preview={<span className="canvas-style-glyph" style={{ textDecorationColor: label.textColor }}>A</span>}>
         <PanelRow label="Color">
           <SwatchGrid label="Label colour" options={INK} selected={label.textColor} onPick={(id) => apply({ labelColor: id })}
             trailing={<CustomColorSwatch value={label.textColor} onChange={() => undefined} onCommit={(hex) => apply({ labelColor: hex })} />} />
         </PanelRow>
-        <details className="ofk-style-more">
-          <summary className="ofk-caption">Label background<Icon icon={IconChevronDown} /></summary>
+        <details className="canvas-style-more">
+          <summary className="canvas-caption">Label background<Icon icon={IconChevronDown} /></summary>
           <PanelRow>
             <SwatchGrid label="Label background"
               options={[{ id: 'transparent', label: 'None', color: 'transparent' }, { id: '#ffffff', label: 'White', color: '#ffffff', border: '#cbd5e1' }, ...INK]}

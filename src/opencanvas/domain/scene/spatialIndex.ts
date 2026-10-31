@@ -75,7 +75,7 @@ function addToCells(
 
 function assertPageValid(page: ScenePage): void {
   const shell = {
-    format: 'openflowkit.scene',
+    format: 'canvas.scene',
     schemaVersion: 1,
     id: 'scene-index-validation',
     name: 'Scene index validation',

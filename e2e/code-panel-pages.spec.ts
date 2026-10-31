@@ -14,7 +14,7 @@ test('Generate never rewrites a page the panel was not opened on @gate', async (
   await openCanvas(page);
   await page.getByRole('toolbar', { name: 'Workspace', exact: true }).getByRole('button', { name: 'Diagram as code' }).click();
   const source = page.getByRole('textbox', { name: 'Diagram source' });
-  await source.fill('%% ofk 1\nflowchart\nOne -> Two');
+  await source.fill('%% canvas 1\nflowchart\nOne -> Two');
   await source.press('ControlOrMeta+Enter');
   await expect.poll(async () => (await doc(page))!.pages[0]!.nodes.length).toBeGreaterThan(2);
   const firstPage = (await doc(page))!.pages[0]!;

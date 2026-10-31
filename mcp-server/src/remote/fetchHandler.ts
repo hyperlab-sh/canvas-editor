@@ -101,7 +101,7 @@ export function createFetchHandler({ viewerHtml, appOrigin, allowedHosts, maxRen
         void server.close();
       }
     } catch (error) {
-      console.error('openflowkit-remote:', error);
+      console.error('canvas-remote:', error);
       return rpcError(500, 'Internal error');
     }
   };

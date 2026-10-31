@@ -79,11 +79,11 @@ export async function startService(options: StartOptions): Promise<RunningServic
   };
 }
 
-/** True when `/health` on the port answers as an OpenFlowKit service. */
+/** True when `/health` on the port answers as a Canvas service. */
 async function isOurService(host: string, port: number): Promise<boolean> {
   try {
     const reply = await fetch(`http://${urlHost(host)}:${port}/health`, { signal: AbortSignal.timeout(2000) });
-    return ((await reply.json()) as { service?: unknown }).service === 'openflowkit-service';
+    return ((await reply.json()) as { service?: unknown }).service === 'canvas-service';
   } catch {
     return false;
   }
@@ -110,19 +110,19 @@ function parseArgs(args: readonly string[]): { port?: number; host?: string; con
 
 /**
  * Starts the service and returns once it listens; the server keeps the process alive.
- * Exit 1 when the port is held by something else, 0 when another OpenFlowKit service already has it.
+ * Exit 1 when the port is held by something else, 0 when another Canvas service already has it.
  */
 export async function runServe(args: readonly string[], io: CliIo, onStart?: (service: RunningService) => void): Promise<number> {
   const parsed = parseArgs(args);
   if (typeof parsed === 'string') { io.err(parsed); return 2; }
   const config = await loadConfig(parsed.config);
   const port = parsed.port ?? config.port;
-  const host = parsed.host ?? (process.env.OPENFLOWKIT_SERVICE_HOST || DEFAULT_HOST);
+  const host = parsed.host ?? (process.env.CANVAS_SERVICE_HOST || DEFAULT_HOST);
   if (isIP(host) === 0) {
-    io.err(`${CLI_NAME} serve: bind address "${host}" is not an IP address. Use --host or OPENFLOWKIT_SERVICE_HOST with e.g. 127.0.0.1, 0.0.0.0 or ::.`);
+    io.err(`${CLI_NAME} serve: bind address "${host}" is not an IP address. Use --host or CANVAS_SERVICE_HOST with e.g. 127.0.0.1, 0.0.0.0 or ::.`);
     return 2;
   }
-  const appDir = parsed.app ?? process.env.OPENFLOWKIT_APP_DIR ?? defaultAppDir();
+  const appDir = parsed.app ?? process.env.CANVAS_APP_DIR ?? defaultAppDir();
   try {
     const service = await startService({ port, host, appDir, config });
     io.out(`${CLI_NAME} service listening on ${service.url} (app: ${resolve(appDir)})`);
@@ -140,7 +140,7 @@ export async function runServe(args: readonly string[], io: CliIo, onStart?: (se
       io.out(`${CLI_NAME} service is already running on http://${urlHost(host)}:${port}`);
       return 0;
     }
-    io.err(`${CLI_NAME} serve: port ${port} is in use by something that is not an OpenFlowKit service. Free it, or pick another with --port or the config file.`);
+    io.err(`${CLI_NAME} serve: port ${port} is in use by something that is not a Canvas service. Free it, or pick another with --port or the config file.`);
     return 1;
   }
 }

@@ -61,7 +61,7 @@ export function useV2EditorNotices(pushToast: (toast: ToastItem) => void): void 
 }
 
 interface PendingNotice { readonly imported: number; readonly failed: readonly string[] }
-const PENDING_KEY = 'ofk.v1ImportNotice';
+const PENDING_KEY = 'canvas.v1ImportNotice';
 const SEEN_AFTER_MS = 8000;
 const clearPending = () => { try { localStorage.removeItem(PENDING_KEY); } catch { /* nothing stored */ } };
 function readPending(): PendingNotice | null {

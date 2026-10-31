@@ -9,8 +9,8 @@ import { expect, test } from './test';
 
 const REPO_ROOT = new URL('..', import.meta.url).pathname;
 // A per-run port so a lingering bridge from an earlier run cannot shadow this
-// one; CI may pin OPENFLOWKIT_BRIDGE_PORT explicitly.
-const BRIDGE_PORT = process.env.OPENFLOWKIT_BRIDGE_PORT ?? String(44_000 + (process.pid % 1_000));
+// one; CI may pin CANVAS_BRIDGE_PORT explicitly.
+const BRIDGE_PORT = process.env.CANVAS_BRIDGE_PORT ?? String(44_000 + (process.pid % 1_000));
 
 interface LiveEvalResult {
   readonly error?: string;
@@ -25,7 +25,7 @@ function runDriver(): Promise<LiveEvalResult> {
   return new Promise((resolve, reject) => {
     const child = spawn('node', ['mcp-server/scripts/live-eval.mjs'], {
       cwd: REPO_ROOT,
-      env: { ...process.env, OPENFLOWKIT_BRIDGE_PORT: BRIDGE_PORT },
+      env: { ...process.env, CANVAS_BRIDGE_PORT: BRIDGE_PORT },
     });
     let stdout = '';
     let stderr = '';
@@ -54,7 +54,7 @@ test('an MCP agent creates, reads, updates and screenshots a diagram in the open
   page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
   // Pair before the app boots: same path the Connect-agent popover writes.
   await page.addInitScript((port) => {
-    const key = 'openflowkit-v2-preferences';
+    const key = 'canvas-v2-preferences';
     const current = JSON.parse(window.localStorage.getItem(key) ?? '{}');
     window.localStorage.setItem(key, JSON.stringify({
       ...current, agentBridgeEnabled: true, bridgePort: port, bridgeToken: '',

@@ -3,7 +3,7 @@ import { expect, test } from './test';
 // Phase 4 UX: code-panel palette, pages, export (real PNG raster), cheatsheet.
 // One headed check for the slice — npm run e2e:headed -- e2e/phase-4.spec.ts
 
-const DSL = `%% ofk 1
+const DSL = `%% canvas 1
 flowchart
 
   Client [blue] -> API [emerald] : HTTPS
@@ -61,7 +61,7 @@ test('palette, pages, export and cheatsheet work end to end', async ({ page }) =
   await page.getByRole('menuitem', { name: 'Delete page' }).click();
   await expect.poll(async () => (await state(page)).pages.length).toBe(2);
   // Switch to the empty page (row button, not the bar button), then close.
-  await page.locator('.ofk-v2-page-select').filter({ hasText: second.name }).click();
+  await page.locator('.canvas-v2-page-select').filter({ hasText: second.name }).click();
   await page.getByRole('button', { name: 'Close pages' }).click();
 
   // The empty page cannot be exported: the button says so instead of failing.
@@ -73,7 +73,7 @@ test('palette, pages, export and cheatsheet work end to end', async ({ page }) =
 
   // Back to the page with the diagram before exporting.
   await page.getByRole('button', { name: /^Pages/ }).click();
-  await page.locator('.ofk-v2-page-select').filter({ hasText: firstPageName }).click();
+  await page.locator('.canvas-v2-page-select').filter({ hasText: firstPageName }).click();
   await page.getByRole('button', { name: 'Close pages' }).click();
 
   // --- export: a real 2x PNG download --------------------------------------

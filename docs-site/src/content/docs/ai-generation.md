@@ -3,7 +3,7 @@ title: AI generation
 description: Bring your own key — talk through a diagram, let the assistant draft changes, review them, apply as one undo step.
 ---
 
-OpenFlowKit's assistant turns a prompt into a diagram without a hosted service in between: your
+Canvas's assistant turns a prompt into a diagram without a hosted service in between: your
 browser calls the provider you configured, directly, with your key. The provider's answer is
 compiled by the same DSL compiler as everything else, then shown for review.
 
@@ -15,7 +15,7 @@ sits under **Endpoint**. **Test key** asks the provider for one short response.
 
 Each provider keeps its own key, marked with a dot on its tile, so switching providers never
 sends one vendor's key to another; **Clear all keys** removes every one. Keys are stored in this
-browser's `localStorage` and sent only to the provider they were entered for. There is no OpenFlowKit account and no relay: if the request fails, the error names the
+browser's `localStorage` and sent only to the provider they were entered for. There is no Canvas account and no relay: if the request fails, the error names the
 cause and the next step. See [Troubleshooting](#troubleshooting).
 
 ## Talk, review, or change
@@ -59,7 +59,7 @@ The report opens a prefilled issue with the prompt, reply and model — never yo
 
 - **No provider list here on purpose.** The catalogue lives in the panel; the providers,
   endpoints and wire formats change independently of this page.
-- **No server-side AI.** No OpenFlowKit proxy, key escrow or usage metering.
+- **No server-side AI.** No Canvas proxy, key escrow or usage metering.
 - **No direct edits.** Every change goes through the proposal; nothing lands until you apply it.
 - **No sync.** Chats stay in this browser; images in older chats may be dropped to fit its
   storage.
@@ -89,7 +89,7 @@ allowing this page's origin.
 3. Start it with the origin allowed — the exact origin is in the error message:
 
    ```sh
-   OLLAMA_ORIGINS='https://your-openflowkit-origin' ollama serve
+   OLLAMA_ORIGINS='https://your-canvas-origin' ollama serve
    ```
 
    `OLLAMA_ORIGINS='*'` works too, and lets any site you visit use your local models.
@@ -97,7 +97,7 @@ allowing this page's origin.
    `launchctl setenv OLLAMA_ORIGINS '*'`, then quit and reopen the app.
 4. If Chrome asks to let the page access devices on your local network, allow it. Brave's
    shields and Safari may block `localhost` from an `https://` page — use Chrome, or run
-   OpenFlowKit locally.
+   Canvas locally.
 5. Press **Test key** in the provider dialog.
 
 Check Ollama itself with `curl http://localhost:11434/api/version`; no answer means step 2 or 3

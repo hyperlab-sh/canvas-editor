@@ -26,27 +26,27 @@ export function MapBoxPanel({ model, id, edges, pathLink, onSelect, onSelectArro
   const size = node.kind === 'file' ? plural(node.loc, 'line') : node.files > 0 ? plural(node.files, 'file') : '';
   const name = (other: string) => model.nodes[other]?.name ?? other;
   return (
-    <div className="ofk-v2-model-detail" aria-label="Selected box">
+    <div className="canvas-v2-model-detail" aria-label="Selected box">
       <strong>{node.name}</strong>
-      <p className="ofk-v2-model-hint">{KIND[node.kind]}{size ? ` · ${size}` : ''}</p>
-      {node.path ? (pathLink ? <a className="ofk-v2-map-link ofk-v2-map-path" href={pathLink} target="_blank" rel="noopener noreferrer">{node.path}</a> : <span>{node.path}</span>) : null}
-      {node.desc ? <p className="ofk-v2-model-hint">{node.desc}</p> : null}
-      {edges.length > 0 ? <h3 className="ofk-v2-map-label" id={`${labelId}-talks`}>Talks to</h3> : null}
-      {edges.length > 0 ? <ul className="ofk-v2-model-list" aria-labelledby={`${labelId}-talks`}>
+      <p className="canvas-v2-model-hint">{KIND[node.kind]}{size ? ` · ${size}` : ''}</p>
+      {node.path ? (pathLink ? <a className="canvas-v2-map-link canvas-v2-map-path" href={pathLink} target="_blank" rel="noopener noreferrer">{node.path}</a> : <span>{node.path}</span>) : null}
+      {node.desc ? <p className="canvas-v2-model-hint">{node.desc}</p> : null}
+      {edges.length > 0 ? <h3 className="canvas-v2-map-label" id={`${labelId}-talks`}>Talks to</h3> : null}
+      {edges.length > 0 ? <ul className="canvas-v2-model-list" aria-labelledby={`${labelId}-talks`}>
         {edges.map((e) => {
           const out = e.from === id;
           return <li key={e.key}>
-            <button type="button" className="ofk-v2-map-link" onClick={() => onSelectArrow(e.key)}>{out ? '→' : '←'} {name(out ? e.to : e.from)}</button>
-            {' '}<span className="ofk-v2-model-hint">{MAP_LINK_WORDS[e.kind]} · {e.count}</span>
+            <button type="button" className="canvas-v2-map-link" onClick={() => onSelectArrow(e.key)}>{out ? '→' : '←'} {name(out ? e.to : e.from)}</button>
+            {' '}<span className="canvas-v2-model-hint">{MAP_LINK_WORDS[e.kind]} · {e.count}</span>
           </li>;
         })}
       </ul> : null}
-      {node.children.length > 0 ? <h3 className="ofk-v2-map-label" id={`${labelId}-inside`}>Inside</h3> : null}
-      {node.children.length > 0 ? <ul className="ofk-v2-model-list" aria-labelledby={`${labelId}-inside`}>
+      {node.children.length > 0 ? <h3 className="canvas-v2-map-label" id={`${labelId}-inside`}>Inside</h3> : null}
+      {node.children.length > 0 ? <ul className="canvas-v2-model-list" aria-labelledby={`${labelId}-inside`}>
         {node.children.slice(0, 40).map((child) => <li key={child}>
-          <button type="button" className="ofk-v2-map-link" onClick={() => onSelect(child)}>{name(child)}</button>
+          <button type="button" className="canvas-v2-map-link" onClick={() => onSelect(child)}>{name(child)}</button>
         </li>)}
-        {node.children.length > 40 ? <li className="ofk-v2-model-hint">{`and ${node.children.length - 40} more`}</li> : null}
+        {node.children.length > 40 ? <li className="canvas-v2-model-hint">{`and ${node.children.length - 40} more`}</li> : null}
       </ul> : null}
     </div>
   );

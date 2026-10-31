@@ -19,11 +19,11 @@ export function HomeProjects({ documents, layout, appearance, renameRef, renamin
   readonly onCancel: (id: string) => void;
 }): React.JSX.Element {
   return (
-    <section className="ofk-home-projects" aria-label="Projects">
+    <section className="canvas-home-projects" aria-label="Projects">
       {groupByProject(documents).map(({ project, documents: grouped }) => (
         <section key={project} aria-label={`Project ${project}`}>
-          <h2 className="ofk-home-project-title">{project}</h2>
-          <ul className="ofk-home-grid" data-layout={layout} aria-label={`${project} project`} onKeyDown={(event) => onGridKey(event, project)}>
+          <h2 className="canvas-home-project-title">{project}</h2>
+          <ul className="canvas-home-grid" data-layout={layout} aria-label={`${project} project`} onKeyDown={(event) => onGridKey(event, project)}>
             {grouped.map((summary) => (
               <DiagramCard key={summary.id} summary={summary} thumbnail={undefined} appearance={appearance} renameRef={renameRef}
                 rename={renaming?.id === summary.id && renaming.project === project ? {

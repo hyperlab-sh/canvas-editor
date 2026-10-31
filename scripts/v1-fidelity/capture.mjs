@@ -3,8 +3,8 @@
 // for delete and the import-mode setting — and this script dumps what landed in
 // IndexedDB / localStorage. Run once, commit the output.
 //
-//   (cd ../ofk-main && npx vite --port 5179)        # git worktree of `main`
-//   (cd ../ofk-premarch && npx vite --port 5180)    # c3e3b92, last build before 2026-03-27
+//   (cd ../canvas-main && npx vite --port 5179)        # git worktree of `main`
+//   (cd ../canvas-premarch && npx vite --port 5180)    # c3e3b92, last build before 2026-03-27
 //   node scripts/v1-fidelity/capture.mjs
 import { chromium } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -159,7 +159,7 @@ async function dropImage(page) {
 function dumpStorage(page) {
   return page.evaluate(async () => {
     const indexedDb = await new Promise((resolve, reject) => {
-      const request = indexedDB.open('openflowkit-persistence');
+      const request = indexedDB.open('canvas-persistence');
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
         const db = request.result;
@@ -263,7 +263,7 @@ const manifest = {};
   await context.close();
 }
 
-// 2. localStorage `openflowkit-documents-fallback`: v1 with IndexedDB unavailable.
+// 2. localStorage `canvas-documents-fallback`: v1 with IndexedDB unavailable.
 {
   const { context, page } = await fresh(() => {
     Object.defineProperty(window, 'indexedDB', { value: undefined });
@@ -276,7 +276,7 @@ const manifest = {};
   await context.close();
 }
 
-// 3. Pre-March `openflowkit-storage` (zustand `tabs`): the last build before documents.
+// 3. Pre-March `canvas-storage` (zustand `tabs`): the last build before documents.
 {
   const { context, page } = await fresh();
   manifest[await newEditor(page, PREMARCH)] = 'pre-march tabs';

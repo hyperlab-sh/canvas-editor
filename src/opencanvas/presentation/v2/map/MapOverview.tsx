@@ -35,16 +35,16 @@ export function MapOverview({ model, arch, onSelect, reading }: MapOverviewData)
   if (boxes <= 0) return null;
   const flows = arch?.flows ?? [];
   return (
-    <div className="ofk-v2-model-detail" aria-label="Map overview">
+    <div className="canvas-v2-model-detail" aria-label="Map overview">
       <strong>{boxes === 1 ? '1 box' : `${boxes} boxes`} · {reading ? 'reading…' : plural(model.links.length, 'connection')}</strong>
-      {rows.length > 0 ? <ul className="ofk-v2-model-list" aria-label="Worth a look">
+      {rows.length > 0 ? <ul className="canvas-v2-model-list" aria-label="Worth a look">
         {rows.map((r) => <li key={`${r.id}:${r.text}`}>
-          <button type="button" className="ofk-v2-map-link" onClick={() => onSelect(r.id)}>{r.text}</button>
-          {r.note ? <>{' '}<span className="ofk-v2-model-hint">{r.note}</span></> : null}
+          <button type="button" className="canvas-v2-map-link" onClick={() => onSelect(r.id)}>{r.text}</button>
+          {r.note ? <>{' '}<span className="canvas-v2-model-hint">{r.note}</span></> : null}
         </li>)}
       </ul> : null}
-      {flows.length > 0 ? <ul className="ofk-v2-model-list" aria-label="Flows in this map">
-        {flows.map((f) => <li key={f.id}><span>{f.name}</span> <span className="ofk-v2-model-hint">{plural(f.steps.length, 'step')}</span></li>)}
+      {flows.length > 0 ? <ul className="canvas-v2-model-list" aria-label="Flows in this map">
+        {flows.map((f) => <li key={f.id}><span>{f.name}</span> <span className="canvas-v2-model-hint">{plural(f.steps.length, 'step')}</span></li>)}
       </ul> : null}
     </div>
   );

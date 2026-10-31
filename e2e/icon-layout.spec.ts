@@ -22,7 +22,7 @@ async function generate(page: Page, source: string, expected: number): Promise<v
 
 test('an arrow into the bottom of an icon tile ends under its caption, not in the empty box below @gate', async ({ page }) => {
   // The tile is 150 tall by hand: its box reaches well below the caption, where the arrow used to stop.
-  await generate(page, '%% ofk 1\narchitecture up\n\nAPI [icon: tabler/server, height: 150]\nDB [icon: tabler/database]\nDB -> API', 2);
+  await generate(page, '%% canvas 1\narchitecture up\n\nAPI [icon: tabler/server, height: 150]\nDB [icon: tabler/database]\nDB -> API', 2);
   const api = (await rect(page, 'api'))!;
   const size = (await nodeOf(page, 'api')).size;
   const scale = api.width / size.width;
@@ -35,7 +35,7 @@ test('an arrow into the bottom of an icon tile ends under its caption, not in th
 });
 
 test('the Icon panel puts the icon left of the text, undoes in one step, and the code says iconpos @gate', async ({ page }) => {
-  await generate(page, '%% ofk 1\narchitecture\n\nAPI [icon: tabler/server]', 0);
+  await generate(page, '%% canvas 1\narchitecture\n\nAPI [icon: tabler/server]', 0);
   const before = await nodeOf(page, 'api');
   const centre = await centreOf(page, 'api');
   await page.mouse.click(centre.x, centre.y);

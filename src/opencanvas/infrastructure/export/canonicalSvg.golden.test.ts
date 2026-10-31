@@ -27,7 +27,7 @@ const FIXTURES: readonly { readonly family: string; readonly file: string }[] = 
 
 function documentFrom(compiled: CompileResult, name: string): SceneDocumentV1 {
   return {
-    format: 'openflowkit.scene', schemaVersion: 1, id: 'golden', name,
+    format: 'canvas.scene', schemaVersion: 1, id: 'golden', name,
     createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z',
     pages: [{
       id: 'page-1', name: 'Page 1', diagramKind: compiled.meta.family,

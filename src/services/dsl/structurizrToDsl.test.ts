@@ -56,8 +56,8 @@ describe('looksLikeStructurizr', () => {
     expect(looksLikeStructurizr('workspace { }')).toBe(true);
   });
 
-  it('rejects OFK, Mermaid and prose', () => {
-    expect(looksLikeStructurizr('%% ofk 1\narchitecture\nmodel { person Customer }')).toBe(false);
+  it('rejects Canvas, Mermaid and prose', () => {
+    expect(looksLikeStructurizr('%% canvas 1\narchitecture\nmodel { person Customer }')).toBe(false);
     expect(looksLikeStructurizr('architecture\nmodel { person Customer }')).toBe(false);
     expect(looksLikeStructurizr('flowchart LR\nA --> B')).toBe(false);
     expect(looksLikeStructurizr('model { a -> b }')).toBe(false);
@@ -69,12 +69,12 @@ describe('header', () => {
   it('returns an error only when no workspace or model block exists', () => {
     expect(structurizrToDsl('person Customer')).toEqual({ error: 'No Structurizr workspace or model block found' });
     expect(structurizrToDsl('views { systemLandscape }')).toEqual({ error: 'No Structurizr workspace or model block found' });
-    expect(convert('workspace { model { } }').dsl).toBe('%% ofk 1\narchitecture\n');
+    expect(convert('workspace { model { } }').dsl).toBe('%% canvas 1\narchitecture\n');
   });
 
   it('turns the workspace name into the title and drops the description with a loss', async () => {
     const result = convert('workspace "Big Bank" "The bank" { model { person "Customer" } }');
-    expect(result.dsl.startsWith('%% ofk 1\narchitecture\ntitle: Big Bank\n\nmodel {')).toBe(true);
+    expect(result.dsl.startsWith('%% canvas 1\narchitecture\ntitle: Big Bank\n\nmodel {')).toBe(true);
     expect(result.losses).toContain('workspace description dropped');
     await expectCleanAndIdempotent(result.dsl);
   });
@@ -345,7 +345,7 @@ describe('views', () => {
     expect(result.dsl).toContain('include Web ->');
     expect(result.dsl).toContain('include * where kind is container');
     expect(result.dsl).toContain('include * where tag is @core');
-    expect(result.losses.some((loss) => loss.includes('no OFK equivalent'))).toBe(false);
+    expect(result.losses.some((loss) => loss.includes('no Canvas equivalent'))).toBe(false);
     await expectCleanAndIdempotent(result.dsl);
   });
 
@@ -361,8 +361,8 @@ describe('views', () => {
     expect(result.dsl).toContain('include element.parent==Shop');
     expect(result.dsl).toContain('include technology==React');
     expect(result.dsl).toContain('include relationship.tag==async');
-    expect(result.losses.filter((loss) => loss.includes('no OFK equivalent'))).toHaveLength(3);
-    // OFK's parseRule accepts any `include <text>` without a diagnostic; the loss notes are
+    expect(result.losses.filter((loss) => loss.includes('no Canvas equivalent'))).toHaveLength(3);
+    // Canvas's parseRule accepts any `include <text>` without a diagnostic; the loss notes are
     // the only signal, and the kept lines match nothing in the view.
     await expectClean(result.dsl);
     await expectIdempotent(result.dsl);
@@ -589,7 +589,7 @@ describe('output shape', () => {
       }
       views { container Shop { include * } }
     }`);
-    expect(result.dsl.startsWith('%% ofk 1\narchitecture\ntitle: Shop\n\n')).toBe(true);
+    expect(result.dsl.startsWith('%% canvas 1\narchitecture\ntitle: Shop\n\n')).toBe(true);
     expect(result.dsl).toContain('\n  person Customer');
     expect(result.dsl).toContain('\n    container Web');
     expect(result.dsl.endsWith('\n')).toBe(true);
@@ -598,7 +598,7 @@ describe('output shape', () => {
 
   it('emits no model block when the model is empty', () => {
     const result = convert('workspace { model { } }');
-    expect(result.dsl).toBe('%% ofk 1\narchitecture\n');
+    expect(result.dsl).toBe('%% canvas 1\narchitecture\n');
   });
 
   it('never throws on malformed bodies', async () => {
@@ -623,7 +623,7 @@ describe('fixture corpus', () => {
 
   it.each(fixturePaths)('%s imports without errors and is format-idempotent', async (path) => {
     const result = convert(fixtures[path]!);
-    expect(result.dsl.startsWith('%% ofk 1\narchitecture\n')).toBe(true);
+    expect(result.dsl.startsWith('%% canvas 1\narchitecture\n')).toBe(true);
     await expectCleanAndIdempotent(result.dsl);
   });
 
@@ -692,7 +692,7 @@ describe('fixture corpus', () => {
       expect(result.losses).toContain(loss);
     }
     expect(result.losses.some((loss) => loss.includes('conjunction flattened to a union'))).toBe(false);
-    expect(result.losses.some((loss) => loss.includes('no OFK equivalent'))).toBe(true);
+    expect(result.losses.some((loss) => loss.includes('no Canvas equivalent'))).toBe(true);
     await expectClean(result.dsl);
   });
 });

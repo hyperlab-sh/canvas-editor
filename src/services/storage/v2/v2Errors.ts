@@ -50,7 +50,7 @@ export function isQuotaFailure(error: unknown): boolean {
 /** What a person reads when storage fails: the cause in their terms and what to do next. */
 export function describeStorageFailure(error: unknown): { readonly blocked: boolean; readonly message: string } {
   if (error instanceof V2StorageBlockedError) {
-    return { blocked: false, message: 'Another OpenFlowKit tab is still open on an older version. Close other OpenFlowKit tabs, then try again.' };
+    return { blocked: false, message: 'Another Canvas tab is still open on an older version. Close other Canvas tabs, then try again.' };
   }
   if (error instanceof V2StorageUnavailableError) {
     return { blocked: true, message: 'This browser is blocking site storage — private windows and some privacy settings do this. Allow storage for this site, then try again.' };

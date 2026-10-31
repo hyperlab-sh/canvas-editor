@@ -97,7 +97,7 @@ export function renderIndexHtml(name: string, model: ArchModelData, views: reado
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${escapeHtml(name)} — OpenFlowKit</title>
+<title>${escapeHtml(name)} — Canvas</title>
 <style>
 :root{color-scheme:light dark;--bg:#f8fafc;--panel:#fff;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--accent:#2563eb}
 @media (prefers-color-scheme:dark){:root{--bg:#020617;--panel:#0f172a;--ink:#e2e8f0;--muted:#94a3b8;--line:#1e293b;--accent:#60a5fa}}
@@ -119,8 +119,8 @@ main{flex:1;overflow:auto;padding:20px}
 .view .dark{display:none}
 @media (prefers-color-scheme:dark){.view .light{display:none}.view .dark{display:block}}
 [data-node-id],[data-connector-id]{transition:opacity .18s ease}
-svg.ofk-dim [data-node-id]:not(.ofk-active),svg.ofk-dim [data-connector-id]:not(.ofk-active){opacity:.12}
-svg:not(.ofk-dim) [data-node-id].ofk-active,svg:not(.ofk-dim) [data-connector-id].ofk-active{filter:drop-shadow(0 0 5px var(--accent))}
+svg.canvas-dim [data-node-id]:not(.canvas-active),svg.canvas-dim [data-connector-id]:not(.canvas-active){opacity:.12}
+svg:not(.canvas-dim) [data-node-id].canvas-active,svg:not(.canvas-dim) [data-connector-id].canvas-active{filter:drop-shadow(0 0 5px var(--accent))}
 #stage [data-node-id]{cursor:pointer}
 footer{display:flex;align-items:center;gap:10px;padding:8px 16px;border-top:1px solid var(--line);background:var(--panel)}
 footer[hidden]{display:none}
@@ -245,8 +245,8 @@ footer button:hover{border-color:var(--accent)}
     label.textContent = parts.join(' · ');
   }
   function activate(step) {
-    views.forEach(function (view) { var svg = svgOf(view.slug); if (svg) svg.classList.remove('ofk-dim'); });
-    document.querySelectorAll('.ofk-active').forEach(function (node) { node.classList.remove('ofk-active'); });
+    views.forEach(function (view) { var svg = svgOf(view.slug); if (svg) svg.classList.remove('canvas-dim'); });
+    document.querySelectorAll('.canvas-active').forEach(function (node) { node.classList.remove('canvas-active'); });
     if (!step || !step.from || !step.to) { setCaption(step); return; }
     var slug = bestView(step);
     if (slug !== current) show(slug);
@@ -260,9 +260,9 @@ footer button:hover{border-color:var(--accent)}
       if (shown) selectors.push('[data-node-id="' + cssEscape(shown) + '"]');
     });
     if (selectors.length === 0) { setCaption(step); return; }
-    svg.classList.add('ofk-dim');
+    svg.classList.add('canvas-dim');
     selectors.forEach(function (selector) {
-      svg.querySelectorAll(selector).forEach(function (node) { node.classList.add('ofk-active'); });
+      svg.querySelectorAll(selector).forEach(function (node) { node.classList.add('canvas-active'); });
     });
     setCaption(step);
   }

@@ -7,7 +7,7 @@ import { expect, test } from './test';
 // frame the encoder paints must be that same picture too, at 1080p.
 // Run headed: npm run e2e:headed -- e2e/motion-svg.spec.ts
 
-const DSL = `%% ofk 1
+const DSL = `%% canvas 1
 flowchart down
 
   Client [blue] -> API [green] : HTTPS
@@ -18,7 +18,7 @@ flowchart down
 
 // The painter and scrubber checks below are about plain shapes: icons from
 // labels would turn Client/API/Store into icon cards, which take the SVG path.
-const DIAGRAM = `%% ofk 1
+const DIAGRAM = `%% canvas 1
 flowchart down
 icons: off
 
@@ -27,7 +27,7 @@ icons: off
   API -> Store
 `;
 
-const MARKED = `%% ofk 1
+const MARKED = `%% canvas 1
 flowchart down
 icons: off
 
@@ -37,7 +37,7 @@ icons: off
   Store -> Worker [rounded, violet] : done [head: arrow]
 `;
 
-const SHAPES = `%% ofk 1
+const SHAPES = `%% canvas 1
 flowchart
 icons: off
 
@@ -55,7 +55,7 @@ Reply -> Done
 Done -> Goal
 `;
 
-const CHART = `%% ofk 1
+const CHART = `%% canvas 1
 chart bar
 title: Monthly revenue
 
@@ -151,8 +151,8 @@ test('animated SVG and the still match at every time', async ({ page }) => {
     // A real animation: keyframes, per-element animations, reduced-motion escape.
     expect(motion!.animatedSvg).toContain('@keyframes');
     expect(motion!.animatedSvg).toContain('prefers-reduced-motion');
-    expect(motion!.animatedSvg).toContain('class="ofk-anim"');
-    if (preset === 'walkthrough') expect(motion!.animatedSvg).toContain('@keyframes ofk-camera');
+    expect(motion!.animatedSvg).toContain('class="canvas-anim"');
+    if (preset === 'walkthrough') expect(motion!.animatedSvg).toContain('@keyframes canvas-camera');
 
     for (const fraction of [0.15, 0.5, 0.85]) {
       const at = Math.round(motion!.durationMs * fraction);

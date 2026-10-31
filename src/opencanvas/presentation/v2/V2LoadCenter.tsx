@@ -23,7 +23,7 @@ export function V2LoadCenter(props: V2LoadCenterProps): React.JSX.Element {
   const home = <Button variant="quiet" onClick={() => navigate('/home')}>Back to home</Button>;
   const downloadRaw = (): void => downloadRawRecords(props.documentId ?? 'document', 'raw-data');
   return (
-    <div className="ofk-v2-center" role="status">
+    <div className="canvas-v2-center" role="status">
       {props.phase === 'failed' ? (
         <ErrorState
           hero={<V2StateHero kind="torn-page" />}

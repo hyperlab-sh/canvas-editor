@@ -13,11 +13,11 @@ export function HomeTemplateGrid({ templates, appearance, onOpen }: {
   readonly templates: readonly Template[]; readonly appearance: 'light' | 'dark'; readonly onOpen: (name: string) => void;
 }): React.JSX.Element {
   return (
-  <ul className="ofk-home-grid ofk-home-templates" aria-label="Templates">
+  <ul className="canvas-home-grid canvas-home-templates" aria-label="Templates">
     {templates.map((template) => (
       <HomeCard key={template.name} title={template.title} meta={template.summary}
         onOpen={() => onOpen(template.name)}
-        preview={<img className="ofk-home-preview-image" alt="" decoding="async" src={templatePicture(template.name, appearance)}
+        preview={<img className="canvas-home-preview-image" alt="" decoding="async" src={templatePicture(template.name, appearance)}
           onLoad={(event) => { event.currentTarget.dataset.fit = templateFit(event.currentTarget); }} />} />
     ))}
   </ul>
@@ -26,7 +26,7 @@ export function HomeTemplateGrid({ templates, appearance, onOpen }: {
 
 export function HomeNoMatch({ query, onClear }: { readonly query: string; readonly onClear: () => void }): React.JSX.Element {
   return (
-    <p className="ofk-home-nomatch" role="status">
+    <p className="canvas-home-nomatch" role="status">
       Nothing matches “{query.trim()}”. <Button variant="quiet" onClick={onClear}>Clear search</Button>
     </p>
   );
@@ -35,10 +35,10 @@ export function HomeNoMatch({ query, onClear }: { readonly query: string; readon
 /** What's new: the changelog, newest first. */
 export function HomeNews(): React.JSX.Element {
   return <>
-    <p className="ofk-home-lede">
+    <p className="canvas-home-lede">
       What changed lately, newest first. <a href={`${REPO_URL}/blob/main/CHANGELOG.md`} target="_blank" rel="noreferrer">Full changelog</a>
     </p>
-    <ol className="ofk-home-changelog">
+    <ol className="canvas-home-changelog">
       {HOME_NEWS.map(({ date, title, text }, index) => (
         <li key={title}>
           {date !== HOME_NEWS[index - 1]?.date ? <time dateTime={date}>{NEWS_DATE.format(new Date(`${date}T12:00:00`))}</time> : <span />}
@@ -54,20 +54,20 @@ export function HomeFirstRun({ repoField, templateGrid, onStart }: {
   readonly repoField: ReactNode; readonly templateGrid: ReactNode; readonly onStart: (intent?: V2StartIntent) => void;
 }): React.JSX.Element {
   return <>
-    <p className="ofk-home-lede">Pick a way in, or drop a file anywhere to import it. No account needed: your diagrams stay on your device, and basic usage stats can be turned off in Settings.</p>
+    <p className="canvas-home-lede">Pick a way in, or drop a file anywhere to import it. No account needed: your diagrams stay on your device, and basic usage stats can be turned off in Settings.</p>
     <section aria-label="Start">
-      <ul className="ofk-home-starts">
+      <ul className="canvas-home-starts">
         {STARTS.map(({ kind, title, text, intent }) => (
           <StartCard key={kind} kind={kind} title={title} text={text} onStart={() => onStart(intent)} />
         ))}
       </ul>
     </section>
-    <section className="ofk-home-section ofk-home-map" aria-labelledby="ofk-home-map">
-      <h2 id="ofk-home-map" className="ofk-home-section-title">Or map a GitHub repo</h2>
+    <section className="canvas-home-section canvas-home-map" aria-labelledby="canvas-home-map">
+      <h2 id="canvas-home-map" className="canvas-home-section-title">Or map a GitHub repo</h2>
       {repoField}
     </section>
-    <section className="ofk-home-section" aria-labelledby="ofk-home-templates">
-      <h2 id="ofk-home-templates" className="ofk-home-section-title">Or start from a template</h2>
+    <section className="canvas-home-section" aria-labelledby="canvas-home-templates">
+      <h2 id="canvas-home-templates" className="canvas-home-section-title">Or start from a template</h2>
       {templateGrid}
     </section>
   </>;

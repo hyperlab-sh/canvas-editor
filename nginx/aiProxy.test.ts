@@ -8,10 +8,10 @@ import { describe, expect, it } from 'vitest';
 // nginx/ai-proxy.sh writes the Docker image's AI proxy at container start. Not run in nginx here; `nginx -t` in the image is the
 // check for the syntax, this is the check for what it lets through.
 const run = (upstream?: string) => {
-  const dir = mkdtempSync(path.join(tmpdir(), 'ofk-ai-proxy-'));
+  const dir = mkdtempSync(path.join(tmpdir(), 'canvas-ai-proxy-'));
   try {
     execFileSync('sh', [path.resolve(__dirname, 'ai-proxy.sh')], {
-      env: { PATH: process.env.PATH, OFK_NGINX_DIR: dir, ...(upstream === undefined ? {} : { OPENFLOWKIT_AI_UPSTREAM: upstream }) }, stdio: 'pipe',
+      env: { PATH: process.env.PATH, CANVAS_NGINX_DIR: dir, ...(upstream === undefined ? {} : { CANVAS_AI_UPSTREAM: upstream }) }, stdio: 'pipe',
     });
     return { ok: true as const, conf: readFileSync(path.join(dir, 'ai-proxy.conf'), 'utf8') };
   } catch (error) {
@@ -23,7 +23,7 @@ describe('nginx AI proxy', () => {
   it('is off by default: every /ai-proxy/ path answers 503 with how to turn it on', () => {
     const result = run();
     expect(result.ok && result.conf).toContain('return 503');
-    expect(result.ok && result.conf).toContain('OPENFLOWKIT_AI_UPSTREAM');
+    expect(result.ok && result.conf).toContain('CANVAS_AI_UPSTREAM');
     expect(result.ok && result.conf).not.toContain('proxy_pass');
   });
 

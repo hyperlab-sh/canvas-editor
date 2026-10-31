@@ -42,13 +42,13 @@ async function holdPort(): Promise<{ server: Server; port: number }> {
   return { server, port: (server.address() as { port: number }).port };
 }
 
-describe('openflowkit serve', () => {
+describe('canvas serve', () => {
   it('listens, prints the URL, and answers /health on the printed port', async () => {
     const { io: sink, out } = io();
     let service: RunningService | undefined;
     const code = await runServe(['--port', '0', '--config', await configFile(), '--app', '/nonexistent'], sink, (s) => { service = s; closers.push(s.close); });
     expect(code).toBe(0);
-    expect(out).toEqual([`openflowkit service listening on ${service!.url} (app: /nonexistent)`]);
+    expect(out).toEqual([`canvas service listening on ${service!.url} (app: /nonexistent)`]);
     expect((await (await fetch(`${service!.url}/health`)).json()).port).toBe(service!.port);
     const root = await fetch(`${service!.url}/`);
     expect(root.status).toBe(503);
@@ -61,16 +61,16 @@ describe('openflowkit serve', () => {
     expect(await runServe(['--port', String(port), '--config', await configFile()], sink)).toBe(1);
     expect(out).toEqual([]);
     expect(err).toHaveLength(1);
-    expect(err[0]).toContain(`port ${port} is in use by something that is not an OpenFlowKit service`);
+    expect(err[0]).toContain(`port ${port} is in use by something that is not a Canvas service`);
   });
 
-  it('exits 0 saying it is already running when another OpenFlowKit service holds the port', async () => {
+  it('exits 0 saying it is already running when another Canvas service holds the port', async () => {
     const first = await startService({ port: 0, config: await loadConfig(await configFile()), appDir: '/nonexistent' });
     closers.push(first.close);
     const { io: sink, err, out } = io();
     expect(await runServe(['--port', String(first.port), '--config', await configFile()], sink)).toBe(0);
     expect(err).toEqual([]);
-    expect(out).toEqual([`openflowkit service is already running on http://127.0.0.1:${first.port}`]);
+    expect(out).toEqual([`canvas service is already running on http://127.0.0.1:${first.port}`]);
   });
 
   it('exits 1 when the port is held by an HTTP server that is not ours', async () => {
@@ -84,28 +84,28 @@ describe('openflowkit serve', () => {
     expect(err[0]).toContain(`port ${port}`);
   });
 
-  it('serves the app from OPENFLOWKIT_APP_DIR when --app is not given', async () => {
+  it('serves the app from CANVAS_APP_DIR when --app is not given', async () => {
     const dir = join(await tempDir(), 'envapp');
     await mkdir(dir);
     await writeFile(join(dir, 'index.html'), '<html>from env</html>');
-    const saved = process.env.OPENFLOWKIT_APP_DIR;
-    process.env.OPENFLOWKIT_APP_DIR = dir;
+    const saved = process.env.CANVAS_APP_DIR;
+    process.env.CANVAS_APP_DIR = dir;
     closers.push(async () => {
-      if (saved === undefined) delete process.env.OPENFLOWKIT_APP_DIR;
-      else process.env.OPENFLOWKIT_APP_DIR = saved;
+      if (saved === undefined) delete process.env.CANVAS_APP_DIR;
+      else process.env.CANVAS_APP_DIR = saved;
     });
     const { io: sink, out } = io();
     let service: RunningService | undefined;
     expect(await runServe(['--port', '0', '--config', await configFile()], sink, (s) => { service = s; closers.push(s.close); })).toBe(0);
-    expect(out).toEqual([`openflowkit service listening on ${service!.url} (app: ${dir})`]);
+    expect(out).toEqual([`canvas service listening on ${service!.url} (app: ${dir})`]);
     expect(await (await fetch(`${service!.url}/`)).text()).toBe('<html>from env</html>');
   });
 
   it('falls back to the repository build folder when neither --app nor the variable is set', async () => {
-    const saved = process.env.OPENFLOWKIT_APP_DIR;
-    delete process.env.OPENFLOWKIT_APP_DIR;
+    const saved = process.env.CANVAS_APP_DIR;
+    delete process.env.CANVAS_APP_DIR;
     closers.push(async () => {
-      if (saved !== undefined) process.env.OPENFLOWKIT_APP_DIR = saved;
+      if (saved !== undefined) process.env.CANVAS_APP_DIR = saved;
     });
     const { io: sink, out } = io();
     expect(await runServe(['--port', '0', '--config', await configFile()], sink, (s) => closers.push(s.close))).toBe(0);
@@ -117,7 +117,7 @@ describe('openflowkit serve', () => {
     for (const [args, message] of [
       [['--port', 'abc'], 'serve: --port must be an integer from 0 to 65535, got "abc".'],
       [['--port'], 'serve: --port needs a value.'],
-      [['--wat', '1'], 'serve: unknown argument "--wat". Usage: openflowkit serve [--port N] [--host addr] [--config path] [--app dir]'],
+      [['--wat', '1'], 'serve: unknown argument "--wat". Usage: canvas serve [--port N] [--host addr] [--config path] [--app dir]'],
     ] as const) {
       const { io: sink, err } = io();
       expect(await runServe(args, sink)).toBe(2);
@@ -151,12 +151,12 @@ function getHealth(ip: string, port: number, host: string): Promise<{ status: nu
 }
 
 async function serveWith(args: string[], env?: string) {
-  const saved = process.env.OPENFLOWKIT_SERVICE_HOST;
-  if (env === undefined) delete process.env.OPENFLOWKIT_SERVICE_HOST;
-  else process.env.OPENFLOWKIT_SERVICE_HOST = env;
+  const saved = process.env.CANVAS_SERVICE_HOST;
+  if (env === undefined) delete process.env.CANVAS_SERVICE_HOST;
+  else process.env.CANVAS_SERVICE_HOST = env;
   closers.push(async () => {
-    if (saved === undefined) delete process.env.OPENFLOWKIT_SERVICE_HOST;
-    else process.env.OPENFLOWKIT_SERVICE_HOST = saved;
+    if (saved === undefined) delete process.env.CANVAS_SERVICE_HOST;
+    else process.env.CANVAS_SERVICE_HOST = saved;
   });
   const sink = io();
   let service: RunningService | undefined;
@@ -164,7 +164,7 @@ async function serveWith(args: string[], env?: string) {
   return { code, service, out: sink.out, err: sink.err };
 }
 
-describe('openflowkit serve --host', () => {
+describe('canvas serve --host', () => {
   it('binds 127.0.0.1 and prints no warning without the flag or the variable', async () => {
     const { code, service, err } = await serveWith([]);
     expect(code).toBe(0);
@@ -234,7 +234,7 @@ describe('openflowkit serve --host', () => {
     expect(code).toBe(2);
     expect(service).toBeUndefined();
     expect(out).toEqual([]);
-    expect(err).toEqual(['openflowkit serve: cannot bind 192.0.2.1: no interface on this machine has that address.']);
+    expect(err).toEqual(['canvas serve: cannot bind 192.0.2.1: no interface on this machine has that address.']);
   });
 
   it.skipIf(!hasIpv6)('binds :: with a [::1] url and one warning', async () => {

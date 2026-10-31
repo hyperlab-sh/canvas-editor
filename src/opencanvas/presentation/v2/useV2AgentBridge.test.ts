@@ -13,7 +13,7 @@ function fakeLocks() {
   const grant = (callback: LockGrantedCallback, resolve: (value: unknown) => void, reject: (error: unknown) => void, me: object) => {
     holder = me;
     const release = () => { if (holder === me) { holder = null; queue.shift()?.(); } };
-    Promise.resolve(callback({ name: 'ofk-agent-bridge', mode: 'exclusive' } as Lock)).then(
+    Promise.resolve(callback({ name: 'canvas-agent-bridge', mode: 'exclusive' } as Lock)).then(
       (value) => { release(); resolve(value); },
       (error: unknown) => { release(); reject(error); },
     );

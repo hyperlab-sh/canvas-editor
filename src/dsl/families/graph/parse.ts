@@ -208,7 +208,7 @@ export function parseGraphStatements(segments: readonly DslSegment[], diagnostic
     const lastToken = segment.tokens.at(-1)!;
     // A quoted first word is a label, never a keyword (grammar §2.4: quoting is the escape).
     const keyword = firstToken.kind === 'word' ? firstToken.value : '';
-    // Mermaid's `subgraph X` … `end`, typed into OFK text: say how to write it, and make no box of either line.
+    // Mermaid's `subgraph X` … `end`, typed into Canvas text: say how to write it, and make no box of either line.
     if (keyword === 'subgraph' && !segment.opens && !segment.tokens.some((token) => token.kind === 'arrow')) {
       mermaidSubgraphs += 1;
       diagnostics.push(tokenDiagnostic('W101', 'warning', firstToken,

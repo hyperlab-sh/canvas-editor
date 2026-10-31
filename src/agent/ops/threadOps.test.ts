@@ -9,7 +9,7 @@ import { AGENT_OPS, findAgentOp } from './index';
 import { createTestCapabilities } from './testHost';
 import type { OpContext } from './types';
 
-const FLOW = '%% ofk 1\nflowchart\n\n  Client [blue] -> API [emerald]\n  API -> Store [cylinder, red]';
+const FLOW = '%% canvas 1\nflowchart\n\n  Client [blue] -> API [emerald]\n  API -> Store [cylinder, red]';
 const capabilities = createTestCapabilities();
 
 const op = (name: string) => findAgentOp(name)!;

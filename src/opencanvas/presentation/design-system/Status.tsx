@@ -18,7 +18,7 @@ export function Status({
 }) {
   return (
     <span
-      className="ofk-status"
+      className="canvas-status"
       data-tone={tone}
       role={live ? 'status' : undefined}
       aria-atomic={live || undefined}

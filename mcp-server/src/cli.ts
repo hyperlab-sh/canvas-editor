@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The `openflowkit` CLI: discover a repo, check drift in CI, or build the
+// The `canvas` CLI: discover a repo, check drift in CI, or build the
 // self-contained static site. Node stdlib + the agent bundle only; views are laid
 // out by the file host's in-process ELK, the same engine the editor runs.
 import { existsSync } from 'node:fs';
@@ -45,7 +45,7 @@ export interface CliIo {
   err(message: string): void;
   /** Piped input for `-`; absent on a terminal. */
   stdin?: () => Promise<string>;
-  /** Set when stdout is a terminal a person reads: bare `openflowkit` greets instead of failing. */
+  /** Set when stdout is a terminal a person reads: bare `canvas` greets instead of failing. */
   terminal?: { readonly columns: number; readonly color: boolean };
 }
 
@@ -53,8 +53,8 @@ const USAGE = `${CLI_NAME} — diagrams agents write, kept valid, editable and n
 
 Usage:
 ${OP_USAGE}
-  ${CLI_NAME} discover <dir> [--out architecture.ofk] [--no-svg]
-  ${CLI_NAME} drift <dir> [--model architecture.ofk] [--json]
+  ${CLI_NAME} discover <dir> [--out architecture.canvas] [--no-svg]
+  ${CLI_NAME} drift <dir> [--model architecture.canvas] [--json]
   ${CLI_NAME} build <dir> [--out dist]
   ${CLI_NAME} map <dir> [--depth overview|detailed|everything] [--html out.html]
   ${CLI_NAME} mcp
@@ -64,7 +64,7 @@ Commands:
 ${OP_COMMANDS}
   discover  scan a repository and print or write a proposed C4 DSL workspace
   drift     compare a repository against its model (exit 1 when drift is found)
-  build     compile architecture.ofk into a self-contained static site
+  build     compile architecture.canvas into a self-contained static site
   map       print what a repository is made of: parts, files, lines, imports, the folders that import each other
   mcp       run the MCP server (stdio) for Claude Code, Cursor and other agents
   serve     run the local diagram service: projects as folders, a link per diagram, the app
@@ -73,16 +73,16 @@ Options:
   --out <path>    discover: write the DSL here (default: stdout); build: output dir (default: dist)
   --no-svg        discover --out also writes <path>.svg for a README; this skips it
   --svg           op --doc / convert -o: also write the .svg beside the .openflow.json
-  --model <path>  drift: model file (default: <dir>/architecture.ofk)
+  --model <path>  drift: model file (default: <dir>/architecture.canvas)
   --json          render, convert, validate, drift, ops: machine-readable output
   --depth <d>     map: overview (default), detailed or everything
   --html <path>   map: also write one self-contained, offline HTML page of the map
   --name <name>   discover: system name (default: directory name)
   --max-files <n> discover/drift: cap on files scanned (default: 2000)
   --port <n>      serve: port (default: the config's, 43120)
-  --host <addr>   serve: bind address (default: OPENFLOWKIT_SERVICE_HOST, else 127.0.0.1); a non-loopback address has no authentication
-  --config <path> serve: service config file (default: OPENFLOWKIT_SERVICE_CONFIG, else ~/.config/openflowkit/service.json)
-  --app <dir>     serve: the built app to serve (default: OPENFLOWKIT_APP_DIR, else <repo>/dist)
+  --host <addr>   serve: bind address (default: CANVAS_SERVICE_HOST, else 127.0.0.1); a non-loopback address has no authentication
+  --config <path> serve: service config file (default: CANVAS_SERVICE_CONFIG, else ~/.config/canvas/service.json)
+  --app <dir>     serve: the built app to serve (default: CANVAS_APP_DIR, else <repo>/dist)
   --help          this text; <command> --help for one command's
   --version       the version
 
@@ -155,7 +155,7 @@ async function runDrift(args: readonly string[], io: CliIo): Promise<number> {
   if (parsed.error) { io.err(`${CLI_NAME} drift: ${parsed.error}\n\n${USAGE}`); return 2; }
   const dir = parsed.positionals[0];
   if (!dir) { io.err(`${CLI_NAME} drift: missing <dir>\n\n${USAGE}`); return 2; }
-  const modelPath = parsed.flags.get('model') ?? path.join(dir, 'architecture.ofk');
+  const modelPath = parsed.flags.get('model') ?? path.join(dir, 'architecture.canvas');
   try {
     const maxFiles = maxFilesOf(parsed.flags);
     const discovery = await runArchitectureDiscovery(dir, maxFiles ? { maxFiles } : {});
@@ -261,11 +261,11 @@ async function runBuild(args: readonly string[], io: CliIo): Promise<number> {
   if (!dir) { io.err(`${CLI_NAME} build: missing <dir>\n\n${USAGE}`); return 2; }
   const outDir = parsed.flags.get('out') ?? 'dist';
   try {
-    const source = await readFile(path.join(dir, 'architecture.ofk'), 'utf8');
+    const source = await readFile(path.join(dir, 'architecture.canvas'), 'utf8');
     // The MCP file host's compile: ELK layout plus the editor's icon rule and art.
     const workspace = await (await loadFileCapabilities()).compileWorkspace(source) as unknown as BundleWorkspace;
     if (workspace.views.length === 0) {
-      io.err(`${CLI_NAME} build: architecture.ofk compiled to no views`);
+      io.err(`${CLI_NAME} build: architecture.canvas compiled to no views`);
       return 2;
     }
     const model = firstModel(workspace) ?? { elements: [], relations: [], views: [], flows: [] };
@@ -277,7 +277,7 @@ async function runBuild(args: readonly string[], io: CliIo): Promise<number> {
       const slug = slugifyViewId(view.viewId || 'primary', used);
       const pageId = `page:${slug}`;
       const document: SvgExportDocument = {
-        id: `openflowkit-build:${slug}`,
+        id: `canvas-build:${slug}`,
         pages: [{
           id: pageId,
           layers: [{ id: 'default', visible: true }],

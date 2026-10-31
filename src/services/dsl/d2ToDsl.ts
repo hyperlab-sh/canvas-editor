@@ -5,7 +5,7 @@ import { sortAttributes } from '../../dsl/vocabulary';
 
 import { Reader, type Item } from './d2Reader';
 import { Converter, type D2Edge, type D2Node } from './d2Converter';
-// D2 → OFK DSL (plan 13.5). D2 is a tree of `key: value { block }` statements and
+// D2 → Canvas DSL (plan 13.5). D2 is a tree of `key: value { block }` statements and
 // `a -> b: label` connections. The subset the public corpus uses converts: shapes,
 // containers, labels, colours, dashes, links, cloud icons, `shape: sequence_diagram`
 // and `sql_table`. Everything else is a W180 loss, never a throw (mermaidToDsl
@@ -162,12 +162,12 @@ function writeSequence(converter: Converter): string {
 
 /** D2-only syntax our DSL never writes: `key.shape:`, `style.` keys, `|md`, `classes: {`. (`#` alone is markdown too.) */
 const D2_MARKERS = /(?:^\s*(?:[^\n:[\]]+\.)?|[{;]\s*)(?:shape|icon|style(?:\.[\w-]+)?|near|tooltip)\s*:|\|md\b|^\s*classes\s*:\s*\{|^\s*vars\s*:\s*\{/m;
-const OFK_OR_MERMAID_HEADER = /^\s*(?:%%|flowchart|graph|architecture|sequence|state|erd|class|mindmap|gitgraph|gitGraph|chart|wireframe|workspace|model\b|sequenceDiagram|stateDiagram|classDiagram|erDiagram|journey|gantt|pie)\b/;
+const CANVAS_OR_MERMAID_HEADER = /^\s*(?:%%|flowchart|graph|architecture|sequence|state|erd|class|mindmap|gitgraph|gitGraph|chart|wireframe|workspace|model\b|sequenceDiagram|stateDiagram|classDiagram|erDiagram|journey|gantt|pie)\b/;
 
 /** True when the text reads as D2 and as nothing we already speak. */
 export function looksLikeD2(text: string): boolean {
   const first = text.split('\n').find((line) => line.trim()) ?? '';
-  if (OFK_OR_MERMAID_HEADER.test(first)) return false;
+  if (CANVAS_OR_MERMAID_HEADER.test(first)) return false;
   // Our DSL attributes live in `[…]`; D2 never writes them on a node line.
   if (/^\s*[^\n#"]*\w \[[^\]]*\]\s*$/m.test(text)) return false;
   return D2_MARKERS.test(text) || /^\s*[^\n:#]+\s*(?:->|<-|<->|--)\s*[^\n:#]+:\s*\S/m.test(text) && /^\s*[\w ."'-]+:\s*\{\s*$/m.test(text);

@@ -24,7 +24,7 @@ export function useMapKeys(actions: MapKeyActions): void {
       const t = e.target as HTMLElement;
       const typing = !!t.closest('input,textarea,select,[contenteditable="true"]');
       if (e.key === '/' && !typing) { e.preventDefault(); a.search(); return; }
-      if (typing || t.closest('[role="menu"],[role="dialog"],[role="toolbar"],.ofk-panel')) return;
+      if (typing || t.closest('[role="menu"],[role="dialog"],[role="toolbar"],.canvas-panel')) return;
       if (e.key === 'f' || e.key === 'F') a.fit();
       else if (e.key === '+' || e.key === '=') a.zoom(1.25);
       else if (e.key === '-') a.zoom(0.8);

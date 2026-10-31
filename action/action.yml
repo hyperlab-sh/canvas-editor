@@ -1,12 +1,12 @@
-name: OpenFlowKit PR diagrams
+name: Canvas PR diagrams
 description: Comment on a pull request with how its diagrams changed (DSL diff, drift, stale SVGs). Runs in your CI, no server.
 inputs:
   github-token:
     description: Token used to comment and to push refreshed SVGs.
     default: ${{ github.token }}
   cli:
-    description: Command that runs the openflowkit CLI.
-    default: npx -y openflowkit@0.2.4
+    description: Command that runs the canvas CLI.
+    default: npx -y @hyperlab.sh/canvas@0.2.4
   refresh-svg:
     description: 'Commit a fresh SVG to the PR branch when the committed one beside a diagram is stale (same-repo PRs only). Off by default: GitHub runs no checks on that commit, so required checks would block the merge.'
     default: 'false'
@@ -15,7 +15,7 @@ inputs:
     default: github-actions[bot]
   paths:
     description: Diagram files to watch, as comma-separated extensions or globs.
-    default: .openflow.json,.ofk
+    default: .openflow.json,.canvas
 runs:
   using: composite
   steps:
@@ -24,10 +24,10 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-        OFK_CLI: ${{ inputs.cli }}
-        OFK_REFRESH_SVG: ${{ inputs.refresh-svg }}
-        OFK_COMMENT_AUTHOR: ${{ inputs.comment-author }}
-        OFK_PATHS: ${{ inputs.paths }}
+        CANVAS_CLI: ${{ inputs.cli }}
+        CANVAS_REFRESH_SVG: ${{ inputs.refresh-svg }}
+        CANVAS_COMMENT_AUTHOR: ${{ inputs.comment-author }}
+        CANVAS_PATHS: ${{ inputs.paths }}
       run: node "$GITHUB_ACTION_PATH/pr-diagrams.mjs"
     - name: Upload before/after SVGs
       if: steps.diagrams.outputs.artifact-dir != ''

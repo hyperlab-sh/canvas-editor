@@ -79,7 +79,7 @@ const PADDING_PRESETS = [{ value: 8, label: 'S' }, { value: 16, label: 'M' }, { 
 const LINE_HEIGHT_PRESETS = [1, 1.25, 1.5, 2].map((value) => ({ value, label: String(value) }));
 const LETTER_SPACING_PRESETS = [{ value: 0, label: '–', title: 'None' }, { value: 0.02, label: 'S' }, { value: 0.05, label: 'M' }, { value: 0.1, label: 'L' }];
 const WIDTH_PRESETS = [1, 2, 3, 4].map((value) => ({
-  value, label: <span className="ofk-width-glyph" style={{ height: value }} />, title: `${value}px`,
+  value, label: <span className="canvas-width-glyph" style={{ height: value }} />, title: `${value}px`,
 }));
 
 function inkOptions(): { id: string; label: string; color: string }[] {
@@ -185,10 +185,10 @@ export function V2NodeStylePanels({ page, nodeIds, commit, onPreview, onCommitte
         </StyleButton>
       ) : null}
       {canPickIcon ? (
-        <StyleButton label="Icon" open={open === 'icon'} onToggle={() => toggle('icon')} onClose={close} panelClassName="ofk-style-panel--icons"
+        <StyleButton label="Icon" open={open === 'icon'} onToggle={() => toggle('icon')} onClose={close} panelClassName="canvas-style-panel--icons"
           preview={selectedIcon ? <IconSwatch packId={selectedIcon.packId} shapeId={selectedIcon.shapeId} /> : <Icon icon={IconMoodSmile} />}>
           {iconCards ? (
-            <div className="ofk-icon-layout">
+            <div className="canvas-icon-layout">
               <ChoiceRow<IconCardPlacement> label="Layout" value={placement} onChange={commitPlacement}
                 options={[
                   { value: 'top', title: 'Icon above', label: <><Icon icon={IconLayoutNavbar} /><span>Icon above</span></> },
@@ -214,7 +214,7 @@ export function V2NodeStylePanels({ page, nodeIds, commit, onPreview, onCommitte
       ) : null}
       {widget && widgetState ? (
         <StyleButton label="State" panelTitle={WIDGETS[widget.widget].name} open={open === 'widget'}
-          onToggle={() => toggle('widget')} onClose={close} preview={<span className="ofk-style-state">{widgetStateSummary(widget)}</span>}>
+          onToggle={() => toggle('widget')} onClose={close} preview={<span className="canvas-style-state">{widgetStateSummary(widget)}</span>}>
           {widgetState === 'checked' ? (
             <PanelRow label="State">
               <Segmented<'on' | 'off'> label="State" value={widget.checked ? 'on' : 'off'}
@@ -256,7 +256,7 @@ export function V2NodeStylePanels({ page, nodeIds, commit, onPreview, onCommitte
       ) : null}
       {isStroke ? (
         <StyleButton label="Ink" open={open === 'ink'} onToggle={() => toggle('ink')} onClose={close}
-          preview={<span className="ofk-style-line" style={{ borderTopColor: inkColor, borderTopWidth: Math.min(4, inkWidth) }} />}>
+          preview={<span className="canvas-style-line" style={{ borderTopColor: inkColor, borderTopWidth: Math.min(4, inkWidth) }} />}>
           <PanelRow label="Colour">
             <SwatchGrid label="Ink colour" options={inkOptions()} selected={inkColor}
               onPick={(id) => commitInk({ strokeColor: id })} />
@@ -264,7 +264,7 @@ export function V2NodeStylePanels({ page, nodeIds, commit, onPreview, onCommitte
           <PanelRow label="Width">
             <ChoiceRow label="Ink width" value={inkWidth}
               options={[1, 2, 3, 4, 6, 8, 12, 16].map((value) => ({
-                value, label: <span className="ofk-width-glyph" style={{ height: Math.min(6, value) }} />,
+                value, label: <span className="canvas-width-glyph" style={{ height: Math.min(6, value) }} />,
                 title: `${value}px`,
               }))}
               onChange={(value) => commitInk({ strokeWidth: value })} />
@@ -273,7 +273,7 @@ export function V2NodeStylePanels({ page, nodeIds, commit, onPreview, onCommitte
       ) : null}
       {isStroke || isChart ? null : (
       <StyleButton label={isText ? 'Background' : 'Fill'} open={open === 'fill'} onToggle={() => toggle('fill')} onClose={close}
-        preview={<span className="ofk-style-swatch" data-mixed={fill === null || undefined} data-transparent={fill === 'transparent' || undefined}
+        preview={<span className="canvas-style-swatch" data-mixed={fill === null || undefined} data-transparent={fill === 'transparent' || undefined}
           style={fill && fill !== 'transparent' ? { background: fill, borderColor: stroke ?? fill } : undefined} />}>
         <PanelRow label="Style">
           <Segmented<PaletteMode> label="Palette mode" value={mode} onChange={setMode}
@@ -309,7 +309,7 @@ export function V2NodeStylePanels({ page, nodeIds, commit, onPreview, onCommitte
 
       {isStroke || isChart ? null : (
       <StyleButton label="Outline" open={open === 'outline'} onToggle={() => toggle('outline')} onClose={close}
-        preview={<span className="ofk-style-swatch ofk-style-swatch--ring" data-mixed={stroke === null || undefined}
+        preview={<span className="canvas-style-swatch canvas-style-swatch--ring" data-mixed={stroke === null || undefined}
           data-transparent={(stroke === 'transparent' || view('strokeWidth') === 0) || undefined}
           style={stroke && stroke !== 'transparent' ? { borderColor: stroke } : undefined} />}>
         <PanelRow label="Color">
@@ -337,8 +337,8 @@ export function V2NodeStylePanels({ page, nodeIds, commit, onPreview, onCommitte
       )}
 
       {isStroke || isChart ? null : (
-      <StyleButton label="Text" open={open === 'text'} onToggle={() => toggle('text')} onClose={close} panelClassName="ofk-style-panel--wide"
-        preview={<span className="ofk-style-glyph" style={{ textDecorationColor: textColor ?? undefined }}>A</span>}>
+      <StyleButton label="Text" open={open === 'text'} onToggle={() => toggle('text')} onClose={close} panelClassName="canvas-style-panel--wide"
+        preview={<span className="canvas-style-glyph" style={{ textDecorationColor: textColor ?? undefined }}>A</span>}>
         {isContainer ? (
           <PanelRow label="Header">
             <Segmented<'shown' | 'hidden'> label="Header" value={nodes.every((node) => node.content.showHeader !== false) ? 'shown' : 'hidden'}
@@ -394,8 +394,8 @@ export function V2NodeStylePanels({ page, nodeIds, commit, onPreview, onCommitte
                 ]} />
             )}
           </PanelRow>
-          <details className="ofk-style-more">
-            <summary className="ofk-caption">Spacing<Icon icon={IconChevronDown} /></summary>
+          <details className="canvas-style-more">
+            <summary className="canvas-caption">Spacing<Icon icon={IconChevronDown} /></summary>
             <PanelRow label="Padding">
               <ChoiceRow label="Padding" value={view('textPadding') as number | null} options={PADDING_PRESETS}
                 onChange={(value) => apply({ textPadding: value })} />
@@ -424,7 +424,7 @@ function IconSwatch({ packId, shapeId }: { readonly packId: string; readonly sha
     void loadProviderShapePreview(packId, shapeId).then((preview) => { if (alive) setUrl(preview?.previewUrl ?? null); });
     return () => { alive = false; };
   }, [packId, shapeId]);
-  return url ? <img className="ofk-style-icon-swatch" src={url} alt="" /> : <Icon icon={IconMoodSmile} />;
+  return url ? <img className="canvas-style-icon-swatch" src={url} alt="" /> : <Icon icon={IconMoodSmile} />;
 }
 
 /** Widget state is content, not a style draft: it commits once, on Enter or blur. */

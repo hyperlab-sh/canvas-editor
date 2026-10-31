@@ -43,7 +43,7 @@ const CAPABILITIES = [
 ] as const;
 
 /** The hosted connector: stateless, it draws cards in a chat and cannot reach this canvas. */
-export const HOSTED_MCP_URL = 'https://mcp.openflowkit.com/mcp';
+export const HOSTED_MCP_URL = 'https://mcp.canvas.hyperlab.sh/mcp';
 
 export type AgentClient = 'claude-code' | 'claude-desktop' | 'cursor' | 'vscode' | 'codex' | 'web';
 const CLIENTS: readonly DropdownOption[] = [
@@ -71,54 +71,54 @@ const THEN: Record<Exclude<AgentClient, 'web'>, string> = {
 };
 
 const bridgeEnv = (port: number, token: string): Record<string, string> =>
-  ({ ...(port !== BRIDGE_DEFAULT_PORT ? { OPENFLOWKIT_BRIDGE_PORT: String(port) } : {}), ...(token ? { OPENFLOWKIT_BRIDGE_TOKEN: token } : {}) });
+  ({ ...(port !== BRIDGE_DEFAULT_PORT ? { CANVAS_BRIDGE_PORT: String(port) } : {}), ...(token ? { CANVAS_BRIDGE_TOKEN: token } : {}) });
 
 /** The same server as one `claude mcp add` line, for Claude Code: user scope, so every project has it, not just this one. */
 export function claudeCodeCommand(port: number, token: string): string {
   const env = Object.entries(bridgeEnv(port, token)).map(([key, value]) => `-e ${key}=${value} `).join('');
-  return `claude mcp add -s user openflowkit ${env}-- npx -y openflowkit mcp`;
+  return `claude mcp add -s user canvas ${env}-- npx -y @hyperlab.sh/canvas mcp`;
 }
 
 /** The same server for the Codex CLI (`codex mcp add NAME --env K=V -- COMMAND`). */
 export function codexCommand(port: number, token: string): string {
   const env = Object.entries(bridgeEnv(port, token)).map(([key, value]) => `--env ${key}=${value} `).join('');
-  return `codex mcp add openflowkit ${env}-- npx -y openflowkit mcp`;
+  return `codex mcp add canvas ${env}-- npx -y @hyperlab.sh/canvas mcp`;
 }
 
 /** One-click installs (Cursor's and VS Code's own link schemes) carrying the same server and env as the copied config. */
 export function installLinks(port: number, token: string): { cursor: string; vscode: string } {
   const server = serverEntry(port, token);
   return {
-    cursor: `cursor://anysphere.cursor-deeplink/mcp/install?name=openflowkit&config=${encodeURIComponent(btoa(JSON.stringify(server)))}`,
-    vscode: `vscode:mcp/install?${encodeURIComponent(JSON.stringify({ name: 'openflowkit', ...server }))}`,
+    cursor: `cursor://anysphere.cursor-deeplink/mcp/install?name=canvas&config=${encodeURIComponent(btoa(JSON.stringify(server)))}`,
+    vscode: `vscode:mcp/install?${encodeURIComponent(JSON.stringify({ name: 'canvas', ...server }))}`,
   };
 }
 
 const serverEntry = (port: number, token: string) => {
   const env = bridgeEnv(port, token);
-  return { command: 'npx', args: ['-y', 'openflowkit', 'mcp'], ...(Object.keys(env).length ? { env } : {}) };
+  return { command: 'npx', args: ['-y', '@hyperlab.sh/canvas', 'mcp'], ...(Object.keys(env).length ? { env } : {}) };
 };
 
 /**
- * What to paste into an agent so it adds OpenFlowKit itself: the same server and pairing env as the copied setup, and the
+ * What to paste into an agent so it adds Canvas itself: the same server and pairing env as the copied setup, and the
  * one thing it cannot do (reload its own tools) handed back to the person. Claude Desktop's is for another agent that can
  * edit files, since Claude Desktop cannot edit its own config.
  */
 export function agentPrompt(client: Exclude<AgentClient, 'web'>, port: number, token: string): string {
-  const json = JSON.stringify({ openflowkit: serverEntry(port, token) }, null, 2);
+  const json = JSON.stringify({ canvas: serverEntry(port, token) }, null, 2);
   const merge = 'Merge this into its "mcpServers" object, keeping any servers already there:';
   switch (client) {
-    case 'claude-code': return `Add the OpenFlowKit MCP server so you can draw on my OpenFlowKit canvas. Run this once in a terminal:\n\n${claudeCodeCommand(port, token)}\n\nThen tell me to run /mcp (or start a new session) so its tools load.`;
-    case 'codex': return `Add the OpenFlowKit MCP server so you can draw on my OpenFlowKit canvas. Run this once in a terminal:\n\n${codexCommand(port, token)}\n\nThen tell me to start a new codex session so its tools load.`;
-    case 'cursor': return `Add the OpenFlowKit MCP server to my Cursor config, ~/.cursor/mcp.json (create it if it is missing). ${merge}\n\n${json}\n\nThen tell me to open a new Agent chat so its tools load.`;
-    case 'vscode': return `Add the OpenFlowKit MCP server to VS Code. Run this once in a terminal (quote the JSON for my shell):\n\ncode --add-mcp '${JSON.stringify({ name: 'openflowkit', ...serverEntry(port, token) })}'\n\nThen tell me to switch Copilot Chat to Agent mode so its tools load.`;
-    case 'claude-desktop': return `Add the OpenFlowKit MCP server to my Claude Desktop config, claude_desktop_config.json (in ~/Library/Application Support/Claude/ on a Mac, %APPDATA%\\Claude\\ on Windows). ${merge}\n\n${json}\n\nIf \`which npx\` is not on a standard path, use its full path as "command". Then tell me to quit Claude Desktop fully and open it again.`;
+    case 'claude-code': return `Add the Canvas MCP server so you can draw on my Canvas editor. Run this once in a terminal:\n\n${claudeCodeCommand(port, token)}\n\nThen tell me to run /mcp (or start a new session) so its tools load.`;
+    case 'codex': return `Add the Canvas MCP server so you can draw on my Canvas editor. Run this once in a terminal:\n\n${codexCommand(port, token)}\n\nThen tell me to start a new codex session so its tools load.`;
+    case 'cursor': return `Add the Canvas MCP server to my Cursor config, ~/.cursor/mcp.json (create it if it is missing). ${merge}\n\n${json}\n\nThen tell me to open a new Agent chat so its tools load.`;
+    case 'vscode': return `Add the Canvas MCP server to VS Code. Run this once in a terminal (quote the JSON for my shell):\n\ncode --add-mcp '${JSON.stringify({ name: 'canvas', ...serverEntry(port, token) })}'\n\nThen tell me to switch Copilot Chat to Agent mode so its tools load.`;
+    case 'claude-desktop': return `Add the Canvas MCP server to my Claude Desktop config, claude_desktop_config.json (in ~/Library/Application Support/Claude/ on a Mac, %APPDATA%\\Claude\\ on Windows). ${merge}\n\n${json}\n\nIf \`which npx\` is not on a standard path, use its full path as "command". Then tell me to quit Claude Desktop fully and open it again.`;
   }
 }
 
 /** The MCP client config: the editor's token goes in env so the server and this window pair on their own. */
 export function mcpConfig(port: number, token: string): string {
-  return JSON.stringify({ mcpServers: { openflowkit: serverEntry(port, token) } }, null, 2);
+  return JSON.stringify({ mcpServers: { canvas: serverEntry(port, token) } }, null, 2);
 }
 
 /** Rail panel for the MCP bridge: per-agent setup when off, a live status card when an agent is on. */
@@ -140,10 +140,10 @@ export function V2AgentConnect(props: V2AgentConnectProps) {
     try { await navigator.clipboard.writeText(text); setCopyStatus(done); }
     catch { setCopyStatus('Could not copy. Select the text and copy it instead.'); }
   }
-  const snippet = (text: string, name: string, connect = true) => <div className="ofk-connection-snippet" data-prompt={name === 'Copy prompt' || undefined}>
+  const snippet = (text: string, name: string, connect = true) => <div className="canvas-connection-snippet" data-prompt={name === 'Copy prompt' || undefined}>
     {/* Breaks at spaces: a flag (`-e`, `--`) never splits after its hyphen. Copy takes `text`, not the DOM. */}
-    <pre className="ofk-v2-bridge-snippet">{text.split(/( )/).map((part, at) => (part.startsWith('-') && part.length <= 6
-      ? <span key={at} className="ofk-connection-flag">{part}</span> : part))}</pre>
+    <pre className="canvas-v2-bridge-snippet">{text.split(/( )/).map((part, at) => (part.startsWith('-') && part.length <= 6
+      ? <span key={at} className="canvas-connection-flag">{part}</span> : part))}</pre>
     <Button variant="quiet" aria-label={name} onClick={() => { void copy(text, `${name.replace('Copy', 'Copied')}`, connect); }}>
       <Icon icon={copyStatus === name.replace('Copy', 'Copied') ? IconCheck : IconCopy} />Copy
     </Button>
@@ -152,11 +152,11 @@ export function V2AgentConnect(props: V2AgentConnectProps) {
   const ways = client === 'web' ? [] : WAYS[client];
   const way = ways.includes(chosenWay) ? chosenWay : ways[0];
   const clientName = CLIENTS.find((option) => option.value === client)?.label ?? '';
-  // The prompt is pasted into the agent, which adds OpenFlowKit itself; the other way is doing it by hand.
+  // The prompt is pasted into the agent, which adds Canvas itself; the other way is doing it by hand.
   const setup = (agent: Exclude<AgentClient, 'web'>): React.ReactNode => {
     if (way === 'prompt') {
       return <><p>{agent === 'claude-desktop' ? 'Paste into Claude Code or Cursor, which can edit Claude Desktop’s config for you.'
-        : `Paste into ${clientName}. It adds OpenFlowKit itself.`}</p>{snippet(agentPrompt(agent, props.port, props.token), 'Copy prompt')}</>;
+        : `Paste into ${clientName}. It adds Canvas itself.`}</p>{snippet(agentPrompt(agent, props.port, props.token), 'Copy prompt')}</>;
     }
     if (way === 'terminal') {
       return <><p>Run once in a terminal.</p>
@@ -168,59 +168,59 @@ export function V2AgentConnect(props: V2AgentConnectProps) {
         {snippet(mcpConfig(props.port, props.token), 'Copy configuration')}</>;
     }
     return <><p>{agent === 'vscode' ? 'For Copilot agent mode. Using the Claude Code extension? Pick Claude Code.' : 'Then approve it in Cursor.'}</p>
-      <a className="ofk-button" data-variant="secondary" href={agent === 'vscode' ? links.vscode : links.cursor} onClick={connectNow}>
+      <a className="canvas-button" data-variant="secondary" href={agent === 'vscode' ? links.vscode : links.cursor} onClick={connectNow}>
         Add to {agent === 'vscode' ? 'VS Code' : 'Cursor'}</a></>;
   };
 
   return <Panel title="Connect agent" onClose={props.onClose} closeLabel="Close agent connection"
-    className="ofk-v2-workspace-panel ofk-connection-panel" data-status={props.status}
-    tools={<span className="ofk-connection-badge"><span className="ofk-connection-dot" />{STATUS_LABEL[props.status]}</span>}>
-    <div className="ofk-connection-hero" aria-hidden="true">
-      <span className="ofk-connection-hero-node"><Icon icon={IconTerminal2} />Agent</span>
-      <span className="ofk-connection-hero-link"><i /><i /><i /></span>
-      <span className="ofk-connection-hero-node ofk-connection-hero-canvas"><img src="/Logo_openflowkit.svg" width="16" height="16" alt="" />Canvas</span>
+    className="canvas-v2-workspace-panel canvas-connection-panel" data-status={props.status}
+    tools={<span className="canvas-connection-badge"><span className="canvas-connection-dot" />{STATUS_LABEL[props.status]}</span>}>
+    <div className="canvas-connection-hero" aria-hidden="true">
+      <span className="canvas-connection-hero-node"><Icon icon={IconTerminal2} />Agent</span>
+      <span className="canvas-connection-hero-link"><i /><i /><i /></span>
+      <span className="canvas-connection-hero-node canvas-connection-hero-canvas"><img src="/logo-canvas.svg" width="16" height="16" alt="" />Canvas</span>
     </div>
     {connected ? <>
       <h3>Your agent is on the canvas.</h3>
-      <p className="ofk-connection-lede">Everything it draws lands here as one undo step, like any edit of your own.</p>
-      <div className="ofk-connection-summary">
-        <span className="ofk-connection-mark"><Icon icon={IconPlugConnected} /></span>
-        <div><strong>Live over MCP</strong><span className="ofk-connection-endpoint">127.0.0.1:{props.port}</span>
-          {props.agents?.length ? <span className="ofk-connection-agents">{props.agents.join(', ')}</span> : null}</div>
+      <p className="canvas-connection-lede">Everything it draws lands here as one undo step, like any edit of your own.</p>
+      <div className="canvas-connection-summary">
+        <span className="canvas-connection-mark"><Icon icon={IconPlugConnected} /></span>
+        <div><strong>Live over MCP</strong><span className="canvas-connection-endpoint">127.0.0.1:{props.port}</span>
+          {props.agents?.length ? <span className="canvas-connection-agents">{props.agents.join(', ')}</span> : null}</div>
         <Button variant="quiet" onClick={() => props.onToggle(false)}>Disconnect</Button>
       </div>
-      {props.activity ? <p className="ofk-connection-activity" role="status" data-working={props.activity.doing ? '' : undefined}>
-        {props.activity.doing ? <><span className="ofk-connection-dot" /><span>{props.activity.agent} is {props.activity.doing}…</span></>
+      {props.activity ? <p className="canvas-connection-activity" role="status" data-working={props.activity.doing ? '' : undefined}>
+        {props.activity.doing ? <><span className="canvas-connection-dot" /><span>{props.activity.agent} is {props.activity.doing}…</span></>
           : <span>{props.activity.agent} {props.activity.change}</span>}
         {!props.activity.doing && props.onUndo ? <Button variant="quiet" onClick={props.onUndo}>Undo</Button> : null}</p> : null}
-      <h4 className="ofk-connection-heading">What your agent can do</h4>
-      <ul className="ofk-connection-capabilities">
+      <h4 className="canvas-connection-heading">What your agent can do</h4>
+      <ul className="canvas-connection-capabilities">
         {CAPABILITIES.map(({ icon, title, text }) => <li key={title}><Icon icon={icon} /><strong>{title}</strong><span>{text}</span></li>)}
       </ul>
     </> : <>
       <h3>Your agent, on your canvas.</h3>
-      <p className="ofk-connection-lede">An agent on this computer can read this document and draw on it — each change is one undo step.</p>
-      {props.status === 'error' ? <p role="alert" className="ofk-connection-error"><strong>{props.detail}</strong></p> : null}
-      {props.status === 'waiting' || props.status === 'connecting' ? <p role="status" className="ofk-connection-waiting">
-        <span className="ofk-connection-dot" /><span>{props.status === 'waiting' ? props.detail : 'Connecting…'}</span></p> : null}
-      {props.status === 'elsewhere' ? <div role="status" className="ofk-connection-elsewhere"><span>{props.detail}</span>
+      <p className="canvas-connection-lede">An agent on this computer can read this document and draw on it — each change is one undo step.</p>
+      {props.status === 'error' ? <p role="alert" className="canvas-connection-error"><strong>{props.detail}</strong></p> : null}
+      {props.status === 'waiting' || props.status === 'connecting' ? <p role="status" className="canvas-connection-waiting">
+        <span className="canvas-connection-dot" /><span>{props.status === 'waiting' ? props.detail : 'Connecting…'}</span></p> : null}
+      {props.status === 'elsewhere' ? <div role="status" className="canvas-connection-elsewhere"><span>{props.detail}</span>
         {props.onClaim ? <Button variant="primary" onClick={props.onClaim}>Use this tab</Button> : null}</div> : null}
       {/* Another tab has Connect on: its setup is done; the steps would only repeat it. */}
-      {props.status === 'elsewhere' ? null : <><div className="ofk-connection-client">
+      {props.status === 'elsewhere' ? null : <><div className="canvas-connection-client">
         <Dropdown label="Your agent" value={client} options={CLIENTS} onChange={(value) => setClient(value as AgentClient)} />
       </div>
       {client === 'web' ? <>
-        <p className="ofk-connection-web"><strong>These draw diagram cards in your chat, not on this canvas.</strong> Each card has an Open in OpenFlowKit link that opens it here.</p>
-        <ol className="ofk-connection-steps">
+        <p className="canvas-connection-web"><strong>These draw diagram cards in your chat, not on this canvas.</strong> Each card has an Open in Canvas link that opens it here.</p>
+        <ol className="canvas-connection-steps">
           <li><span>1</span><div><strong>Copy the connector URL</strong>{snippet(HOSTED_MCP_URL, 'Copy URL', false)}</div></li>
           <li><span>2</span><div><strong>Add it as a custom connector</strong><p>claude.ai: Settings → Connectors (Customize → Connectors on newer
             accounts) → Add custom connector. Paste the URL and choose No sign-in. ChatGPT takes the same URL where your plan allows it.</p></div></li>
-          <li><span>3</span><div><strong>Turn it on in a chat</strong><p>Press + → Connectors and turn OpenFlowKit on, then ask for a diagram.</p></div></li>
+          <li><span>3</span><div><strong>Turn it on in a chat</strong><p>Press + → Connectors and turn Canvas on, then ask for a diagram.</p></div></li>
         </ol>
-        <p className="ofk-connection-note">On a Team or Enterprise plan only an owner can add connectors.</p>
-      </> : <ol className="ofk-connection-steps">
-        <li><span>1</span><div><strong>Add OpenFlowKit to {clientName}</strong>
-          <div className="ofk-connection-way"><Segmented<Way> label="How" value={way!} onChange={setWay}
+        <p className="canvas-connection-note">On a Team or Enterprise plan only an owner can add connectors.</p>
+      </> : <ol className="canvas-connection-steps">
+        <li><span>1</span><div><strong>Add Canvas to {clientName}</strong>
+          <div className="canvas-connection-way"><Segmented<Way> label="How" value={way!} onChange={setWay}
             options={ways.map((value) => ({ value, label: WAY_LABEL[value] }))} /></div>
           {setup(client)}</div></li>
         <li><span>2</span><div><strong>{THEN[client]}</strong><p>This panel connects by itself.</p>
@@ -230,25 +230,25 @@ export function V2AgentConnect(props: V2AgentConnectProps) {
       </ol>}</>}
     </>}
     {props.webMcpTools ? <>
-      <p className="ofk-connection-activity" data-testid="webmcp-status"><span>WebMCP (experimental): agents in this browser can use {props.webMcpTools} tools.</span></p>
-      {props.webMcpActivity ? <p className="ofk-connection-activity" role="status"><span>Browser agent: {props.webMcpActivity}</span>
+      <p className="canvas-connection-activity" data-testid="webmcp-status"><span>WebMCP (experimental): agents in this browser can use {props.webMcpTools} tools.</span></p>
+      {props.webMcpActivity ? <p className="canvas-connection-activity" role="status"><span>Browser agent: {props.webMcpActivity}</span>
         {props.onUndo ? <Button variant="quiet" onClick={props.onUndo}>Undo</Button> : null}</p> : null}
     </> : null}
-    <details className="ofk-accordion ofk-connection-details" open={props.status === 'error' || undefined}><summary>Connection settings<Icon icon={IconChevronDown} /></summary>
-      <div className="ofk-accordion-body">
-        <div className="ofk-connection-fields">
-          <label htmlFor="ofk-bridge-port">Port<input id="ofk-bridge-port" className="ofk-v2-bridge-input" inputMode="numeric" value={draftPort}
+    <details className="canvas-accordion canvas-connection-details" open={props.status === 'error' || undefined}><summary>Connection settings<Icon icon={IconChevronDown} /></summary>
+      <div className="canvas-accordion-body">
+        <div className="canvas-connection-fields">
+          <label htmlFor="canvas-bridge-port">Port<input id="canvas-bridge-port" className="canvas-v2-bridge-input" inputMode="numeric" value={draftPort}
             disabled={running} aria-invalid={!validPort || undefined} onChange={(event) => setDraftPort(event.target.value.replace(/[^0-9]/g, ''))}
             onBlur={() => { if (validPort) props.onPortChange(port); }} /></label>
-          <label htmlFor="ofk-bridge-token">Token<input id="ofk-bridge-token" type="password" autoComplete="off" className="ofk-v2-bridge-input"
+          <label htmlFor="canvas-bridge-token">Token<input id="canvas-bridge-token" type="password" autoComplete="off" className="canvas-v2-bridge-input"
             value={draftToken} disabled={running} placeholder="Server token" onChange={(event) => setDraftToken(event.target.value)}
             onBlur={() => props.onTokenChange(draftToken.trim())} /></label>
         </div>
-        {!validPort ? <p role="alert" className="ofk-connection-error">Use a port between 1 and 65535.</p> : null}
+        {!validPort ? <p role="alert" className="canvas-connection-error">Use a port between 1 and 65535.</p> : null}
         <p>{running && props.status !== 'elsewhere' ? `${connected ? 'Disconnect' : props.status === 'error' ? 'Stop retrying' : 'Stop waiting'} to change settings. ` : ''}
           The copied setup carries both, so copy it again after a change.</p>
       </div>
     </details>
-    {copyStatus ? <span className="ofk-copy-feedback" role="status">{copyStatus}</span> : null}
+    {copyStatus ? <span className="canvas-copy-feedback" role="status">{copyStatus}</span> : null}
   </Panel>;
 }

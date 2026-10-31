@@ -27,17 +27,17 @@ export function StyleButton(props: StyleButtonProps): React.JSX.Element {
   return (
     <>
       <Tooltip content={props.label} shortcut={props.shortcut && platformKeys(props.shortcut)}>
-        <button ref={ref} type="button" className="ofk-button ofk-style-button" data-variant="quiet"
+        <button ref={ref} type="button" className="canvas-button canvas-style-button" data-variant="quiet"
           aria-label={props.label} aria-haspopup="dialog" aria-expanded={props.open} onClick={props.onToggle}>
-          <span className="ofk-style-preview" aria-hidden="true">{props.preview}</span>
-          {props.text ? <span className="ofk-style-text">{props.text}</span> : null}
+          <span className="canvas-style-preview" aria-hidden="true">{props.preview}</span>
+          {props.text ? <span className="canvas-style-text">{props.text}</span> : null}
           <Icon icon={IconChevronDown} />
         </button>
       </Tooltip>
       <Popover role="dialog" aria-label={props.label} open={props.open} anchorRef={ref} onClose={props.onClose}
-        placement="bottom-start" className={`ofk-style-panel ${props.panelClassName ?? ''}`}
+        placement="bottom-start" className={`canvas-style-panel ${props.panelClassName ?? ''}`}
         onPointerDown={(event) => event.stopPropagation()}>
-        <header className="ofk-style-panel-heading">
+        <header className="canvas-style-panel-heading">
           <h2>{props.panelTitle ?? props.label}</h2>
           <IconButton label={`Close ${props.label}`} variant="quiet" icon={<Icon icon={IconX} />} onClick={props.onClose} />
         </header>
@@ -49,8 +49,8 @@ export function StyleButton(props: StyleButtonProps): React.JSX.Element {
 
 export function PanelRow({ label, children }: { label?: string; children: ReactNode }): React.JSX.Element {
   return (
-    <div className="ofk-style-row">
-      {label ? <span className="ofk-caption ofk-style-row-label">{label}</span> : null}
+    <div className="canvas-style-row">
+      {label ? <span className="canvas-caption canvas-style-row-label">{label}</span> : null}
       {children}
     </div>
   );
@@ -86,10 +86,10 @@ export function SwatchGrid(props: {
   readonly trailing?: ReactNode;
 }): React.JSX.Element {
   return (
-    <div className="ofk-swatch-grid" role="radiogroup" aria-label={props.label} onKeyDown={radioKeys}>
+    <div className="canvas-swatch-grid" role="radiogroup" aria-label={props.label} onKeyDown={radioKeys}>
       {props.options.map((option) => (
         <button key={option.id} type="button" role="radio" aria-checked={props.selected === option.id}
-          className="ofk-swatch-cell" title={option.label} aria-label={option.label}
+          className="canvas-swatch-cell" title={option.label} aria-label={option.label}
           data-transparent={option.color === 'transparent' || undefined}
           style={option.color === 'transparent' ? undefined : { background: option.color, borderColor: option.border ?? option.color }}
           onClick={() => props.onPick(option.id)} />
@@ -108,11 +108,11 @@ export function CustomColorSwatch({ value, onChange, onCommit }: {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLButtonElement>(null);
   return <>
-    <button ref={ref} type="button" className="ofk-swatch-cell ofk-swatch-custom"
+    <button ref={ref} type="button" className="canvas-swatch-cell canvas-swatch-custom"
       aria-label="Custom color" title="Custom color" aria-haspopup="dialog" aria-expanded={open}
       onClick={() => setOpen((current) => !current)} />
     <Popover role="dialog" aria-label="Custom color" open={open} anchorRef={ref}
-      placement="right-start" onClose={() => setOpen(false)} className="ofk-custom-color-panel"
+      placement="right-start" onClose={() => setOpen(false)} className="canvas-custom-color-panel"
       onPointerDown={(event) => event.stopPropagation()}
       onKeyDown={(event) => event.stopPropagation()}>
       <ColorPicker value={value === 'transparent' ? null : value} presets={[]}
@@ -131,11 +131,11 @@ export function ChoiceRow<T extends string | number>(props: {
   readonly layout?: 'row' | 'grid';
 }): React.JSX.Element {
   return (
-    <div className={props.layout === 'grid' ? 'ofk-choice-row ofk-choice-row--grid' : 'ofk-choice-row'}
+    <div className={props.layout === 'grid' ? 'canvas-choice-row canvas-choice-row--grid' : 'canvas-choice-row'}
       role="radiogroup" aria-label={props.label} onKeyDown={radioKeys}>
       {props.options.map((option) => (
         <button key={String(option.value)} type="button" role="radio" aria-checked={props.value === option.value}
-          className="ofk-choice" title={option.title ?? String(option.label)} aria-label={option.title ?? String(option.value)}
+          className="canvas-choice" title={option.title ?? String(option.label)} aria-label={option.title ?? String(option.value)}
           onClick={() => props.onChange(option.value)}>{option.label}</button>
       ))}
     </div>
@@ -149,10 +149,10 @@ export function ToggleRow(props: {
   readonly onToggle: (id: string) => void;
 }): React.JSX.Element {
   return (
-    <div className="ofk-choice-row" role="group" aria-label={props.label}>
+    <div className="canvas-choice-row" role="group" aria-label={props.label}>
       {props.options.map((option) => (
         <Tooltip key={option.id} content={option.label} shortcut={option.shortcut && platformKeys(option.shortcut)}>
-          <button type="button" aria-pressed={option.on} aria-label={option.label} className="ofk-choice"
+          <button type="button" aria-pressed={option.on} aria-label={option.label} className="canvas-choice"
             onClick={() => props.onToggle(option.id)}>{option.icon}</button>
         </Tooltip>
       ))}
@@ -187,8 +187,8 @@ export function FontPicker({ value, onChange, label = 'Font family' }: {
   ] as const).map(([family, optionLabel]) => ({
     value: family,
     label: optionLabel,
-    icon: <span className="ofk-font-sample" style={{ fontFamily: FONT_STACKS[family] }}>Ag</span>,
+    icon: <span className="canvas-font-sample" style={{ fontFamily: FONT_STACKS[family] }}>Ag</span>,
   }));
-  return <Dropdown className="ofk-font-picker" label={label} hideLabel value={value}
+  return <Dropdown className="canvas-font-picker" label={label} hideLabel value={value}
     placeholder="Mixed fonts" options={options} onChange={(family) => onChange(family as FontFamilyKey)} />;
 }

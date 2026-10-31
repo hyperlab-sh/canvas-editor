@@ -1,15 +1,15 @@
 ---
 title: Introduction
-description: OpenFlowKit is a free, local-first canvas for architecture diagrams you draw, write as code, or hand to your agent.
+description: Canvas is a free, local-first canvas for architecture diagrams you draw, write as code, or hand to your agent.
 ---
 
-OpenFlowKit is an infinite canvas for technical diagrams that treats text as the source of
+Canvas is an infinite canvas for technical diagrams that treats text as the source of
 truth. A small line-oriented language — OpenFlow DSL — compiles to shapes, connectors and
 layout; the canvas edits the same document; and an agent can drive either through MCP.
 
-<figure class="ofk-screen">
-  <img class="ofk-screen-light" src="/screens/editor-light.webp" width="2560" height="1600" loading="lazy" alt="The OpenFlowKit editor: an architecture diagram on the canvas, generated from the OpenFlow DSL in the code panel beside it" />
-  <img class="ofk-screen-dark" src="/screens/editor-dark.webp" width="2560" height="1600" loading="lazy" alt="The OpenFlowKit editor in dark mode: an architecture diagram generated from the OpenFlow DSL in the code panel" />
+<figure class="canvas-screen">
+  <img class="canvas-screen-light" src="/screens/editor-light.webp" width="2560" height="1600" loading="lazy" alt="The Canvas editor: an architecture diagram on the canvas, generated from the OpenFlow DSL in the code panel beside it" />
+  <img class="canvas-screen-dark" src="/screens/editor-dark.webp" width="2560" height="1600" loading="lazy" alt="The Canvas editor in dark mode: an architecture diagram generated from the OpenFlow DSL in the code panel" />
 </figure>
 
 ## Three ways in

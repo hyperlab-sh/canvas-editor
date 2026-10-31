@@ -16,7 +16,7 @@ interface EvalClient {
 
 async function agent(bridge?: LiveBridge): Promise<EvalClient> {
   const { server } = createServerWithDeps({ ...(bridge ? { bridge } : {}), log: () => undefined });
-  const client = new Client({ name: 'openflowkit-eval', version: '0.0.0' });
+  const client = new Client({ name: 'canvas-eval', version: '0.0.0' });
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
   const raw = async (name: string, args: Record<string, unknown> = {}) => {
@@ -35,7 +35,7 @@ async function agent(bridge?: LiveBridge): Promise<EvalClient> {
   };
 }
 
-const FLOWCHART = `%% ofk 1
+const FLOWCHART = `%% canvas 1
 flowchart
 
   Client [blue] -> API [emerald] : HTTPS
@@ -70,7 +70,7 @@ describe('agent eval — create, read, update, screenshot', () => {
     // 3. update_diagram — same frame, new body
     const updated = await a.call('update_diagram', {
       documentId, frameId,
-      dsl: '%% ofk 1\nflowchart\n\n  Client -> API : HTTPS\n  API -> Queue [queue, amber]\n  Queue -> Worker\n  Worker -> Store [cylinder, red, bold]\n',
+      dsl: '%% canvas 1\nflowchart\n\n  Client -> API : HTTPS\n  API -> Queue [queue, amber]\n  Queue -> Worker\n  Worker -> Store [cylinder, red, bold]\n',
     }) as { output: { frameId: string; nodes: number; connectors: number } };
     expect(updated.output).toMatchObject({ frameId, nodes: 5, connectors: 4 });
     const reread = await a.call('get_diagram', { documentId, frameId }) as { output: { dsl: string } };
@@ -109,7 +109,7 @@ describe('agent eval — create, read, update, screenshot', () => {
     const editor = {
       connected: true,
       health: () => ({
-        ok: true, protocol: 1, name: 'openflowkit', version: '0.0.0', connected: true,
+        ok: true, protocol: 1, name: 'canvas', version: '0.0.0', connected: true,
         documentId: 'live-doc', documentName: 'Live checkout', pageId: 'p1',
         pages: [{ pageId: 'p1', name: 'Page 1', nodes: 3, connectors: 2 }], lastSeenMs: 10,
       }),

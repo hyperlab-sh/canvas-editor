@@ -120,7 +120,7 @@ export async function loadSharedDocument(
 
 // Share ids and delete tokens kept here so the creator can delete a link later. Storage can be blocked
 // (SecurityError) or hold anything, so every read is guarded and a bad value reads as "no links".
-const TOKENS_KEY = 'ofk-shares';
+const TOKENS_KEY = 'canvas-shares';
 type TokenMap = Record<string, { docId: string; deleteToken: string }>;
 
 /** `window.localStorage`, or null where touching it throws. */

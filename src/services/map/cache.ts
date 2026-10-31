@@ -90,7 +90,7 @@ export async function writeCache(store: CacheStore, key: string, facts: CachedFa
   }
 }
 
-const DB = 'ofk-map-cache';
+const DB = 'canvas-map-cache';
 const FACTS = 'facts';
 const USED = 'used';
 

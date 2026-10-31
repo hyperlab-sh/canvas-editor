@@ -64,7 +64,7 @@ export function Panel({
     <aside
       {...props}
       ref={ref}
-      className={`ofk-panel ofk-floating ${className}`}
+      className={`canvas-panel canvas-floating ${className}`}
       data-side={side}
       aria-label={title}
       {...(modal ? { role: 'dialog', 'aria-modal': true } : {})}
@@ -81,8 +81,8 @@ export function Panel({
         }
       }}
     >
-      <header className="ofk-panel-header">
-        <h2 className="ofk-panel-title">{title}</h2>
+      <header className="canvas-panel-header">
+        <h2 className="canvas-panel-title">{title}</h2>
         {tools}
         <IconButton
           ref={closeRef}
@@ -93,7 +93,7 @@ export function Panel({
         />
       </header>
       {/* A modal's body is a stop of its own: the keyboard scrolls a long sheet from there. */}
-      <div className="ofk-panel-body" tabIndex={modal ? 0 : undefined}>{children}</div>
+      <div className="canvas-panel-body" tabIndex={modal ? 0 : undefined}>{children}</div>
     </aside>
   );
 }

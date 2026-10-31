@@ -18,7 +18,7 @@ import { registerResources } from './resources/index.js';
 import { registerPrompts } from './prompts/index.js';
 
 export interface ServerOptions extends Partial<OpToolDeps> {
-  /** Bridge port; defaults to OPENFLOWKIT_BRIDGE_PORT or 43119. */
+  /** Bridge port; defaults to CANVAS_BRIDGE_PORT or 43119. */
   readonly port?: number;
   readonly log?: (message: string) => void;
 }
@@ -32,15 +32,15 @@ export interface CreatedServer {
 
 /** What the model reads before any tool: how a drawing reaches the user. */
 export const INSTRUCTIONS = [
-  'OpenFlowKit draws diagrams from a small text DSL (get_syntax for the grammar, validate_openflow_dsl to check it).',
-  'How a drawing reaches the user: when an OpenFlowKit editor tab is paired with this server (whoami says mode "live-editor"),'
+  'Canvas draws diagrams from a small text DSL (get_syntax for the grammar, validate_openflow_dsl to check it).',
+  'How a drawing reaches the user: when a Canvas editor tab is paired with this server (whoami says mode "live-editor"),'
     + ' create_diagram, update_diagram and the other drawing tools draw live on that canvas, where the user sees them at once.',
   `When no editor is paired, ask the user to open ${CONNECT_URL} and press Connect, then call the tool again.`
     + ' Or use file mode: openflow_create (or openflow_open with a .openflow.json path), draw, then openflow_save;'
     + ' a file-mode drawing also returns an openUrl the user can open to see it.',
   'Several agent sessions can share one canvas: whoami shows bridge.shared when this server draws through another one.',
   'Threads: list_threads reads the conversations people pinned on the canvas (filter by threadId, or unanswered: true for the ones waiting on you); reply_to_thread adds a comment, resolve_thread closes one and start_thread opens one.',
-  'If live comments are on, a new comment from the editor may arrive as <channel source="openflowkit" thread_id=… node_label=…>:'
+  'If live comments are on, a new comment from the editor may arrive as <channel source="canvas" thread_id=… node_label=…>:'
     + ' reply with reply_to_thread using that thread_id. Without that, nothing is pushed; read the threads with list_threads when asked.',
   'Call whoami when unsure which mode you are in.',
 ].join('\n');
@@ -53,8 +53,8 @@ export function createServerWithDeps(options: ServerOptions = {}): CreatedServer
   const store = options.store ?? new DocumentStore();
   const log = options.log ?? ((message: string) => console.error(message));
   const bridge = options.bridge ?? new LiveBridge({
-    port: options.port ?? (Number.parseInt(process.env.OPENFLOWKIT_BRIDGE_PORT ?? '', 10) || 43119),
-    ...(process.env.OPENFLOWKIT_BRIDGE_TOKEN ? { token: process.env.OPENFLOWKIT_BRIDGE_TOKEN } : {}),
+    port: options.port ?? (Number.parseInt(process.env.CANVAS_BRIDGE_PORT ?? '', 10) || 43119),
+    ...(process.env.CANVAS_BRIDGE_TOKEN ? { token: process.env.CANVAS_BRIDGE_TOKEN } : {}),
     log,
   });
   // `claude/channel` registers the push listener in Claude Code; a client without channels ignores it, so tools are unaffected.

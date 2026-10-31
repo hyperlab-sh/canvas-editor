@@ -32,8 +32,8 @@ export const V2_TIPS: Readonly<Record<V2TipId, V2TipCopy>> = {
 /** A trigger must hold this long before its tip shows (a label editor opening a render later sweeps it). */
 export const TIP_QUIET_MS = 700;
 
-const SEEN_KEY = 'ofk.tips.seen';
-const SESSION_KEY = 'ofk.tips.shown';
+const SEEN_KEY = 'canvas.tips.seen';
+const SESSION_KEY = 'canvas.tips.shown';
 
 /** Per-viewer convenience: storage that throws (private mode, blocked) just means "show nothing twice this page". */
 function read(storage: () => Storage, key: string): string | null {

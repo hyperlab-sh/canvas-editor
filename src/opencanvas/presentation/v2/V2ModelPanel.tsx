@@ -78,11 +78,11 @@ function searchVisible(index: ArchIndex, query: string): ReadonlySet<string> | n
 }
 
 // ponytail: plain label, no flag — drop it when the C4 workspace leaves beta.
-const BETA = <span className="ofk-v2-beta">Beta</span>;
+const BETA = <span className="canvas-v2-beta">Beta</span>;
 
 /** The same back row as an element card, for the repo map's selected box or arrow. */
 function MapBack({ label, onBack }: { readonly label: string; readonly onBack: () => void }): React.JSX.Element {
-  return <nav className="ofk-v2-card-nav"><button type="button" className="ofk-v2-card-back" onClick={onBack}><Icon icon={IconArrowLeft} />{label}</button></nav>;
+  return <nav className="canvas-v2-card-nav"><button type="button" className="canvas-v2-card-back" onClick={onBack}><Icon icon={IconArrowLeft} />{label}</button></nav>;
 }
 
 /**
@@ -169,23 +169,23 @@ export function V2ModelPanel(props: V2ModelPanelProps): React.JSX.Element {
   if (!model && (props.mapOverview || repoArrow)) {
     const detail = repoArrow ? <MapArrowEvidence arrow={repoArrow} /> : props.mapBox ? <MapBoxPanel {...props.mapBox} /> : null;
     return (
-      <Panel title="Map" onClose={props.onClose} className="ofk-v2-workspace-panel ofk-v2-model-panel ofk-v2-map-panel">
-        {detail ? <div className="ofk-v2-card"><MapBack label="Overview" onBack={props.onClearSelection} />{detail}</div>
-          : props.mapOverview ? <div className="ofk-v2-card"><MapOverview {...props.mapOverview} /></div> : null}
+      <Panel title="Map" onClose={props.onClose} className="canvas-v2-workspace-panel canvas-v2-model-panel canvas-v2-map-panel">
+        {detail ? <div className="canvas-v2-card"><MapBack label="Overview" onBack={props.onClearSelection} />{detail}</div>
+          : props.mapOverview ? <div className="canvas-v2-card"><MapOverview {...props.mapOverview} /></div> : null}
       </Panel>
     );
   }
 
   if (!model || !index) {
     return (
-      <Panel title="Architecture model" onClose={props.onClose} className="ofk-v2-workspace-panel ofk-v2-model-panel" tools={BETA}>
-        <div className="ofk-model-welcome">
-          <div className="ofk-model-preview" aria-hidden="true"><span>System</span><div><span>App</span><span>Data</span></div></div>
+      <Panel title="Architecture model" onClose={props.onClose} className="canvas-v2-workspace-panel canvas-v2-model-panel" tools={BETA}>
+        <div className="canvas-model-welcome">
+          <div className="canvas-model-preview" aria-hidden="true"><span>System</span><div><span>App</span><span>Data</span></div></div>
           <h3>One system. Every view.</h3>
           <p>Define your architecture once. Explore its systems and components across connected diagrams.</p>
           <Button variant="primary" disabled={readOnly} onClick={props.onCreateWorkspace}>Create C4 workspace</Button>
           <Button variant="quiet" onClick={props.onOpenCode}>Open diagram as code</Button>
-          <span className="ofk-model-welcome-note">Start with an architecture model.</span>
+          <span className="canvas-model-welcome-note">Start with an architecture model.</span>
         </div>
       </Panel>
     );
@@ -203,13 +203,13 @@ export function V2ModelPanel(props: V2ModelPanelProps): React.JSX.Element {
     if (id && id !== elementId) { inspect(id); setJustAdded(null); }
   };
   const relationCount = model.relations.length;
-  const header = { title: 'Architecture model', onClose: props.onClose, className: 'ofk-agent-panel ofk-v2-model-panel', tools: BETA };
+  const header = { title: 'Architecture model', onClose: props.onClose, className: 'canvas-agent-panel canvas-v2-model-panel', tools: BETA };
   const showCard = tab === 'elements';
 
   if (showCard && c4Arrow) {
     return (
       <Panel {...header}>
-        <div className="ofk-v2-card">
+        <div className="canvas-v2-card">
           <MapBack label="All elements" onBack={back} />
           <MapArrowDetails model={model} arrow={c4Arrow} onSelectElement={(id) => inspect(id)} />
         </div>
@@ -217,7 +217,7 @@ export function V2ModelPanel(props: V2ModelPanelProps): React.JSX.Element {
     );
   }
   if (showCard && repoArrow) {
-    return <Panel {...header}><div className="ofk-v2-card"><MapBack label="All elements" onBack={back} /><MapArrowEvidence arrow={repoArrow} /></div></Panel>;
+    return <Panel {...header}><div className="canvas-v2-card"><MapBack label="All elements" onBack={back} /><MapArrowEvidence arrow={repoArrow} /></div></Panel>;
   }
   if (showCard && selected) {
     const placed = props.placedElementIds.has(selected.id);
@@ -260,19 +260,19 @@ export function V2ModelPanel(props: V2ModelPanelProps): React.JSX.Element {
         tabs={[
           {
             value: 'elements',
-            label: <>Elements<span className="ofk-v2-tab-count">{model.elements.length}</span></>,
+            label: <>Elements<span className="canvas-v2-tab-count">{model.elements.length}</span></>,
             panel: (
               <>
-                <label className="ofk-v2-model-search"><span className="ofk-visually-hidden">Search architecture</span>
+                <label className="canvas-v2-model-search"><span className="canvas-visually-hidden">Search architecture</span>
                   <input type="search" value={query} placeholder="Name, technology, tag or environment" onChange={(event) => setQuery(event.target.value)} />
                 </label>
-                <div className="ofk-v2-model-scroll" ref={treeHost}>
+                <div className="canvas-v2-model-scroll" ref={treeHost}>
                   {props.mapOverview && !query ? <MapOverview {...props.mapOverview} /> : null}
                   {model.elements.length === 0 ? (
                     <EmptyState icon={<Icon icon={IconPlus} />} title="No elements yet" description="Add a person or a system to start the model."
                       action={readOnly ? undefined : <Button variant="primary" onClick={() => { addElement(null, 'system'); }}>Add element</Button>} />
                   ) : nodes.length === 0 ? (
-                    <p role="status" className="ofk-v2-model-hint">No matching elements. Try another name, technology or tag.</p>
+                    <p role="status" className="canvas-v2-model-hint">No matching elements. Try another name, technology or tag.</p>
                   ) : (
                     <Tree
                       label="Model elements"
@@ -284,7 +284,7 @@ export function V2ModelPanel(props: V2ModelPanelProps): React.JSX.Element {
                     />
                   )}
                 </div>
-                <footer className="ofk-v2-model-foot">
+                <footer className="canvas-v2-model-foot">
                   <span>{plural(model.elements.length, 'element')} · {plural(relationCount, 'relationship')}</span>
                   {readOnly || model.elements.length === 0 ? null : <Button variant="quiet" onClick={() => { addElement(null, 'system'); }}><Icon icon={IconPlus} />Add element</Button>}
                 </footer>
@@ -293,23 +293,23 @@ export function V2ModelPanel(props: V2ModelPanelProps): React.JSX.Element {
           },
           {
             value: 'flows',
-            label: <>Flows<span className="ofk-v2-tab-count">{model.flows.length}</span></>,
+            label: <>Flows<span className="canvas-v2-tab-count">{model.flows.length}</span></>,
             panel: (
-              <div className="ofk-v2-model-scroll">
-                {!readOnly && !composingFlow ? <Button className="ofk-v2-model-create" onClick={() => setComposingFlow(true)}><Icon icon={IconPlus} />Create flow</Button> : null}
+              <div className="canvas-v2-model-scroll">
+                {!readOnly && !composingFlow ? <Button className="canvas-v2-model-create" onClick={() => setComposingFlow(true)}><Icon icon={IconPlus} />Create flow</Button> : null}
                 {composingFlow && !readOnly ? <V2FlowComposer model={model} onSave={(flow) => { props.onCreateFlow(flow); setComposingFlow(false); }} onCancel={() => setComposingFlow(false)} /> : null}
-                <ul className="ofk-v2-model-list" aria-label="Flows">
+                <ul className="canvas-v2-model-list" aria-label="Flows">
                   {model.flows.map((flow) => (
-                    <li key={flow.id} className="ofk-v2-model-flow">
-                      <button type="button" className="ofk-v2-model-row ofk-v2-model-flow-name" onClick={() => props.onPlayFlow(flow)}>
-                        <span className="ofk-v2-model-name">{flow.name}</span>
-                        <span className="ofk-v2-model-tech">{plural(flow.steps.length, 'step')}</span>
+                    <li key={flow.id} className="canvas-v2-model-flow">
+                      <button type="button" className="canvas-v2-model-row canvas-v2-model-flow-name" onClick={() => props.onPlayFlow(flow)}>
+                        <span className="canvas-v2-model-name">{flow.name}</span>
+                        <span className="canvas-v2-model-tech">{plural(flow.steps.length, 'step')}</span>
                       </button>
                       <IconButton label={`Play ${flow.name}`} variant="quiet" onClick={() => props.onPlayFlow(flow)} icon={<Icon icon={IconPlayerPlay} />} />
                     </li>
                   ))}
                   {model.flows.length === 0 ? (
-                    <li className="ofk-v2-model-hint">No flows yet. A flow is a sequence of messages between elements. Create one, or write it in the diagram code.</li>
+                    <li className="canvas-v2-model-hint">No flows yet. A flow is a sequence of messages between elements. Create one, or write it in the diagram code.</li>
                   ) : null}
                 </ul>
               </div>
@@ -317,20 +317,20 @@ export function V2ModelPanel(props: V2ModelPanelProps): React.JSX.Element {
           },
           {
             value: 'tags',
-            label: <>Tags{tags.length > 0 ? <span className="ofk-v2-tab-count">{tags.length}</span> : null}</>,
+            label: <>Tags{tags.length > 0 ? <span className="canvas-v2-tab-count">{tags.length}</span> : null}</>,
             panel: (
-              <div className="ofk-v2-model-tags ofk-v2-model-scroll">
-                <p className="ofk-v2-model-hint">
+              <div className="canvas-v2-model-tags canvas-v2-model-scroll">
+                <p className="canvas-v2-model-hint">
                   Pick tags to spotlight the elements that carry them; everything else dims. Give an element tags from its card, or write <code>@tag</code> in the diagram code.
                 </p>
-                <div className="ofk-v2-model-tag-grid">
+                <div className="canvas-v2-model-tag-grid">
                   {tags.map((tag) => {
                     const active = props.perspectiveTags.includes(tag);
                     return (
                       <button
                         key={tag}
                         type="button"
-                        className="ofk-v2-model-tag"
+                        className="canvas-v2-model-tag"
                         data-active={active || undefined}
                         aria-pressed={active}
                         onClick={() => props.onPerspectiveChange(
@@ -342,16 +342,16 @@ export function V2ModelPanel(props: V2ModelPanelProps): React.JSX.Element {
                       </button>
                     );
                   })}
-                  {tags.length === 0 ? <span className="ofk-v2-model-hint">No tags in this model.</span> : null}
+                  {tags.length === 0 ? <span className="canvas-v2-model-hint">No tags in this model.</span> : null}
                 </div>
                 {props.perspectiveTags.length > 0 ? (
                   <Button variant="quiet" onClick={() => props.onPerspectiveChange([])}>Clear perspective</Button>
                 ) : null}
-                <ul className="ofk-v2-model-list" aria-label="Tagged elements">
+                <ul className="canvas-v2-model-list" aria-label="Tagged elements">
                   {props.perspectiveTags.map((tag) => {
                     const tagged = model.elements.filter((element) => element.tags.includes(tag));
                     return (
-                      <li key={tag} className="ofk-v2-model-hint">
+                      <li key={tag} className="canvas-v2-model-hint">
                         <strong>@{tag}</strong>: {tagged.map((element) => element.name).join(', ') || 'no elements'}
                       </li>
                     );

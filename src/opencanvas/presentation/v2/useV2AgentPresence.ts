@@ -101,7 +101,12 @@ class CursorMotion {
 
   private readonly tick = (now: number): void => {
     this.raf = 0;
-    while (this.legs[0] && now >= this.legs[0].t0 + this.legs[0].ms) { this.pos = this.legs[0].to; this.legs.shift(); }
+    // Arrived: rest a full IDLE_MS from the frame it lands on, so a stalled main thread (a screenshot render) cannot skip the rest.
+    while (this.legs[0] && now >= this.legs[0].t0 + this.legs[0].ms) {
+      this.pos = this.legs[0].to;
+      this.legs.shift();
+      if (!this.legs.length) this.until = Math.max(this.until, now + IDLE_MS);
+    }
     const leg = this.legs[0];
     if (leg && now >= leg.t0) this.pos = lerp(leg.from, leg.to, easeInOut((now - leg.t0) / leg.ms));
     const shown = this.pos !== null && (this.busy || this.legs.length > 0 || now < this.until);

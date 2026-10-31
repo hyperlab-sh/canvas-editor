@@ -58,25 +58,25 @@ function Card(props: {
   const [menuOpen, setMenuOpen] = useState(false);
   const anchor = useRef<HTMLButtonElement>(null);
   return (
-    <li className="ofk-threads-card" data-testid="v2-thread-card" data-thread-id={thread.id} data-selected={selected || undefined}
+    <li className="canvas-threads-card" data-testid="v2-thread-card" data-thread-id={thread.id} data-selected={selected || undefined}
       data-resolved={thread.resolved || undefined} data-unread={unread || undefined} data-menu-open={menuOpen || undefined}>
-      <button type="button" className="ofk-threads-card-main" aria-current={selected || undefined} onClick={props.onSelect}>
+      <button type="button" className="canvas-threads-card-main" aria-current={selected || undefined} onClick={props.onSelect}>
         <Avatar kind={lead.author.kind} name={lead.author.name} size={28} />
-        <span className="ofk-threads-card-text">
-          <span className="ofk-threads-card-where">
+        <span className="canvas-threads-card-text">
+          <span className="canvas-threads-card-where">
             <span>#{thread.number} · {entry.pageName}</span>
-            {thread.resolved ? <span className="ofk-threads-card-state">Resolved</span> : null}
-            {unread ? <span className="ofk-threads-card-dot" role="img" aria-label="Unread" /> : null}
+            {thread.resolved ? <span className="canvas-threads-card-state">Resolved</span> : null}
+            {unread ? <span className="canvas-threads-card-dot" role="img" aria-label="Unread" /> : null}
           </span>
-          <span className="ofk-threads-card-meta">
+          <span className="canvas-threads-card-meta">
             <strong>{lead.author.name}</strong>
             <time dateTime={lead.createdAt}>{relativeTime(lead.createdAt, props.now)}</time>
           </span>
-          <span className="ofk-threads-card-body">{lead.body}</span>
-          {replies > 0 ? <span className="ofk-threads-card-replies">{replies} {replies === 1 ? 'reply' : 'replies'}</span> : null}
+          <span className="canvas-threads-card-body">{lead.body}</span>
+          {replies > 0 ? <span className="canvas-threads-card-replies">{replies} {replies === 1 ? 'reply' : 'replies'}</span> : null}
         </span>
       </button>
-      <div className="ofk-threads-card-actions">
+      <div className="canvas-threads-card-actions">
         {readOnly ? null : (
           <IconButton variant="quiet" label={thread.resolved ? 'Reopen thread' : 'Resolve thread'} icon={<Icon icon={IconCheck} />}
             onClick={props.onToggleResolved} />
@@ -122,20 +122,20 @@ export function V2ThreadsPanel(props: Props): React.JSX.Element {
 
   return (
     <>
-      <Panel title="Threads" onClose={props.onClose} closeLabel="Close threads" className="ofk-v2-workspace-panel ofk-threads-panel"
+      <Panel title="Threads" onClose={props.onClose} closeLabel="Close threads" className="canvas-v2-workspace-panel canvas-threads-panel"
         autoFocus={props.focusOnOpen} data-testid="v2-threads-panel"
         tools={(
-          <div className="ofk-threads-live">
+          <div className="canvas-threads-live">
             <V2LiveCommentsToggle compact on={props.live.on} available={props.live.available} why={props.live.why} onChange={props.live.onChange} />
             <Tooltip content="Automatically send new comments to your agent">
               <IconButton variant="quiet" label="About live comments" icon={<Icon icon={IconHelp} />} />
             </Tooltip>
           </div>
         )}>
-        <div className="ofk-threads-bar">
-          <label className="ofk-threads-search">
+        <div className="canvas-threads-bar">
+          <label className="canvas-threads-search">
             <Icon icon={IconSearch} />
-            <span className="ofk-visually-hidden">Search threads</span>
+            <span className="canvas-visually-hidden">Search threads</span>
             <input type="search" value={query} placeholder="Search comments" autoComplete="off"
               onChange={(event) => props.onQuery(event.target.value)}
               onKeyDown={(event) => {
@@ -150,14 +150,14 @@ export function V2ThreadsPanel(props: Props): React.JSX.Element {
             <MenuItem checked={filters.unansweredOnly} keepOpen onSelect={() => props.onFilters({ unansweredOnly: !filters.unansweredOnly })}>Unanswered only</MenuItem>
           </Menu>
         </div>
-        <div className="ofk-threads-send">
+        <div className="canvas-threads-send">
           <Button variant="secondary" disabled={props.unsentCount === 0 || !props.live.available} onClick={props.onSendToAgent}
             data-testid="v2-threads-send" title={props.live.available ? undefined : props.live.why ?? undefined}>
             Send {props.unsentCount} {props.unsentCount === 1 ? 'comment' : 'comments'} to agent
           </Button>
         </div>
         {entries.length === 0 ? (
-          <div className="ofk-threads-empty" data-testid="v2-threads-empty">
+          <div className="canvas-threads-empty" data-testid="v2-threads-empty">
             <Icon icon={IconMessageCircle} />
             {total === 0 ? (
               <>
@@ -173,7 +173,7 @@ export function V2ThreadsPanel(props: Props): React.JSX.Element {
             )}
           </div>
         ) : (
-          <ul ref={list} className="ofk-threads-list" aria-label="Threads">
+          <ul ref={list} className="canvas-threads-list" aria-label="Threads">
             {entries.map((entry) => (
               <Card key={entry.thread.id} entry={entry} now={now} readOnly={readOnly}
                 unread={props.unread.has(entry.thread.id)} selected={props.selectedId === entry.thread.id}

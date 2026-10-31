@@ -91,7 +91,7 @@ export function Menu({
       anchorRef={anchorRef}
       onClose={onClose}
       placement={placement}
-      className={`ofk-menu ${className}`}
+      className={`canvas-menu ${className}`}
     >
       <MenuContext.Provider value={onSelectClose ?? onClose}>
         <SubmenuContext.Provider value={{ active, setActive }}>
@@ -148,7 +148,7 @@ export function MenuItem({
       aria-disabled={disabled || undefined}
       aria-checked={resolvedRole === 'menuitem' ? undefined : Boolean(checked)}
       data-danger={danger || undefined}
-      className="ofk-menu-item"
+      className="canvas-menu-item"
       onClick={select}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -157,21 +157,21 @@ export function MenuItem({
         }
       }}
     >
-      <span className="ofk-menu-item-lead" aria-hidden="true">
+      <span className="canvas-menu-item-lead" aria-hidden="true">
         {checked !== undefined ? checked ? <Icon icon={IconCheck} /> : null : icon}
       </span>
-      <span className="ofk-menu-item-label">{children}</span>
+      <span className="canvas-menu-item-label">{children}</span>
       {shortcut && <Kbd keys={shortcut} />}
     </div>
   );
 }
 export function MenuSeparator() {
-  return <div role="separator" className="ofk-menu-separator" />;
+  return <div role="separator" className="canvas-menu-separator" />;
 }
 export function MenuGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div role="group" aria-label={label} className="ofk-menu-group">
-      <div className="ofk-menu-group-label" aria-hidden="true">
+    <div role="group" aria-label={label} className="canvas-menu-group">
+      <div className="canvas-menu-group-label" aria-hidden="true">
         {label}
       </div>
       {children}
@@ -198,7 +198,7 @@ export function MenuSubmenu({ label, children }: { label: string; children: Reac
   return <>
     <div ref={anchorRef} role="menuitem" tabIndex={-1} aria-haspopup="menu"
       aria-expanded={open} aria-controls={open ? id : undefined}
-      className="ofk-menu-item ofk-submenu-trigger"
+      className="canvas-menu-item canvas-submenu-trigger"
       onPointerEnter={(event) => {
         if (event.pointerType === 'touch') return;
         setKeyboard(false); setActive(id);
@@ -211,12 +211,12 @@ export function MenuSubmenu({ label, children }: { label: string; children: Reac
           event.preventDefault(); event.stopPropagation(); enter();
         }
       }}>
-      <span className="ofk-menu-item-label">{label}</span>
+      <span className="canvas-menu-item-label">{label}</span>
       <Icon icon={IconChevronRight} />
     </div>
     {open ? <Menu open anchorRef={anchorRef} onClose={close} onSelectClose={closeTree}
       focusOnOpen={keyboard} placement={rtl ? 'left-start' : 'right-start'} label={label} id={id}
-      className="ofk-cascade-menu" data-context-menu
+      className="canvas-cascade-menu" data-context-menu
       onKeyDownCapture={(event) => {
         if (event.key === exitKey) {
           event.preventDefault(); event.stopPropagation();

@@ -10,8 +10,8 @@ export const keep = (event: KeyboardEvent): void => event.stopPropagation();
 
 export function Avatar({ kind, name, size = 24 }: { readonly kind: 'human' | 'agent'; readonly name: string; readonly size?: number }): React.JSX.Element {
   return kind === 'agent'
-    ? <span className="ofk-comment-avatar" data-kind="agent" style={{ width: size, height: size }} aria-hidden="true"><Icon icon={IconSparkles} /></span>
-    : <span className="ofk-comment-avatar" style={{ width: size, height: size, background: avatarColor(name) }} aria-hidden="true"><Icon icon={IconUser} /></span>;
+    ? <span className="canvas-comment-avatar" data-kind="agent" style={{ width: size, height: size }} aria-hidden="true"><Icon icon={IconSparkles} /></span>
+    : <span className="canvas-comment-avatar" style={{ width: size, height: size, background: avatarColor(name) }} aria-hidden="true"><Icon icon={IconUser} /></span>;
 }
 
 /** Enter sends, Shift+Enter breaks a line, Esc leaves; the box grows with its text. */
@@ -40,7 +40,7 @@ export function CommentInput(props: {
   }, [props.autoFocus, props.selectOnFocus]);
   const empty = props.value.trim() === '';
   return (
-    <div className="ofk-comment-input">
+    <div className="canvas-comment-input">
       <textarea ref={ref} rows={1} value={props.value} maxLength={COMMENT_BODY_MAX} placeholder={props.placeholder} aria-label={props.label}
         onChange={(event) => props.onChange(event.target.value)}
         onKeyDown={(event) => {
@@ -51,7 +51,7 @@ export function CommentInput(props: {
             if (!empty) props.onSend();
           }
         }} />
-      <button type="button" className="ofk-comment-send" disabled={empty} aria-label={props.sendLabel ?? 'Send comment'} onClick={props.onSend}>
+      <button type="button" className="canvas-comment-send" disabled={empty} aria-label={props.sendLabel ?? 'Send comment'} onClick={props.onSend}>
         <Icon icon={IconArrowUp} />
       </button>
     </div>
@@ -67,7 +67,7 @@ export function CommentComposer(props: {
 }): React.JSX.Element {
   const [body, setBody] = useState('');
   return (
-    <div className="ofk-comment-card ofk-comment-composer" role="dialog" aria-label="New comment" data-comment-ui data-comment-open
+    <div className="canvas-comment-card canvas-comment-composer" role="dialog" aria-label="New comment" data-comment-ui data-comment-open
       onKeyDown={keep}>
       <CommentInput value={body} onChange={(text) => { setBody(text); props.onDraft(text); }} onSend={() => props.onSend(body)} onEscape={props.onCancel}
         placeholder="Add a comment" label="Comment" autoFocus />
@@ -102,20 +102,20 @@ function Message(props: {
   const [draft, setDraft] = useState(message.body);
   const commit = () => { if (draft.trim()) { props.onEdit(draft); setEditing(false); } };
   return (
-    <li className="ofk-comment-message" data-testid="v2-comment-message">
+    <li className="canvas-comment-message" data-testid="v2-comment-message">
       <Avatar kind={message.author.kind} name={message.author.name} />
       <div>
-        <p className="ofk-comment-meta">
+        <p className="canvas-comment-meta">
           <strong>{message.author.name}</strong>
           <time dateTime={message.createdAt}>{relativeTime(message.createdAt, props.now)}</time>
           {message.editedAt ? <span>edited</span> : null}
         </p>
         {editing ? (
-          <div className="ofk-comment-edit">
+          <div className="canvas-comment-edit">
             <CommentInput value={draft} onChange={setDraft} onSend={commit} onEscape={() => { setEditing(false); setDraft(message.body); }}
               placeholder="Edit comment" label="Edit comment" sendLabel="Save comment" autoFocus selectOnFocus />
           </div>
-        ) : <p className="ofk-comment-body">{message.body}</p>}
+        ) : <p className="canvas-comment-body">{message.body}</p>}
       </div>
       {props.canEdit && !editing ? (
         <MessageMenu label="Comment actions" onEdit={() => { setDraft(message.body); setEditing(true); }} onDelete={props.onDelete} />
@@ -150,7 +150,7 @@ export function ThreadPopover(props: {
   let body: ReactNode = null;
   if (confirming) {
     body = (
-      <div className="ofk-comment-confirm" role="alert">
+      <div className="canvas-comment-confirm" role="alert">
         <p>Delete this thread{count > 1 ? ` and its ${count} messages` : ''}?</p>
         <div>
           <Button variant="danger" autoFocus onClick={() => { setConfirming(false); props.onDeleteThread(); }}>Delete thread</Button>
@@ -160,7 +160,7 @@ export function ThreadPopover(props: {
     );
   }
   return (
-    <div className="ofk-comment-card ofk-comment-thread" role="dialog" aria-label="Comment thread" data-comment-ui data-comment-open
+    <div className="canvas-comment-card canvas-comment-thread" role="dialog" aria-label="Comment thread" data-comment-ui data-comment-open
       data-testid="v2-comment-thread"
       onKeyDown={(event) => {
         keep(event);
@@ -182,7 +182,7 @@ export function ThreadPopover(props: {
         <IconButton variant="quiet" label="Close thread" icon={<Icon icon={IconX} />} onClick={props.onClose} />
       </header>
       {body}
-      <ul ref={listRef} className="ofk-comment-messages">
+      <ul ref={listRef} className="canvas-comment-messages">
         {thread.comments.map((message) => (
           <Message key={message.id} message={message} now={props.now}
             canEdit={!readOnly && message.author.kind === 'human'}

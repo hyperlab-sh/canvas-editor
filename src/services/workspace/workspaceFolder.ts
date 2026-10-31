@@ -2,7 +2,7 @@ import { archViewIdOfPage, placedElementId } from '../../dsl/model/model';
 import type { SceneDocumentV1, SceneNode, ScenePage } from '../../opencanvas/domain/document/types';
 
 /**
- * Git-native workspace (phase 5.7): a folder with `architecture.ofk` (the DSL),
+ * Git-native workspace (phase 5.7): a folder with `architecture.canvas` (the DSL),
  * `views/*.snap` (manual layout overrides) and `adr/*.md`. The File System
  * Access API is behind `WorkspaceFolder` so the merge logic stays testable.
  */
@@ -28,7 +28,7 @@ export interface WorkspaceContents {
   readonly adrs: readonly { path: string; text: string }[];
 }
 
-const WORKSPACE_DSL_FILE = 'architecture.ofk';
+const WORKSPACE_DSL_FILE = 'architecture.canvas';
 const VIEWS_DIR = 'views/';
 const ADR_DIR = 'adr/';
 

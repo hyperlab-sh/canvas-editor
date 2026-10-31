@@ -14,7 +14,7 @@ let url: string;
 
 test.beforeAll(async () => {
   test.setTimeout(240_000);
-  scratch = mkdtempSync(join(tmpdir(), 'ofk-service-sync-'));
+  scratch = mkdtempSync(join(tmpdir(), 'canvas-service-sync-'));
   mkdirSync(join(scratch, 'demo'));
   const app = join(scratch, 'app');
   execFileSync('npx', ['vite', 'build', '--outDir', app, '--emptyOutDir'], { stdio: 'pipe' });

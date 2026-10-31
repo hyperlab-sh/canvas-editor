@@ -385,7 +385,7 @@ export function V2EditorPage({ shared, repository }: { readonly shared?: V2Share
 
   return (
     <SystemRoot appearance={appearance} density={preferences.density}>
-      <div className="ofk-v2" data-testid="v2-editor" data-tool={spacePan ? 'hand' : tool}
+      <div className="canvas-v2" data-testid="v2-editor" data-tool={spacePan ? 'hand' : tool}
         style={{ backgroundColor: canvasColor }}
         data-workspace-open={panels.workspace !== null || panels.shortcutsOpen || panels.motionOpen || chartPanelNode !== null}
         data-left-open={panels.treeOpen}

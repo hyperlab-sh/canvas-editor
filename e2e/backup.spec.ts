@@ -27,7 +27,7 @@ test('Download all diagrams writes one file that Import and Open file… bring b
   await draw(page, 'Auth', 'flowchart\nLogin -> Session\n');
   await page.waitForTimeout(1_500);
   await page.goto('/#/home');
-  const cards = page.getByRole('list', { name: 'Diagrams' }).locator('.ofk-home-card-hit');
+  const cards = page.getByRole('list', { name: 'Diagrams' }).locator('.canvas-home-card-hit');
   await expect(cards).toHaveCount(2);
 
   // Search reads box labels, not only titles.
@@ -42,9 +42,9 @@ test('Download all diagrams writes one file that Import and Open file… bring b
   // Saved under its own name: the browser's temp path has no extension, and Import goes by it.
   const file = test.info().outputPath((await download).suggestedFilename());
   await (await download).saveAs(file);
-  expect(file).toMatch(/openflowkit-diagrams-\d{4}-\d{2}-\d{2}\.json$/);
+  expect(file).toMatch(/canvas-diagrams-\d{4}-\d{2}-\d{2}\.json$/);
   const backup = JSON.parse(readFileSync(file, 'utf8')) as { format: string; version: number; documents: { name: string }[] };
-  expect(backup).toMatchObject({ format: 'openflowkit.backup', version: 1 });
+  expect(backup).toMatchObject({ format: 'canvas.backup', version: 1 });
   expect(backup.documents.map(({ name }) => name).sort()).toEqual(['Auth', 'Checkout flow']);
 
   // Home → Import: every document comes back as a copy beside the original.

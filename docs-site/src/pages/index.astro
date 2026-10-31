@@ -12,10 +12,10 @@ import SiteFooter from '../components/SiteFooter.astro';
 import { APP_URL, MCP_COMMAND, REPO_URL, SAMPLE_MAP_URL } from '../components/links';
 import { findExamples, hashExample } from '../../scripts/example-blocks.mjs';
 
-const TITLE = 'OpenFlowKit — Architecture diagrams you draw, write as code, or hand to your agent';
+const TITLE = 'Canvas — Architecture diagrams you draw, write as code, or hand to your agent';
 const TAGLINE = 'Architecture diagrams you draw, write as code, or hand to your agent.';
 const SUBLINE = 'Free, open source and local-first. Paste a GitHub repo and get its map, every arrow cited to a line of code.';
-const SITE = 'https://docs.openflowkit.com';
+const SITE = 'https://docs.canvas.hyperlab.sh';
 
 // The build runs from docs-site/ (npm workspace script), after prebuild wrote
 // public/examples; screenshots are committed under public/screens.
@@ -95,9 +95,9 @@ function highlight(source: string): string {
 
 const MCP_CONFIG = `{
   "mcpServers": {
-    "openflowkit": {
+    "canvas": {
       "command": "npx",
-      "args": ["-y", "openflowkit", "mcp"]
+      "args": ["-y", "@hyperlab.sh/canvas", "mcp"]
     }
   }
 }`;
@@ -113,7 +113,7 @@ const MCP_CONFIG = `{
     <link rel="canonical" href={`${SITE}/`} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={`${SITE}/`} />
-    <meta property="og:site_name" content="OpenFlowKit" />
+    <meta property="og:site_name" content="Canvas" />
     <meta property="og:title" content={TITLE} />
     <meta property="og:description" content={SUBLINE} />
     <meta property="og:image" content={`${SITE}/og.png`} />
@@ -141,12 +141,12 @@ const MCP_CONFIG = `{
     <header class="nav wrap">
       <a class="brand" href="/">
         <img src="/favicon.svg" alt="" width="24" height="24" />
-        OpenFlowKit
+        Canvas
       </a>
       <nav aria-label="Main">
         <a class="nav-link" href="/introduction/">Docs</a>
         <a class="nav-link wide-only" href="/mcp-server/">Agents</a>
-        <a class="nav-icon" href={REPO_URL} aria-label="OpenFlowKit on GitHub" title="GitHub">
+        <a class="nav-icon" href={REPO_URL} aria-label="Canvas on GitHub" title="GitHub">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3" /></svg>
         </a>
         <a class="button button-primary button-small" href={APP_URL}>Open app</a>
@@ -174,10 +174,10 @@ const MCP_CONFIG = `{
         {heroShot && (
           <figure class="wrap shot hero-shot">
             <div class="frame">
-              <img class="ofk-screen-light" src={heroShot.light} width={heroShot.width} height={heroShot.height} fetchpriority="high"
-                alt="The OpenFlowKit editor: an architecture diagram on the canvas beside the panel that drew it" />
-              <img class="ofk-screen-dark" src={heroShot.dark} width={heroShot.width} height={heroShot.height}
-                alt="The OpenFlowKit editor in dark mode: an architecture diagram on the canvas beside the panel that drew it" />
+              <img class="canvas-screen-light" src={heroShot.light} width={heroShot.width} height={heroShot.height} fetchpriority="high"
+                alt="The Canvas editor: an architecture diagram on the canvas beside the panel that drew it" />
+              <img class="canvas-screen-dark" src={heroShot.dark} width={heroShot.width} height={heroShot.height}
+                alt="The Canvas editor in dark mode: an architecture diagram on the canvas beside the panel that drew it" />
             </div>
           </figure>
         )}
@@ -196,13 +196,13 @@ const MCP_CONFIG = `{
               <li>29 tools: create, update, style, export, screenshot.</li>
               <li>No app open? It edits <code>.openflow.json</code> files in your repo instead.</li>
               <li>No API key of its own. Your client's model does the thinking.</li>
-              <li>In claude.ai or ChatGPT? Add the connector <code>https://mcp.openflowkit.com/mcp</code>: no install, and diagrams appear as cards in the chat.</li>
+              <li>In claude.ai or ChatGPT? Add the connector <code>https://mcp.canvas.hyperlab.sh/mcp</code>: no install, and diagrams appear as cards in the chat.</li>
             </ul>
             <a class="more" href="/connect-your-agent/">Connect your agent <span aria-hidden="true">→</span></a>
           </div>
           <div class="panel code-card" role="group" aria-label="MCP client setup">
             <div class="code-head">Claude Code</div>
-            <pre><code><span class="t-l">$</span> claude mcp add -s user openflowkit -- {MCP_COMMAND}</code></pre>
+            <pre><code><span class="t-l">$</span> claude mcp add -s user canvas -- {MCP_COMMAND}</code></pre>
             <div class="code-head">Cursor, Windsurf, VS Code, Claude Desktop</div>
             <pre class="config"><code>{MCP_CONFIG}</code></pre>
             <p class="code-foot">Then open the app and click <strong>Connect agent</strong>. It shows the exact steps for your client.</p>
@@ -224,9 +224,9 @@ const MCP_CONFIG = `{
           <figure class="panel duo">
             <pre class="duo-source"><code set:html={highlight(textExample.source)} /></pre>
             <div class="duo-render canvas">
-              <img class="ofk-example-light" src={`/examples/${textExample.view.light}`} width={textExample.view.width} height={textExample.view.height} loading="lazy" decoding="async"
+              <img class="canvas-example-light" src={`/examples/${textExample.view.light}`} width={textExample.view.width} height={textExample.view.height} loading="lazy" decoding="async"
                 alt="The architecture diagram compiled from the source beside it" />
-              <img class="ofk-example-dark" src={`/examples/${textExample.view.dark}`} width={textExample.view.width} height={textExample.view.height} loading="lazy" decoding="async"
+              <img class="canvas-example-dark" src={`/examples/${textExample.view.dark}`} width={textExample.view.width} height={textExample.view.height} loading="lazy" decoding="async"
                 alt="The architecture diagram compiled from the source beside it" />
             </div>
             <figcaption>Compiled from this source by the app's own compiler when this page was built.</figcaption>
@@ -250,10 +250,10 @@ const MCP_CONFIG = `{
         {mapShot && (
           <figure class="shot">
             <div class="frame">
-              <img class="ofk-screen-light" src={mapShot.light} width={mapShot.width} height={mapShot.height} loading="lazy" decoding="async"
-                alt="A repository's map in OpenFlowKit, one box opened in place beside a card listing what it talks to" />
-              <img class="ofk-screen-dark" src={mapShot.dark} width={mapShot.width} height={mapShot.height} loading="lazy" decoding="async"
-                alt="A repository's map in OpenFlowKit in dark mode, one box opened in place beside a card listing what it talks to" />
+              <img class="canvas-screen-light" src={mapShot.light} width={mapShot.width} height={mapShot.height} loading="lazy" decoding="async"
+                alt="A repository's map in Canvas, one box opened in place beside a card listing what it talks to" />
+              <img class="canvas-screen-dark" src={mapShot.dark} width={mapShot.width} height={mapShot.height} loading="lazy" decoding="async"
+                alt="A repository's map in Canvas in dark mode, one box opened in place beside a card listing what it talks to" />
             </div>
           </figure>
         )}
@@ -270,8 +270,8 @@ const MCP_CONFIG = `{
             <li>
               <a href={`/${slug}/`}>
                 <span class="thumb canvas">
-                  <img class="ofk-example-light" src={`/examples/${view.light}`} width={view.width} height={view.height} loading="lazy" decoding="async" alt="" />
-                  <img class="ofk-example-dark" src={`/examples/${view.dark}`} width={view.width} height={view.height} loading="lazy" decoding="async" alt="" />
+                  <img class="canvas-example-light" src={`/examples/${view.light}`} width={view.width} height={view.height} loading="lazy" decoding="async" alt="" />
+                  <img class="canvas-example-dark" src={`/examples/${view.dark}`} width={view.width} height={view.height} loading="lazy" decoding="async" alt="" />
                 </span>
                 <span class="thumb-label">{label}</span>
               </a>
@@ -296,10 +296,10 @@ const MCP_CONFIG = `{
           </div>
           {motion && (
             <figure class="panel motion">
-              <img class="ofk-example-light" src="/examples/motion-light.svg" width={motion.width} height={motion.height} loading="lazy" decoding="async" data-replay
-                alt="The architecture diagram above, building itself one step at a time: an animated SVG exported by OpenFlowKit" />
-              <img class="ofk-example-dark" src="/examples/motion-dark.svg" width={motion.width} height={motion.height} loading="lazy" decoding="async" data-replay
-                alt="The architecture diagram above, building itself one step at a time: an animated SVG exported by OpenFlowKit" />
+              <img class="canvas-example-light" src="/examples/motion-light.svg" width={motion.width} height={motion.height} loading="lazy" decoding="async" data-replay
+                alt="The architecture diagram above, building itself one step at a time: an animated SVG exported by Canvas" />
+              <img class="canvas-example-dark" src="/examples/motion-dark.svg" width={motion.width} height={motion.height} loading="lazy" decoding="async" data-replay
+                alt="The architecture diagram above, building itself one step at a time: an animated SVG exported by Canvas" />
               <figcaption>The diagram above as an animated SVG, straight from the exporter. It plays each time it scrolls into view.</figcaption>
             </figure>
           )}
@@ -375,7 +375,7 @@ const MCP_CONFIG = `{
         margin: 0;
         color: var(--sl-color-text);
         font: 400 1rem/1.6 var(--sl-font);
-        background: var(--ofk-canvas);
+        background: var(--canvas-bg);
         -webkit-font-smoothing: antialiased;
         text-rendering: optimizeLegibility;
       }
@@ -385,14 +385,14 @@ const MCP_CONFIG = `{
       }
       kbd {
         padding: 0.05rem 0.35rem;
-        border: 1px solid var(--ofk-border);
+        border: 1px solid var(--canvas-border);
         border-radius: 6px;
-        background: var(--ofk-surface);
+        background: var(--canvas-surface);
         font: 500 0.85em/1.4 var(--sl-font);
-        color: var(--ofk-text);
+        color: var(--canvas-text);
       }
       :focus-visible {
-        outline: 2px solid var(--ofk-text);
+        outline: 2px solid var(--canvas-text);
         outline-offset: 2px;
         border-radius: 6px;
       }
@@ -405,7 +405,7 @@ const MCP_CONFIG = `{
         top: 1rem;
         z-index: 10;
         padding: 0.5rem 0.75rem;
-        background: var(--ofk-surface);
+        background: var(--canvas-surface);
         border-radius: 8px;
       }
       .wrap {
@@ -430,7 +430,7 @@ const MCP_CONFIG = `{
         gap: 0.6rem;
         font-weight: 600;
         letter-spacing: -0.01em;
-        color: var(--ofk-text);
+        color: var(--canvas-text);
       }
       .nav nav {
         display: flex;
@@ -451,7 +451,7 @@ const MCP_CONFIG = `{
         height: 2.25rem;
         margin-inline-end: 0.25rem;
         border-radius: 8px;
-        color: var(--ofk-text);
+        color: var(--canvas-text);
         transition: background-color 150ms ease;
       }
 
@@ -466,7 +466,7 @@ const MCP_CONFIG = `{
         font-size: 0.9375rem;
         font-weight: 600;
         white-space: nowrap;
-        transition: background-color 150ms ease, border-color 150ms ease, transform 120ms var(--ofk-ease);
+        transition: background-color 150ms ease, border-color 150ms ease, transform 120ms var(--canvas-ease);
       }
       .button:active,
       .copy-button:active {
@@ -479,35 +479,35 @@ const MCP_CONFIG = `{
         font-size: 0.875rem;
       }
       .button-primary {
-        background: var(--ofk-primary);
-        color: var(--ofk-on-primary);
+        background: var(--canvas-primary);
+        color: var(--canvas-on-primary);
       }
       .button-quiet {
-        border: 1px solid var(--ofk-border);
-        background: var(--ofk-surface);
-        color: var(--ofk-text);
+        border: 1px solid var(--canvas-border);
+        background: var(--canvas-surface);
+        color: var(--canvas-text);
       }
       @media (hover: hover) {
         .nav-link:hover,
         .nav-icon:hover {
-          background: var(--ofk-raised);
-          color: var(--ofk-text);
+          background: var(--canvas-raised);
+          color: var(--canvas-text);
         }
         .button-primary:hover {
-          background: var(--ofk-primary-hover);
+          background: var(--canvas-primary-hover);
         }
         .button-quiet:hover {
-          border-color: var(--ofk-border-strong);
+          border-color: var(--canvas-border-strong);
         }
         .more:hover {
           text-decoration-color: currentColor;
         }
         .gallery a:hover .thumb {
-          border-color: var(--ofk-border-strong);
+          border-color: var(--canvas-border-strong);
         }
         .copy-button:hover {
-          background: var(--ofk-raised);
-          color: var(--ofk-text);
+          background: var(--canvas-raised);
+          color: var(--canvas-text);
         }
       }
 
@@ -522,7 +522,7 @@ const MCP_CONFIG = `{
         position: absolute;
         inset: 0 0 30% 0;
         z-index: -1;
-        background-image: radial-gradient(circle, var(--ofk-dot) 1px, transparent 1.2px);
+        background-image: radial-gradient(circle, var(--canvas-dot) 1px, transparent 1.2px);
         background-size: 20px 20px;
         -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 30%, transparent 75%);
         mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, #000 30%, transparent 75%);
@@ -540,7 +540,7 @@ const MCP_CONFIG = `{
         font-weight: 650;
         line-height: 1.04;
         letter-spacing: -0.04em;
-        color: var(--ofk-text);
+        color: var(--canvas-text);
         text-wrap: balance;
       }
       .subline {
@@ -564,20 +564,20 @@ const MCP_CONFIG = `{
         max-width: 100%;
         margin-top: 1.5rem;
         padding: 0.25rem 0.25rem 0.25rem 0.875rem;
-        border: 1px solid var(--ofk-border);
+        border: 1px solid var(--canvas-border);
         border-radius: 10px;
-        background: var(--ofk-surface);
+        background: var(--canvas-surface);
       }
       .install code {
         min-width: 0;
         overflow-x: auto;
         font: 0.8125rem/1.5 var(--sl-font-mono);
-        color: var(--ofk-text);
+        color: var(--canvas-text);
         white-space: nowrap;
         scrollbar-width: none;
       }
       .prompt {
-        color: var(--ofk-muted);
+        color: var(--canvas-muted);
         user-select: none;
       }
       .copy-button {
@@ -590,15 +590,15 @@ const MCP_CONFIG = `{
         border: 0;
         border-radius: 7px;
         background: transparent;
-        color: var(--ofk-muted);
+        color: var(--canvas-muted);
         font: 500 0.8125rem/1 var(--sl-font);
         cursor: pointer;
-        transition: background-color 150ms ease, color 150ms ease, transform 120ms var(--ofk-ease);
+        transition: background-color 150ms ease, color 150ms ease, transform 120ms var(--canvas-ease);
       }
       .install-note {
         margin: 0.625rem 0 0;
         font-size: 0.8125rem;
-        color: var(--ofk-muted);
+        color: var(--canvas-muted);
       }
       .shot {
         margin: 0 auto;
@@ -608,10 +608,10 @@ const MCP_CONFIG = `{
       }
       .frame {
         overflow: hidden;
-        border: 1px solid var(--ofk-border);
+        border: 1px solid var(--canvas-border);
         border-radius: 16px;
-        background: var(--ofk-surface);
-        box-shadow: var(--ofk-shadow-overlay);
+        background: var(--canvas-surface);
+        box-shadow: var(--canvas-shadow-overlay);
         line-height: 0;
       }
       .frame img {
@@ -627,7 +627,7 @@ const MCP_CONFIG = `{
         margin: 0 0 0.75rem;
         font-size: 0.8125rem;
         font-weight: 600;
-        color: var(--ofk-primary);
+        color: var(--canvas-primary);
       }
       h2 {
         margin: 0;
@@ -635,7 +635,7 @@ const MCP_CONFIG = `{
         font-weight: 650;
         line-height: 1.12;
         letter-spacing: -0.03em;
-        color: var(--ofk-text);
+        color: var(--canvas-text);
         text-wrap: balance;
       }
       .copy > p:not(.eyebrow),
@@ -663,9 +663,9 @@ const MCP_CONFIG = `{
         margin-top: 1.25rem;
         font-weight: 600;
         font-size: 0.9375rem;
-        color: var(--ofk-text);
+        color: var(--canvas-text);
         text-decoration: underline;
-        text-decoration-color: var(--ofk-border-strong);
+        text-decoration-color: var(--canvas-border-strong);
         text-decoration-thickness: 1px;
         text-underline-offset: 0.25em;
         transition: text-decoration-color 150ms ease;
@@ -676,11 +676,11 @@ const MCP_CONFIG = `{
       .copy code,
       .points code {
         padding: 0.05rem 0.3rem;
-        border: 1px solid var(--ofk-border);
+        border: 1px solid var(--canvas-border);
         border-radius: 6px;
-        background: var(--ofk-raised);
+        background: var(--canvas-raised);
         font: 0.85em var(--sl-font-mono);
-        color: var(--ofk-text);
+        color: var(--canvas-text);
         overflow-wrap: anywhere;
       }
       .points {
@@ -702,7 +702,7 @@ const MCP_CONFIG = `{
         width: 5px;
         height: 5px;
         border-radius: 50%;
-        background: var(--ofk-border-strong);
+        background: var(--canvas-border-strong);
       }
       .split {
         display: grid;
@@ -711,13 +711,13 @@ const MCP_CONFIG = `{
       }
       .panel {
         margin: 0;
-        border: 1px solid var(--ofk-border);
+        border: 1px solid var(--canvas-border);
         border-radius: 16px;
-        background: var(--ofk-surface);
+        background: var(--canvas-surface);
       }
       .canvas {
-        background-color: var(--ofk-canvas);
-        background-image: radial-gradient(circle, var(--ofk-dot) 1px, transparent 1.2px);
+        background-color: var(--canvas-bg);
+        background-image: radial-gradient(circle, var(--canvas-dot) 1px, transparent 1.2px);
         background-size: 16px 16px;
       }
 
@@ -730,20 +730,20 @@ const MCP_CONFIG = `{
         padding: 0.75rem 0.75rem 0.5rem;
         font-size: 0.75rem;
         font-weight: 600;
-        color: var(--ofk-muted);
+        color: var(--canvas-muted);
       }
       .code-card pre,
       .duo-source {
         margin: 0;
         font: 0.8125rem/1.7 var(--sl-font-mono);
-        color: var(--ofk-text);
+        color: var(--canvas-text);
         white-space: pre-wrap;
         overflow-wrap: anywhere;
       }
       .code-card pre {
         padding: 0.75rem 0.875rem;
         border-radius: 10px;
-        background: var(--ofk-canvas);
+        background: var(--canvas-bg);
       }
       /* JSON keeps its shape and scrolls on a phone rather than breaking a string. */
       .code-card pre.config {
@@ -755,10 +755,10 @@ const MCP_CONFIG = `{
         margin: 0;
         padding: 0.875rem 0.75rem 0.5rem;
         font-size: 0.875rem;
-        color: var(--ofk-muted);
+        color: var(--canvas-muted);
       }
       .code-foot strong {
-        color: var(--ofk-text);
+        color: var(--canvas-text);
         font-weight: 600;
       }
 
@@ -776,7 +776,7 @@ const MCP_CONFIG = `{
         display: grid;
         place-items: center;
         padding: 2rem 1.25rem;
-        border-top: 1px solid var(--ofk-border);
+        border-top: 1px solid var(--canvas-border);
       }
       .duo-render img {
         max-width: 100%;
@@ -785,21 +785,21 @@ const MCP_CONFIG = `{
       .duo figcaption {
         grid-column: 1 / -1;
         padding: 0.75rem 1.5rem;
-        border-top: 1px solid var(--ofk-border);
+        border-top: 1px solid var(--canvas-border);
         font-size: 0.8125rem;
-        color: var(--ofk-muted);
+        color: var(--canvas-muted);
       }
       /* The highlighted DSL is set:html, so its spans carry no scope attribute. */
       :global(.t-k) {
-        color: var(--ofk-primary);
+        color: var(--canvas-primary);
         font-weight: 600;
       }
       :global(.t-b),
       :global(.t-l) {
-        color: var(--ofk-muted);
+        color: var(--canvas-muted);
       }
       :global(.t-a) {
-        color: var(--ofk-primary);
+        color: var(--canvas-primary);
       }
 
       /* Gallery */
@@ -818,7 +818,7 @@ const MCP_CONFIG = `{
       .thumb {
         position: relative;
         aspect-ratio: 4 / 3;
-        border: 1px solid var(--ofk-border);
+        border: 1px solid var(--canvas-border);
         border-radius: 12px;
         transition: border-color 150ms ease;
       }
@@ -832,7 +832,7 @@ const MCP_CONFIG = `{
       .thumb-label {
         font-size: 0.9375rem;
         font-weight: 600;
-        color: var(--ofk-text);
+        color: var(--canvas-text);
       }
 
       /* Motion sample: the exported file on its own background, as it ships. */
@@ -846,9 +846,9 @@ const MCP_CONFIG = `{
       }
       .motion figcaption {
         padding: 0.75rem 1rem;
-        border-top: 1px solid var(--ofk-border);
+        border-top: 1px solid var(--canvas-border);
         font-size: 0.8125rem;
-        color: var(--ofk-muted);
+        color: var(--canvas-muted);
       }
 
       /* Privacy */
@@ -862,15 +862,15 @@ const MCP_CONFIG = `{
         padding: 1rem 0;
       }
       .leaves div + div {
-        border-top: 1px solid var(--ofk-border);
+        border-top: 1px solid var(--canvas-border);
       }
       .leaves dt {
         font-weight: 600;
-        color: var(--ofk-text);
+        color: var(--canvas-text);
       }
       .leaves dd {
         margin: 0;
-        color: var(--ofk-muted);
+        color: var(--canvas-muted);
       }
 
       /* Closing */
@@ -922,7 +922,7 @@ const MCP_CONFIG = `{
         }
         .duo-render {
           border-top: 0;
-          border-left: 1px solid var(--ofk-border);
+          border-left: 1px solid var(--canvas-border);
         }
         .gallery {
           grid-template-columns: repeat(5, minmax(0, 1fr));

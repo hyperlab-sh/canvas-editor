@@ -1,16 +1,16 @@
 {
-  "name": "openflowkit",
+  "name": "@hyperlab.sh/canvas",
   "version": "0.2.4",
-  "mcpName": "io.github.openflowkit/openflowkit-mcp",
-  "description": "The OpenFlowKit CLI: render Mermaid, D2, Structurizr or OpenFlow DSL to SVG, validate diagrams in CI, map a repo. Same as @openflowkit/openflowkit-mcp.",
-  "keywords": ["diagram", "cli", "mermaid", "d2", "structurizr", "svg", "architecture", "mcp", "openflowkit"],
-  "homepage": "https://docs.openflowkit.com/cli/",
-  "bugs": "https://github.com/openflowkit/openflowkit/issues",
-  "repository": { "type": "git", "url": "https://github.com/openflowkit/openflowkit.git", "directory": "cli" },
+  "mcpName": "io.github.hyperlab-sh/canvas-mcp",
+  "description": "The Canvas CLI: render Mermaid, D2, Structurizr or OpenFlow DSL to SVG, validate diagrams in CI, map a repo. Same as @hyperlab.sh/canvas-mcp.",
+  "keywords": ["diagram", "cli", "mermaid", "d2", "structurizr", "svg", "architecture", "mcp", "canvas"],
+  "homepage": "https://docs.canvas.hyperlab.sh/cli/",
+  "bugs": "https://github.com/hyperlab-sh/canvas-editor/issues",
+  "repository": { "type": "git", "url": "https://github.com/hyperlab-sh/canvas-editor.git", "directory": "cli" },
   "license": "MIT",
   "type": "module",
-  "bin": { "openflowkit": "./openflowkit.js", "openflowkit-mcp": "./openflowkit-mcp.js" },
-  "files": ["openflowkit.js", "openflowkit-mcp.js", "README.md", "LICENSE"],
+  "bin": { "canvas": "./canvas.js", "canvas-mcp": "./canvas-mcp.js" },
+  "files": ["canvas.js", "canvas-mcp.js", "README.md", "LICENSE"],
   "engines": { "node": ">=20.11" },
-  "dependencies": { "@openflowkit/openflowkit-mcp": "0.2.4" }
+  "dependencies": { "@hyperlab.sh/canvas-mcp": "0.2.4" }
 }

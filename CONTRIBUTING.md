@@ -1,10 +1,10 @@
-# Contributing to OpenFlowKit
+# Contributing to Canvas
 
 Thanks for helping. Bug reports, ideas, docs fixes and code are all welcome.
 
-- **A bug:** open an [issue](https://github.com/openflowkit/openflowkit/issues/new/choose). The
+- **A bug:** open an [issue](https://github.com/hyperlab-sh/canvas-editor/issues/new/choose). The
   smallest DSL or Mermaid text that shows it is worth more than a long description.
-- **An idea or a question:** start a [Discussion](https://github.com/openflowkit/openflowkit/discussions).
+- **An idea or a question:** start a [Discussion](https://github.com/hyperlab-sh/canvas-editor/discussions).
 - **Code:** look for issues labelled `good first issue` or `help wanted`, or say in an issue
   what you plan to change before a large PR.
 - **A security problem:** report it privately, as [SECURITY.md](SECURITY.md) describes, not in an issue.
@@ -14,8 +14,8 @@ Thanks for helping. Bug reports, ideas, docs fixes and code are all welcome.
 You need Node **22.22+** and git. Everything else is in `package.json`.
 
 ```bash
-git clone https://github.com/openflowkit/openflowkit.git
-cd openflowkit
+git clone https://github.com/hyperlab-sh/canvas-editor.git
+cd canvas
 npm install                       # also installs the pre-commit hook (husky + lint-staged)
 npx playwright install chromium   # once, for the browser tests
 npm run dev                       # http://localhost:3000
@@ -29,7 +29,7 @@ npm run dev                       # http://localhost:3000
 | `npm run typecheck` | `tsc -b` | under a minute |
 | `npm run lint` | ESLint, zero warnings allowed | about a minute |
 | `npm test -- --run` | Vitest unit and golden tests, once (`npm test` watches) | 3–4 minutes |
-| `npm --prefix mcp-server run test:run` | MCP server and `openflowkit` CLI tests (builds the agent bundle first) | under a minute |
+| `npm --prefix mcp-server run test:run` | MCP server and `canvas` CLI tests (builds the agent bundle first) | under a minute |
 | `npm run verify` | **The merge gate:** typecheck, lint, unit, MCP tests, then the `@gate` browser set in a **headed** browser | about 9 minutes |
 | `npm run e2e:headed` | The whole Playwright suite (about 270 tests) in a visible browser on your GPU, including the `@local` GPU specs | long; ask before a release |
 | `npm run e2e:ci` | The suite headless with software WebGL (SwiftShader), for machines **without a GPU or display** (Linux, WSL, containers). Sets `CI=1` itself and skips the `@local` specs | roughly 30 minutes |
@@ -89,8 +89,8 @@ also follow. The short version:
 
 ### Storage keys
 
-Documents live in the IndexedDB database `openflowkit-persistence`. Settings use
-`openflowkit-v2-*` and `ofk.*` localStorage keys. **Don't rename a store or key** without a
+Documents live in the IndexedDB database `canvas-persistence`. Settings use
+`canvas-v2-*` and `canvas.*` localStorage keys. **Don't rename a store or key** without a
 migration that reads the old one: a rename silently loses every user's data.
 
 ## Common changes

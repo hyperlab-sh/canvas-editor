@@ -4,7 +4,7 @@ import { expect, test } from './test';
 // model-level rename across views, flow playback. One headed check for the slice —
 // npm run e2e:headed -- e2e/phase-5.spec.ts
 
-const WORKSPACE = `%% ofk 1
+const WORKSPACE = `%% canvas 1
 architecture
 
 model {
@@ -68,13 +68,13 @@ test('C4 workspace: generate, drill down, rename across views, play a flow', asy
   await page.getByRole('tab', { name: 'Elements' }).waitFor();
   await page.getByRole('treeitem', { name: /^Shop/ }).click();
   await page.getByRole('button', { name: 'Open Container view', exact: true }).click();
-  await expect(page.locator('.ofk-v2-breadcrumb-current')).toHaveText('Services: Shop', { timeout: 5000 });
+  await expect(page.locator('.canvas-v2-breadcrumb-current')).toHaveText('Services: Shop', { timeout: 5000 });
   // Back up a level with the breadcrumb link.
-  await page.locator('.ofk-v2-breadcrumb-link').first().click();
-  await expect(page.locator('.ofk-v2-breadcrumb-current')).toHaveText('Landscape');
+  await page.locator('.canvas-v2-breadcrumb-link').first().click();
+  await expect(page.locator('.canvas-v2-breadcrumb-current')).toHaveText('Landscape');
   // Shop's card stays open: drill again from it.
   await page.getByRole('button', { name: 'Open Container view', exact: true }).click();
-  await expect(page.locator('.ofk-v2-breadcrumb-current')).toHaveText('Services: Shop');
+  await expect(page.locator('.canvas-v2-breadcrumb-current')).toHaveText('Services: Shop');
 
   // --- rename an element: every view follows -------------------------------
   await page.getByRole('button', { name: 'All elements', exact: true }).click();
@@ -112,7 +112,7 @@ test('canvas connector between two model objects records the relation', async ({
   await page.waitForSelector('[data-testid="v2-canvas"]');
   await page.getByRole('toolbar', { name: 'Workspace', exact: true }).getByRole('button', { name: 'Diagram as code' }).click();
   const editor = page.getByRole('textbox', { name: 'Diagram source' });
-  await editor.fill(`%% ofk 1
+  await editor.fill(`%% canvas 1
 architecture
 model {
   system Shop { container Web; container API }

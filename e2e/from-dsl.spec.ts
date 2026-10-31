@@ -1,7 +1,7 @@
 import { deflateRawSync } from 'node:zlib';
 import { expect, test, type Page } from './test';
 
-// The MCP viewer's "Open in OpenFlowKit" link (#/from/dsl?d=<base64url deflate-raw DSL>).
+// The MCP viewer's "Open in Canvas" link (#/from/dsl?d=<base64url deflate-raw DSL>).
 // npx playwright test e2e/from-dsl.spec.ts
 
 const DSL = 'flowchart\nCart -> Payment -> Receipt\n';
@@ -10,9 +10,9 @@ const payload = (text: string) => deflateRawSync(Buffer.from(text, 'utf8')).toSt
 
 /** Regression guard: a standalone state renders inside the system root, with design-system buttons. */
 async function expectSystemState(page: Page, testId: string, primary: string): Promise<void> {
-  await expect(page.locator(`.ofk-system[data-ofk-appearance] [data-testid="${testId}"]`)).toBeVisible();
+  await expect(page.locator(`.canvas-system[data-canvas-appearance] [data-testid="${testId}"]`)).toBeVisible();
   await expect(page.getByRole('button', { name: primary })).toHaveAttribute('data-variant', 'primary');
-  await expect(page.getByRole('button', { name: primary })).toHaveClass(/ofk-button/);
+  await expect(page.getByRole('button', { name: primary })).toHaveClass(/canvas-button/);
 }
 
 test('a DSL link opens in the editor @gate', async ({ page }) => {

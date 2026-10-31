@@ -35,8 +35,8 @@ describe('V2RepoMapState', () => {
     expect(screen.queryByText('Try again')).toBeNull();
   });
   it('never breaks the CLI command across lines', () => {
-    view({ status: 'problem', problem: { status: 'problem', title: 'This repo was not found, or it is private.', detail: 'a/b wasn\'t found. Use the CLI: npx openflowkit map . --html map.html', retry: false, hero: 'lost-link' } });
-    const command = screen.getByText('npx openflowkit map . --html map.html');
+    view({ status: 'problem', problem: { status: 'problem', title: 'This repo was not found, or it is private.', detail: 'a/b wasn\'t found. Use the CLI: npx @hyperlab.sh/canvas map . --html map.html', retry: false, hero: 'lost-link' } });
+    const command = screen.getByText('npx @hyperlab.sh/canvas map . --html map.html');
     expect(command.tagName).toBe('CODE');
     expect(command.style.whiteSpace).toBe('nowrap');
   });

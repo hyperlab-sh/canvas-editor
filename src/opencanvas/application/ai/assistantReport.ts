@@ -1,7 +1,7 @@
 // "Report" on an assistant reply: a prefilled GitHub issue the user reads and
 // edits before posting. Carries the exchange and the model, never a key or the
 // endpoint (a custom base URL can name a private host).
-export const ISSUE_URL = 'https://github.com/openflowkit/openflowkit/issues/new';
+export const ISSUE_URL = 'https://github.com/hyperlab-sh/canvas-editor/issues/new';
 
 interface AssistantReportInput {
   readonly prompt: string;
