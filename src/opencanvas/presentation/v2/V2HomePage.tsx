@@ -302,8 +302,8 @@ export function V2HomePage(): React.JSX.Element {
   /** Arrows walk the cards; Space selects, F2 renames, S stars, Delete archives — on the focused card or the selection. */
   const onGridKey = (event: ReactKeyboardEvent<HTMLUListElement>, project?: string) => {
     const target = event.target as HTMLElement;
-    if (!target.classList.contains('canvas-home-card-hit') || event.metaKey || event.ctrlKey || event.altKey) return;
-    const hits = [...event.currentTarget.querySelectorAll<HTMLElement>('.canvas-home-card-hit')];
+    if (!target.classList.contains('ofk-home-card-hit') || event.metaKey || event.ctrlKey || event.altKey) return;
+    const hits = [...event.currentTarget.querySelectorAll<HTMLElement>('.ofk-home-card-hit')];
     const index = hits.indexOf(target);
     const id = target.dataset.docId;
     const top = hits[0]?.closest('li')?.offsetTop;
@@ -374,7 +374,7 @@ export function V2HomePage(): React.JSX.Element {
     content = <HomeNews />;
   } else if (view === 'templates') {
     content = <>
-      <p className="canvas-home-lede">Real diagrams to change. No API key needed.</p>
+      <p className="ofk-home-lede">Real diagrams to change. No API key needed.</p>
       {templates.length ? templateGrid : noMatch}
     </>;
   } else if (firstRun) {
@@ -390,20 +390,20 @@ export function V2HomePage(): React.JSX.Element {
     content = <>
       {view === 'recents' ? (
         <>
-          <ul className="canvas-home-chips" aria-label="Start">
+          <ul className="ofk-home-chips" aria-label="Start">
             {STARTS.map(({ kind, chip, hint, intent }) => (
               <StartChip key={kind} kind={kind} title={chip} hint={hint} onStart={() => create(intent)} />
             ))}
           </ul>
           {/* The repo map stays one field away for a returning visitor too (not only a paste nobody knows about). */}
-          <section className="canvas-home-map" aria-label="Map a GitHub repo">{repoField}</section>
+          <section className="ofk-home-map" aria-label="Map a GitHub repo">{repoField}</section>
         </>
       ) : null}
       {view === 'archive' && archive?.length ? (
-        <p className="canvas-home-lede">Off your list, kept until you delete them. Restore one to open it again.</p>
+        <p className="ofk-home-lede">Off your list, kept until you delete them. Restore one to open it again.</p>
       ) : null}
       {empty ?? (shown && shown.length === 0 ? noMatch : (
-        <ul className="canvas-home-grid" data-layout={home.layout} aria-label="Diagrams" aria-busy={shown === null}
+        <ul className="ofk-home-grid" data-layout={home.layout} aria-label="Diagrams" aria-busy={shown === null}
           aria-multiselectable="true" onKeyDown={onGridKey}>
           {shown ? shown.map((summary) => view === 'archive' ? (
             <ArchivedCard key={summary.id} summary={summary} thumbnail={thumbnails.get(summary.id)} appearance={appearance}
@@ -435,7 +435,7 @@ export function V2HomePage(): React.JSX.Element {
 
   return (
     <SystemRoot appearance={appearance} density={preferences.density}>
-      <div className="canvas-home-page" data-testid="v2-home" data-selecting={selected.length ? '' : undefined}
+      <div className="ofk-home-page" data-testid="v2-home" data-selecting={selected.length ? '' : undefined}
         onDragEnter={(event) => { if (event.dataTransfer.types.includes('Files')) { event.preventDefault(); setDragging(true); } }}
         onDragOver={(event) => { if (event.dataTransfer.types.includes('Files')) event.preventDefault(); }}
         onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false); }}
@@ -450,15 +450,15 @@ export function V2HomePage(): React.JSX.Element {
           onToggleTheme={() => updatePreferences({ theme: dark ? 'light' : 'dark' })}
           onDownloadAll={() => { void downloadAllDiagrams(transfer); }} />
 
-        <main className="canvas-home-main">
+        <main className="ofk-home-main">
           <V2HomeHeader title={firstRun ? 'Let’s draw your first diagram.' : viewTitle} listing={listing} sortTitle={sortTitle}
             sortOpen={open === 'sort'} home={home} fileRef={fileRef} blocked={listError?.blocked}
             onSortOpen={(next) => setOpen(next ? 'sort' : null)} onUpdateHome={updateHome}
             onImport={(files) => void importFiles(files)} onCreate={() => create()} />
-          <div className="canvas-home-content">
+          <div className="ofk-home-content">
             {notice ? <HomeNoticeStrip notice={notice} onDismiss={() => setNotice(null)} /> : null}
             {failed.length > 0 ? (
-              <section className="canvas-home-notice" data-tone="warning" aria-label="Not brought over">
+              <section className="ofk-home-notice" data-tone="warning" aria-label="Not brought over">
                 <Icon icon={IconAlertTriangle} />
                 <div>
                   <p><strong>{failed.length === 1 ? '1 diagram' : `${failed.length} diagrams`} from the previous editor didn’t come over yet.</strong> {failed.length === 1 ? 'It’s' : 'They’re'} safe in this browser.</p>

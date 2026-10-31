@@ -20,7 +20,7 @@ interface LabelledProps extends InputHTMLAttributes<HTMLInputElement> {
 export const Checkbox = forwardRef<HTMLInputElement, LabelledProps & { indeterminate?: boolean }>(
   function Checkbox({ label, hideLabel, indeterminate, className = '', ...props }, ref) {
     return (
-      <label className={`canvas-check ${className}`} data-hide-label={hideLabel || undefined}>
+      <label className={`ofk-check ${className}`} data-hide-label={hideLabel || undefined}>
         <input
           {...props}
           ref={(node) => {
@@ -30,7 +30,7 @@ export const Checkbox = forwardRef<HTMLInputElement, LabelledProps & { indetermi
           }}
           type="checkbox"
         />
-        <span className="canvas-check-box" aria-hidden="true">
+        <span className="ofk-check-box" aria-hidden="true">
           <Icon icon={indeterminate ? IconMinus : IconCheck} />
         </span>
         <span>{label}</span>
@@ -43,9 +43,9 @@ export const Switch = forwardRef<HTMLInputElement, LabelledProps>(function Switc
   ref
 ) {
   return (
-    <label className={`canvas-switch ${className}`} data-hide-label={hideLabel || undefined}>
+    <label className={`ofk-switch ${className}`} data-hide-label={hideLabel || undefined}>
       <input {...props} ref={ref} type="checkbox" role="switch" />
-      <span className="canvas-switch-track" aria-hidden="true" />
+      <span className="ofk-switch-track" aria-hidden="true" />
       <span>{label}</span>
     </label>
   );
@@ -63,11 +63,11 @@ export const Slider = forwardRef<HTMLInputElement, SliderProps>(function Slider(
   const generated = useId();
   const inputId = id ?? generated;
   return (
-    <div className={`canvas-slider ${className}`} data-hide-label={hideLabel || undefined}>
+    <div className={`ofk-slider ${className}`} data-hide-label={hideLabel || undefined}>
       <label htmlFor={inputId}>{label}</label>
       <input {...props} ref={ref} id={inputId} type="range" />
       {readout && (
-        <output htmlFor={inputId} className="canvas-numeric">
+        <output htmlFor={inputId} className="ofk-numeric">
           {readout}
         </output>
       )}
@@ -155,18 +155,18 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
   }
   const shown = draft ?? (value === null ? '' : String(value));
   return (
-    <div className={`canvas-number ${className}`} data-stepper={stepper} data-hide-label={hideLabel || undefined}>
+    <div className={`ofk-number ${className}`} data-stepper={stepper} data-hide-label={hideLabel || undefined}>
       <label htmlFor={inputId}>{label}</label>
-      <span className="canvas-number-control">
+      <span className="ofk-number-control">
         {prefix && (
-          <span className="canvas-number-prefix" aria-hidden="true">
+          <span className="ofk-number-prefix" aria-hidden="true">
             {prefix}
           </span>
         )}
         {stepper !== 'none' && <IconButton
           variant="quiet"
           label={`Decrease ${label}`}
-          className="canvas-number-decrease"
+          className="ofk-number-decrease"
           icon={<Icon icon={stepper === 'stacked' ? IconChevronDown : IconMinus} />}
           tabIndex={-1}
           disabled={props.disabled}
@@ -179,7 +179,7 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
           id={inputId}
           type="text"
           inputMode="decimal"
-          className="canvas-numeric"
+          className="ofk-numeric"
           role="spinbutton"
           value={shown}
           placeholder={value === null ? mixedLabel : props.placeholder}
@@ -213,11 +213,11 @@ export const NumberField = forwardRef<HTMLInputElement, NumberFieldProps>(functi
             }
           }}
         />
-        {unit && <span className="canvas-number-unit" data-unit={unit}>{unit}</span>}
+        {unit && <span className="ofk-number-unit" data-unit={unit}>{unit}</span>}
         {stepper !== 'none' && <IconButton
           variant="quiet"
           label={`Increase ${label}`}
-          className="canvas-number-increase"
+          className="ofk-number-increase"
           icon={<Icon icon={stepper === 'stacked' ? IconChevronUp : IconPlus} />}
           tabIndex={-1}
           disabled={props.disabled}
@@ -246,7 +246,7 @@ export function Segmented<T extends string>({
 }: SegmentedProps<T>) {
   const name = useId();
   const group = (
-    <div className="canvas-segmented" role="radiogroup" aria-label={showLabel ? undefined : label}
+    <div className="ofk-segmented" role="radiogroup" aria-label={showLabel ? undefined : label}
       aria-labelledby={showLabel ? `${name}-label` : undefined}>
       {options.map((o) => (
         <label key={o.value} title={o.title} data-selected={o.value === value || undefined}>
@@ -264,8 +264,8 @@ export function Segmented<T extends string>({
     </div>
   );
   return showLabel ? (
-    <div className="canvas-segmented-field">
-      <span className="canvas-segmented-caption" id={`${name}-label`}>{label}</span>
+    <div className="ofk-segmented-field">
+      <span className="ofk-segmented-caption" id={`${name}-label`}>{label}</span>
       {group}
     </div>
   ) : group;
@@ -280,7 +280,7 @@ export const ColorSwatch = forwardRef<
     <button
       ref={ref}
       type="button"
-      className="canvas-button canvas-swatch"
+      className="ofk-button ofk-swatch"
       aria-label={`${label}: ${color ?? 'mixed'}`}
       aria-haspopup={expanded === undefined ? undefined : 'dialog'}
       aria-expanded={expanded}
@@ -304,7 +304,7 @@ export interface TabsProps<T extends string> {
 export function Tabs<T extends string>({ label, value, onChange, tabs }: TabsProps<T>) {
   const id = useId();
   return (
-    <div className="canvas-tabs">
+    <div className="ofk-tabs">
       <div
         role="tablist"
         aria-label={label}
@@ -372,15 +372,15 @@ export function EmptyState({
   secondary?: ReactNode;
 }) {
   return (
-    <div className="canvas-empty" data-hero={hero ? '' : undefined}>
+    <div className="ofk-empty" data-hero={hero ? '' : undefined}>
       {(hero ?? icon) && (
-        <span className="canvas-empty-icon" aria-hidden="true">
+        <span className="ofk-empty-icon" aria-hidden="true">
           {hero ?? icon}
         </span>
       )}
-      <p className="canvas-empty-title">{title}</p>
-      {description && <p className="canvas-caption">{description}</p>}
-      {(action || secondary) && <div className="canvas-empty-actions">{action}{secondary}</div>}
+      <p className="ofk-empty-title">{title}</p>
+      {description && <p className="ofk-caption">{description}</p>}
+      {(action || secondary) && <div className="ofk-empty-actions">{action}{secondary}</div>}
     </div>
   );
 }
@@ -407,13 +407,13 @@ export function ErrorState({
 }) {
   const primary = action ?? (onRetry && <Button variant="primary" onClick={onRetry}>{retryLabel}</Button>);
   return (
-    <div className="canvas-empty" data-tone="danger" data-hero={hero ? '' : undefined} role="alert">
-      <span className="canvas-empty-icon" aria-hidden="true">
+    <div className="ofk-empty" data-tone="danger" data-hero={hero ? '' : undefined} role="alert">
+      <span className="ofk-empty-icon" aria-hidden="true">
         {hero ?? <Icon icon={IconAlertTriangle} />}
       </span>
-      <p className="canvas-empty-title">{title}</p>
-      {description && <p className="canvas-caption">{description}</p>}
-      {(primary || secondary) && <div className="canvas-empty-actions">{primary}{secondary}</div>}
+      <p className="ofk-empty-title">{title}</p>
+      {description && <p className="ofk-caption">{description}</p>}
+      {(primary || secondary) && <div className="ofk-empty-actions">{primary}{secondary}</div>}
     </div>
   );
 }

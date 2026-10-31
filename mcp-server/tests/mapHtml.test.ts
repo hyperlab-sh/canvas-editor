@@ -31,9 +31,9 @@ describe('map --html helpers', () => {
   });
 });
 
-describe('canvas map --html', () => {
+describe('openflowkit map --html', () => {
   it('writes one offline page with a CSP, the model inlined, and no links outside a github checkout', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'canvas-maphtml-'));
+    const root = await mkdtemp(join(tmpdir(), 'openflowkit-maphtml-'));
     tempDirs.push(root);
     await mkdir(join(root, 'src'), { recursive: true });
     await writeFile(join(root, 'src', 'a.ts'), "import { b } from './b';\nexport const a = b;\n", 'utf8');
@@ -45,7 +45,7 @@ describe('canvas map --html', () => {
     const html = await readFile(out, 'utf8');
     expect(html).toMatch(/content="default-src 'none'; script-src 'sha256-[A-Za-z0-9+/]+={0,2}'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'"/);
     expect(html.match(/<script[ >]/g)!.length).toBeGreaterThanOrEqual(2);
-    const data = /<script type="application\/json" id="canvas-map-data">([^<]*)<\/script>/.exec(html);
+    const data = /<script type="application\/json" id="ofk-map-data">([^<]*)<\/script>/.exec(html);
     expect(data).not.toBeNull();
     const parsed = JSON.parse(data![1]!) as { repo: unknown; depth: string; model: { stats: { files: number } } };
     expect(parsed).toMatchObject({ repo: null, depth: 'overview', model: { stats: { files: 2 } } });
@@ -57,7 +57,7 @@ const git = (cwd: string, ...args: string[]): string =>
   execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false', ...args], { cwd, encoding: 'utf8' }).trim();
 
 async function gitRepo(origin?: string): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), 'canvas-maphtml-git-'));
+  const root = await mkdtemp(join(tmpdir(), 'openflowkit-maphtml-git-'));
   tempDirs.push(root);
   git(root, 'init', '-q');
   if (origin) git(root, 'remote', 'add', 'origin', origin);
@@ -86,7 +86,7 @@ describe('map in a git checkout', () => {
     expect(lines.join('\n')).toContain('2 files');
     expect(lines.join('\n')).toContain('acme/widgets');
     const html = await readFile(out, 'utf8');
-    const data = JSON.parse(/id="canvas-map-data">([^<]*)</.exec(html)![1]!) as { repo: unknown; name: string; model: { nodes: Record<string, unknown> } };
+    const data = JSON.parse(/id="ofk-map-data">([^<]*)</.exec(html)![1]!) as { repo: unknown; name: string; model: { nodes: Record<string, unknown> } };
     expect(data.repo).toEqual({ owner: 'acme', repo: 'widgets', ref: sha });
     expect(data.name).toBe('widgets');
     expect(Object.keys(data.model.nodes).filter((id) => /plans|untracked|link/.test(id))).toEqual([]);
@@ -103,7 +103,7 @@ describe('map in a git checkout', () => {
     tempDirs.push(out);
     for (const dir of [lab, join(lab, 'pkg')]) {
       expect(await main(['map', dir, '--html', out], { out: () => undefined, err: () => undefined })).toBe(0);
-      expect(/id="canvas-map-data">([^<]*)</.exec(await readFile(out, 'utf8'))![1]).toContain('"repo":null');
+      expect(/id="ofk-map-data">([^<]*)</.exec(await readFile(out, 'utf8'))![1]).toContain('"repo":null');
     }
     const hub = await gitRepo('https://github.com/acme/widgets.git');
     await mkdir(join(hub, 'pkg'), { recursive: true });
@@ -111,7 +111,7 @@ describe('map in a git checkout', () => {
     git(hub, 'add', '.');
     git(hub, 'commit', '-q', '-m', 'init');
     expect(await main(['map', join(hub, 'pkg'), '--html', out], { out: () => undefined, err: () => undefined })).toBe(0);
-    expect(/id="canvas-map-data">([^<]*)</.exec(await readFile(out, 'utf8'))![1]).toContain('"repo":null');
+    expect(/id="ofk-map-data">([^<]*)</.exec(await readFile(out, 'utf8'))![1]).toContain('"repo":null');
   });
 
   it('never runs a command named by the checkout\'s own git config', async () => {
@@ -129,7 +129,7 @@ describe('map in a git checkout', () => {
 
 describe('hostile file names', () => {
   it('cannot add a script, a comment or a line break to the page', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'canvas-maphtml-evil-'));
+    const root = await mkdtemp(join(tmpdir(), 'openflowkit-maphtml-evil-'));
     tempDirs.push(root);
     const names = ['<!--<script>.ts', 'a\u2028b.ts', '<SCRIPT>x.ts', '"><img src=x onerror=alert(1)>.ts'];
     for (const name of names) await writeFile(join(root, name), 'export {};\n', 'utf8');
@@ -140,7 +140,7 @@ describe('hostile file names', () => {
     expect(html.match(/<script[ >]/gi)!.length).toBeLessThanOrEqual(3); // the viewer's own code mentions the tag once
     expect(html).not.toMatch(/<!--/);
     expect(html).not.toMatch(/<img\s/i);
-    const json = /id="canvas-map-data">([^<]*)</.exec(html)![1]!;
+    const json = /id="ofk-map-data">([^<]*)</.exec(html)![1]!;
     expect(json).not.toMatch(/[\u2028\u2029]/);
     const nodes = Object.keys((JSON.parse(json) as { model: { nodes: Record<string, unknown> } }).model.nodes);
     for (const name of names) expect(nodes).toContain(name);

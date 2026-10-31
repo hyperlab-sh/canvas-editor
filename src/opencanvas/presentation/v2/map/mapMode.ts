@@ -137,7 +137,7 @@ export function freeArea(size: { width: number; height: number }, edges: { left:
 /** The canvas the side panels and the floating chrome leave: the document bar, the right rail and the camera controls are measured now. */
 export function clearance(host: { getViewportSize(): { width: number; height: number } }, withTools = true): FreeArea {
   const size = host.getViewportSize();
-  const root = document.querySelector<HTMLElement>('.canvas-v2');
+  const root = document.querySelector<HTMLElement>('.ofk-v2');
   const origin = document.querySelector<HTMLElement>('[data-testid="v2-canvas"]')?.getBoundingClientRect();
   const at = (label: string) => root?.querySelector<HTMLElement>(`[role="toolbar"][aria-label="${label}"]`)?.getBoundingClientRect();
   const [bar, rail, controls, tools] = [at('Document'), at('Workspace'), at('View'), at('Create')];

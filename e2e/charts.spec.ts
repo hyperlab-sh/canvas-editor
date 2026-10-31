@@ -92,7 +92,7 @@ test('the data panel opens on demand, not on every select, and Esc closes it', a
   await page.keyboard.press('Escape');
   await expect(panel).toBeHidden();
   await expect.poll(() => page.evaluate(() =>
-    Boolean((document.activeElement as HTMLElement)?.closest?.('.canvas-v2')))).toBe(true);
+    Boolean((document.activeElement as HTMLElement)?.closest?.('.ofk-v2')))).toBe(true);
 
   // Double-click reopens it — charts are data, so it edits numbers, not a label.
   await page.mouse.dblclick(box.x + rect.x + rect.width / 2, box.y + rect.y + rect.height / 2);

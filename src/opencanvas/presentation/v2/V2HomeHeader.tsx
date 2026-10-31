@@ -25,11 +25,11 @@ export function V2HomeHeader({
 }: HomeHeaderProps): React.JSX.Element {
   const sortRef = useRef<HTMLButtonElement>(null);
   return (
-    <header className="canvas-home-head">
+    <header className="ofk-home-head">
       <h1>{title}</h1>
       {listing ? (
-        <div className="canvas-home-head-tools">
-          <Button ref={sortRef} variant="quiet" className="canvas-home-sort" aria-haspopup="menu" aria-expanded={sortOpen}
+        <div className="ofk-home-head-tools">
+          <Button ref={sortRef} variant="quiet" className="ofk-home-sort" aria-haspopup="menu" aria-expanded={sortOpen}
             aria-label={`Sort by ${sortTitle}`} onClick={() => onSortOpen(!sortOpen)}>
             {sortTitle} <Icon icon={IconChevronDown} />
           </Button>
@@ -40,13 +40,13 @@ export function V2HomeHeader({
             ))}
           </Menu>
           <Segmented label="Layout" value={home.layout} onChange={(layout) => onUpdateHome({ layout })} options={[
-            { value: 'grid', title: 'Grid', label: <><Icon icon={IconLayoutGrid} /><span className="canvas-visually-hidden">Grid</span></> },
-            { value: 'list', title: 'List', label: <><Icon icon={IconLayoutList} /><span className="canvas-visually-hidden">List</span></> },
+            { value: 'grid', title: 'Grid', label: <><Icon icon={IconLayoutGrid} /><span className="ofk-visually-hidden">Grid</span></> },
+            { value: 'list', title: 'List', label: <><Icon icon={IconLayoutList} /><span className="ofk-visually-hidden">List</span></> },
           ]} />
         </div>
       ) : null}
       <Tooltip content="Import .json, Mermaid, D2 or Structurizr — or drop files anywhere">
-        <Button variant="quiet" className="canvas-home-import" onClick={() => fileRef.current?.click()}>
+        <Button variant="quiet" className="ofk-home-import" onClick={() => fileRef.current?.click()}>
           <Icon icon={IconFileImport} /> <span>Import</span>
         </Button>
       </Tooltip>

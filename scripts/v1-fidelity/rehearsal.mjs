@@ -3,8 +3,8 @@
 // profile. v1's own UI writes the diagrams (production build: no store imports); v2 then
 // boots on top and must list every one of them. Read-only on the repo.
 //
-//   git worktree add --detach "$S/canvas-v1" origin/main     # what canvas.hyperlab.sh serves
-//   (cd "$S/canvas-v1" && npm ci && npx vite build --outDir "$S/v1-dist")
+//   git worktree add --detach "$S/ofk-v1" origin/main     # what app.openflowkit.com serves
+//   (cd "$S/ofk-v1" && npm ci && npx vite build --outDir "$S/v1-dist")
 //   npx vite build --outDir "$S/v2-dist"
 //   V1_DIST="$S/v1-dist" V2_DIST="$S/v2-dist" node scripts/v1-fidelity/rehearsal.mjs
 import { chromium } from '@playwright/test';
@@ -53,7 +53,7 @@ async function applyMermaid(page, source) {
 
 const readStore = (page, store) => page.evaluate(async (name) => {
   const db = await new Promise((resolve, reject) => {
-    const request = indexedDB.open('canvas-persistence');
+    const request = indexedDB.open('openflowkit-persistence');
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
@@ -66,7 +66,7 @@ const readStore = (page, store) => page.evaluate(async (name) => {
   return rows;
 }, store);
 
-const profile = mkdtempSync(join(tmpdir(), 'canvas-rehearsal-'));
+const profile = mkdtempSync(join(tmpdir(), 'ofk-rehearsal-'));
 const launch = () => chromium.launchPersistentContext(profile, {
   viewport: { width: 1440, height: 900 },
   args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
@@ -109,8 +109,8 @@ try {
   await page.reload();
   await page.locator('[data-testid="v2-canvas"]').waitFor({ timeout: 15_000 });
 }
-await page.waitForFunction(() => localStorage.getItem('canvas.v1Import') !== null, null, { timeout: 30_000 });
-const marker = JSON.parse(await page.evaluate(() => localStorage.getItem('canvas.v1Import')));
+await page.waitForFunction(() => localStorage.getItem('ofk.v1Import') !== null, null, { timeout: 30_000 });
+const marker = JSON.parse(await page.evaluate(() => localStorage.getItem('ofk.v1Import')));
 const v2Docs = (await readStore(page, 'v2Documents')).filter((row) => row.id.startsWith('v1-'));
 const v1Intact = JSON.stringify(await readStore(page, 'documents')) === v1Snapshot;
 // v1's worker meets the 12.6 kill switch on this visit; give it time to unregister and reload.

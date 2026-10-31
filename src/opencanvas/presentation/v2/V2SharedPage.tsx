@@ -45,7 +45,7 @@ export function V2SharedPage(): React.JSX.Element {
   return (
     <V2StateShell testId="v2-shared-state">
       {state === null ? (
-        <div className="canvas-empty"><BrandLoader /><p className="canvas-caption" role="status">Opening diagram…</p></div>
+        <div className="ofk-empty"><BrandLoader /><p className="ofk-caption" role="status">Opening diagram…</p></div>
       ) : 'problem' in state ? (
         <ErrorState
           // A retry can help when the service or network failed; a bad link stays bad.

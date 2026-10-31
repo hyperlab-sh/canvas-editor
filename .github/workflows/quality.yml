@@ -163,19 +163,19 @@ jobs:
 
       - name: Build image and serve the app
         run: |
-          docker build -t canvas:check .
-          docker run -d --name canvas -p 3045:3045 canvas:check
+          docker build -t openflowkit:check .
+          docker run -d --name ofk -p 3045:3045 openflowkit:check
           up() { for i in $(seq 1 20); do curl -fs "http://127.0.0.1:$1/" | grep -q '<div id="root"' && return 0; sleep 1; done; docker logs "$2"; return 1; }
           status() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
-          up 3045 canvas
+          up 3045 ofk
           # The AI proxy is off by default: its paths say so (503), they never fall through to the app page.
           test "$(status http://127.0.0.1:3045/ai-proxy/models)" = 503
           # On, it forwards only its two paths; nothing listens upstream here, so a forwarded call is a 502.
-          docker run -d --name canvas-proxy -p 3046:3045 -e CANVAS_AI_UPSTREAM=http://127.0.0.1:9/v1 canvas:check
-          up 3046 canvas-proxy
+          docker run -d --name ofk-proxy -p 3046:3045 -e OPENFLOWKIT_AI_UPSTREAM=http://127.0.0.1:9/v1 openflowkit:check
+          up 3046 ofk-proxy
           test "$(status http://127.0.0.1:3046/ai-proxy/models)" = 502
           test "$(status -X POST http://127.0.0.1:3046/ai-proxy/chat/completions -d '{}')" = 502
           test "$(status -X POST http://127.0.0.1:3046/ai-proxy/models)" = 403
           test "$(status http://127.0.0.1:3046/ai-proxy/v1/files)" = 404
           # A value nginx config cannot take stops the container instead of serving a broken proxy.
-          if docker run --rm -e 'CANVAS_AI_UPSTREAM=http://x;evil' canvas:check nginx -t; then exit 1; fi
+          if docker run --rm -e 'OPENFLOWKIT_AI_UPSTREAM=http://x;evil' openflowkit:check nginx -t; then exit 1; fi

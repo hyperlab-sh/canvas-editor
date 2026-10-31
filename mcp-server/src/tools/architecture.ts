@@ -19,11 +19,11 @@ function text(payload: unknown): CallToolResult {
 }
 
 const pathField = z.string().min(1).describe('Absolute or cwd-relative path to the repository root.');
-const dslField = z.string().min(1).optional().describe('Inline Canvas architecture workspace; wins over documentId.');
+const dslField = z.string().min(1).optional().describe('Inline OFK architecture workspace; wins over documentId.');
 const documentIdField = z.string().min(1).optional()
-  .describe('File-mode document id from openflow_open; without dsl or documentId, the model is architecture.canvas in path.');
+  .describe('File-mode document id from openflow_open; without dsl or documentId, the model is architecture.ofk in path.');
 
-/** The model a drift/explain call is about: inline DSL, a stored document, or the repo's architecture.canvas. */
+/** The model a drift/explain call is about: inline DSL, a stored document, or the repo's architecture.ofk. */
 async function modelForInput(
   input: { dsl?: string | undefined; documentId?: string | undefined; path?: string | undefined },
   store: DocumentStore,
@@ -38,7 +38,7 @@ async function modelForInput(
   }
   if (input.documentId) return modelFromDocument(store.get(input.documentId));
   if (input.path) {
-    const source = await readFile(path.join(path.resolve(input.path), 'architecture.canvas'), 'utf8').catch(() => null);
+    const source = await readFile(path.join(path.resolve(input.path), 'architecture.ofk'), 'utf8').catch(() => null);
     if (source === null) return null;
     const workspace = await compileWorkspace(source);
     for (const view of workspace.views) {
@@ -79,7 +79,7 @@ export function registerArchitectureTools(server: McpServer, store: DocumentStor
       title: 'Discover architecture from a repository',
       description:
         'Walk a local repo (compose, Dockerfiles, k8s, terraform, package manifests, datastore and ' +
-        'HTTP-client usage) and return a proposed Canvas C4 workspace as DSL, with evidence per unit. ' +
+        'HTTP-client usage) and return a proposed OFK C4 workspace as DSL, with evidence per unit. ' +
         'Deterministic, offline; review the proposal before committing it.',
       inputSchema: {
         path: pathField,
@@ -109,7 +109,7 @@ export function registerArchitectureTools(server: McpServer, store: DocumentStor
     {
       title: 'Architecture drift report',
       description:
-        'Compare an architecture model (inline dsl, a documentId, or else architecture.canvas in path) against a repository. ' +
+        'Compare an architecture model (inline dsl, a documentId, or else architecture.ofk in path) against a repository. ' +
         'Returns missing (in repo, not in model), undrawn (in model, no repo evidence) and changed ' +
         '(name matches, tech or dir differs) with evidence lines.',
       inputSchema: { path: pathField, dsl: dslField, documentId: documentIdField },
@@ -118,7 +118,7 @@ export function registerArchitectureTools(server: McpServer, store: DocumentStor
       try {
         const discovery = await runArchitectureDiscovery(rootPath);
         const model = await modelForInput({ dsl, documentId, path: rootPath }, store);
-        if (!model) throw new Error('No C4 model found: pass dsl or documentId, or put architecture.canvas in the repo.');
+        if (!model) throw new Error('No C4 model found: pass dsl or documentId, or put architecture.ofk in the repo.');
         const report = driftReport(model, discovery);
         return text({
           ...report,
@@ -149,7 +149,7 @@ export function registerArchitectureTools(server: McpServer, store: DocumentStor
     async ({ elementId, path: rootPath, dsl, documentId }) => {
       try {
         const model = await modelForInput({ dsl, documentId, path: rootPath }, store);
-        if (!model) throw new Error('No C4 model found: pass dsl or documentId, or point path at a repo with architecture.canvas.');
+        if (!model) throw new Error('No C4 model found: pass dsl or documentId, or point path at a repo with architecture.ofk.');
         const element = findElement(model, elementId);
         if (!element) throw new Error(`Element "${elementId}" is not in the model.`);
         const relations = model.relations.filter((relation) => relation.from === element.id || relation.to === element.id);

@@ -108,7 +108,7 @@ export function V2EditorOverlays(p: OverlaysProps): React.JSX.Element {
       {feedback.prompt ? <V2FeedbackPrompt prompt={feedback.prompt} hidden={transient} onToast={pushToast}
         onFinish={(outcome) => { feedback.finish(outcome); if (document.activeElement === document.body) p.focusCanvas(); }} /> : null}
       {panels.motionOpen ? (
-        <Panel title="Animation export" className="canvas-motion-panel canvas-v2-workspace-panel"
+        <Panel title="Animation export" className="ofk-motion-panel ofk-v2-workspace-panel"
           onClose={panels.closeMotion}>
           <V2MotionExport key={page.id} document={session.document!} pageId={page.id}
             onToast={(title, tone) => pushToast({ id: `motion-${Date.now()}`, tone, title })}

@@ -57,22 +57,22 @@ export function V2MotionSteps({ steps, page, onReorder, onMerge, onHold, onShowC
   const holdStep = holdIndex === null ? null : steps[holdIndex] ?? null;
   const shown = steps.slice(0, MAX_CHIPS);
   return (
-    <div className="canvas-motion-steps">
-      <details className="canvas-accordion canvas-motion-steps-disclosure" open={steps.length <= OPEN_STEPS}>
+    <div className="ofk-motion-steps">
+      <details className="ofk-accordion ofk-motion-steps-disclosure" open={steps.length <= OPEN_STEPS}>
         <summary>
           <span>Steps</span>
-          <span className="canvas-accordion-meta">
-            <span className="canvas-caption">{steps.length} step{steps.length === 1 ? '' : 's'}</span>
+          <span className="ofk-accordion-meta">
+            <span className="ofk-caption">{steps.length} step{steps.length === 1 ? '' : 's'}</span>
             <Icon icon={IconChevronDown} />
           </span>
         </summary>
-        <div className="canvas-accordion-body">
-          <ol className="canvas-motion-chip-row" aria-label="Animation steps">
+        <div className="ofk-accordion-body">
+          <ol className="ofk-motion-chip-row" aria-label="Animation steps">
             {shown.map((step, index) => (
               <li key={`${index}:${step.nodeIds.join(',')}:${step.connectorIds.join(',')}`}>
                 <button
                   type="button"
-                  className="canvas-motion-chip"
+                  className="ofk-motion-chip"
                   data-dragging={dragFrom === index || undefined}
                   data-drop={dropAt === index || undefined}
                   draggable
@@ -109,26 +109,26 @@ export function V2MotionSteps({ steps, page, onReorder, onMerge, onHold, onShowC
                     }
                   }}
                 >
-                  <span className="canvas-motion-chip-index" aria-hidden="true">{index + 1}</span>
-                  <span className="canvas-motion-chip-label">{chipLabel(page, step)}</span>
+                  <span className="ofk-motion-chip-index" aria-hidden="true">{index + 1}</span>
+                  <span className="ofk-motion-chip-label">{chipLabel(page, step)}</span>
                 </button>
                 {index < shown.length - 1 ? (
-                  <span className="canvas-motion-chip-gap" aria-hidden="true" onDragOver={(event) => event.preventDefault()} onDrop={() => { if (dragFrom !== null) { onReorder(dragFrom, index); setDragFrom(null); setDropAt(null); } }} />
+                  <span className="ofk-motion-chip-gap" aria-hidden="true" onDragOver={(event) => event.preventDefault()} onDrop={() => { if (dragFrom !== null) { onReorder(dragFrom, index); setDragFrom(null); setDropAt(null); } }} />
                 ) : null}
               </li>
             ))}
           </ol>
-          <p className="canvas-caption">Drag to reorder, drop one onto another to merge, click for its hold. Every edit writes the <code>animate</code> block in the diagram&apos;s code.</p>
-          {onShowCode ? <Button variant="secondary" className="canvas-motion-show-code" onClick={onShowCode}>Show code</Button> : null}
+          <p className="ofk-caption">Drag to reorder, drop one onto another to merge, click for its hold. Every edit writes the <code>animate</code> block in the diagram&apos;s code.</p>
+          {onShowCode ? <Button variant="secondary" className="ofk-motion-show-code" onClick={onShowCode}>Show code</Button> : null}
           {steps.length > MAX_CHIPS ? (
-            <p className="canvas-caption">Showing the first {MAX_CHIPS} steps — the rest are in the <code>animate</code> block in the code panel.</p>
+            <p className="ofk-caption">Showing the first {MAX_CHIPS} steps — the rest are in the <code>animate</code> block in the code panel.</p>
           ) : null}
         </div>
       </details>
       {holdStep ? (
         <Popover role="dialog" aria-label={`Step ${(holdIndex ?? 0) + 1} hold`} open anchorRef={holdAnchor} onClose={() => setHoldIndex(null)} placement="bottom-start">
           <PopoverHeader title={`Step ${(holdIndex ?? 0) + 1} hold`} onClose={() => setHoldIndex(null)} />
-          <div className="canvas-v2-properties canvas-motion-hold">
+          <div className="ofk-v2-properties ofk-motion-hold">
             <NumberField
               label="Hold"
               data-autofocus
@@ -139,7 +139,7 @@ export function V2MotionSteps({ steps, page, onReorder, onMerge, onHold, onShowC
               unit="s"
               onChange={(value) => onHold(holdIndex ?? 0, Math.round(value * 1000))}
             />
-            <div className="canvas-motion-hold-actions">
+            <div className="ofk-motion-hold-actions">
               <Button variant="quiet" onClick={() => onHold(holdIndex ?? 0, 1700)}>One beat</Button>
               <Button variant="quiet" onClick={() => onHold(holdIndex ?? 0, 2600)}>Note length</Button>
               <Button variant="quiet" onClick={() => onHold(holdIndex ?? 0, null)}>Default</Button>

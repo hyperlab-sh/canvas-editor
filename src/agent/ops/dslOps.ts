@@ -57,7 +57,7 @@ const mintPageId = (prefix: string) => `${prefix}-${crypto.randomUUID().slice(0,
 
 /**
  * Nothing drawable (every line dropped, or none written) is a failed call, not an empty frame. The diagnostics ride on the
- * error so a checker (`canvas validate`) can report them as its own.
+ * error so a checker (`openflowkit validate`) can report them as its own.
  */
 function requireDrawable(compiled: CompileResult): CompileResult {
   const notable = compiled.diagnostics.filter(({ severity }) => severity !== 'info');

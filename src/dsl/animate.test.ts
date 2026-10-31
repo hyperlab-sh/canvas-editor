@@ -9,7 +9,7 @@ import { serialize } from './serialize';
 import { animEdge, animNode, animPage } from '../opencanvas/domain/animation/testFixtures';
 import type { SceneDocumentV1 } from '../opencanvas/domain/document/types';
 
-const BLOCK = `%% canvas 1
+const BLOCK = `%% ofk 1
 flowchart
 
 a -> b
@@ -228,7 +228,7 @@ describe('timeline → animate block', () => {
       preset: 'build', loop: false, durationMs: 0,
       steps: [{ nodeIds: ['a'], connectorIds: [] }],
     }, page);
-    const once = writeAnimateBlock('%% canvas 1\nflowchart\n\na -> b\n', block);
+    const once = writeAnimateBlock('%% ofk 1\nflowchart\n\na -> b\n', block);
     expect(once).toContain('animate build {');
     expect(writeAnimateBlock(once, block)).toBe(once);
     // An existing block is replaced, not duplicated.
@@ -243,9 +243,9 @@ describe('timeline → animate block', () => {
 
 describe('motionTimelineFor', () => {
   it('defaults to autoSequence and reads a code block on request', async () => {
-    const compiled = await compile('%% canvas 1\nflowchart\na -> b\nb -> c\n\nanimate pulse 4s {\n  step a\n  step b\n}\n');
+    const compiled = await compile('%% ofk 1\nflowchart\na -> b\nb -> c\n\nanimate pulse 4s {\n  step a\n  step b\n}\n');
     const document: SceneDocumentV1 = {
-      format: 'canvas.scene', schemaVersion: 1, id: 'x', name: 'x',
+      format: 'openflowkit.scene', schemaVersion: 1, id: 'x', name: 'x',
       createdAt: '', updatedAt: '', metadata: {}, extensions: {},
       pages: [{
         id: 'p', name: 'P', diagramKind: 'flowchart',

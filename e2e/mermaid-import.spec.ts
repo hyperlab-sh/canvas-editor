@@ -237,8 +237,8 @@ test('a whole import is one undo step', async ({ page }) => {
   await expect.poll(async () => (await state(page)).nodes.length).toBe(0);
 });
 
-// U1-07: Canvas's own warnings on Mermaid text were false alarms; the banner is the one message.
-test('pasted Mermaid shows the banner, not Canvas warnings', async ({ page }) => {
+// U1-07: OpenFlowKit's own warnings on Mermaid text were false alarms; the banner is the one message.
+test('pasted Mermaid shows the banner, not OpenFlowKit warnings', async ({ page }) => {
   const source = await openCodePanel(page);
   await source.fill('graph LR\n  Web --> Api');
   await expect(page.getByText('Mermaid detected.')).toBeVisible();

@@ -79,7 +79,7 @@ async function serveRepo(page: Page, hold?: Promise<void>): Promise<void> {
 
 async function openMap(page: Page, port: number): Promise<void> {
   await page.addInitScript((port) => {
-    localStorage.setItem('canvas-v2-preferences', JSON.stringify({ agentBridgeEnabled: true, bridgePort: port, bridgeToken: '' }));
+    localStorage.setItem('openflowkit-v2-preferences', JSON.stringify({ agentBridgeEnabled: true, bridgePort: port, bridgeToken: '' }));
   }, port);
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/#/map/github/acme/shop');
@@ -165,7 +165,7 @@ test('an agent drawing while the repo is still being read is refused with the ne
     expect(refused.ok).toBe(false);
     expect(refused.error).toContain('repo map');
     expect(refused.error).toContain('press Canvas');
-    const toast = page.getByRole('region', { name: 'Notifications' }).locator('.canvas-toast').filter({ hasText: 'tried to draw on the repo map' });
+    const toast = page.getByRole('region', { name: 'Notifications' }).locator('.ofk-toast').filter({ hasText: 'tried to draw on the repo map' });
     await expect(toast).toBeVisible();
     await expect(toast).toContainText('Claude Code');
     await expect(toast).toContainText('still being read');

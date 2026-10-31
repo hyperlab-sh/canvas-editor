@@ -1,9 +1,9 @@
 ---
 title: Self-hosting
-description: Run your own copy of Canvas — Docker, any static host, the Content Security Policy, and the optional share-link Worker.
+description: Run your own copy of OpenFlowKit — Docker, any static host, the Content Security Policy, and the optional share-link Worker.
 ---
 
-Canvas is a static web app: HTML, JavaScript and assets, with no app server of its own.
+OpenFlowKit is a static web app: HTML, JavaScript and assets, with no app server of its own.
 Documents live in each visitor's browser, so a self-hosted copy stores nothing on your server.
 The server-side part is the optional Worker that holds encrypted [share links](/share-links/);
 it also receives basic [usage stats](#usage-stats).
@@ -11,8 +11,8 @@ it also receives basic [usage stats](#usage-stats).
 ## Docker
 
 ```sh
-docker build -t canvas .
-docker run --rm -p 3045:3045 canvas      # http://localhost:3045/
+docker build -t openflowkit .
+docker run --rm -p 3045:3045 openflowkit      # http://localhost:3045/
 ```
 
 The image builds the app with Node 22 and serves it with nginx on port 3045, using
@@ -53,8 +53,8 @@ It is off unless you set one variable:
 
 ```sh
 docker run --rm -p 3045:3045 \
-  -e CANVAS_AI_UPSTREAM=http://host.docker.internal:11434/v1 \
-  canvas
+  -e OPENFLOWKIT_AI_UPSTREAM=http://host.docker.internal:11434/v1 \
+  openflowkit
 ```
 
 The value is an OpenAI-compatible base URL: Ollama's `/v1`, LM Studio, vLLM, LiteLLM. On Linux,
@@ -91,19 +91,19 @@ node mcp-server/dist/cli.js serve      # http://127.0.0.1:43120/
 ```
 
 ```text
-canvas serve [--port N] [--config path] [--app dir]
+openflowkit serve [--port N] [--config path] [--app dir]
 ```
 
 | Flag | Default |
 | --- | --- |
 | `--port` | the config file's `port` (43120) |
-| `--config` | `CANVAS_SERVICE_CONFIG`, else `~/.config/canvas/service.json` |
-| `--app` | `CANVAS_APP_DIR`, else the repository's `dist/` |
+| `--config` | `OPENFLOWKIT_SERVICE_CONFIG`, else `~/.config/openflowkit/service.json` |
+| `--app` | `OPENFLOWKIT_APP_DIR`, else the repository's `dist/` |
 
 If nothing answers on the port, an agent's MCP server starts the service itself, detached, and waits until it is
 healthy; a second MCP server finds the running one and never starts another. So you rarely run `serve` by hand, but `dist/` must exist. The
-auto-started service takes its app folder from `CANVAS_APP_DIR` in the MCP server's environment. If the port is
-held by something that is not the service, `canvas serve` exits 1 naming the port; if it is another copy of the
+auto-started service takes its app folder from `OPENFLOWKIT_APP_DIR` in the MCP server's environment. If the port is
+held by something that is not the service, `openflowkit serve` exits 1 naming the port; if it is another copy of the
 service, it prints "already running" and exits 0. With the app folder missing, `/` answers 503 with the path it looked
 for.
 
@@ -122,7 +122,7 @@ subfolders). The config file lists them:
 }
 ```
 
-- **First run** writes this file with one project, `scratch`, in `~/.local/share/canvas/diagrams`. An existing
+- **First run** writes this file with one project, `scratch`, in `~/.local/share/openflowkit/diagrams`. An existing
   file is never touched.
 - **Names** are lowercase letters, digits, `.`, `_` and `-`, starting with a letter or digit, and unique. Paths are
   absolute, existing directories, one project each. A bad file stops the service with the reason.
@@ -136,7 +136,7 @@ subfolders). The config file lists them:
 ### Pointing agents at it
 
 The MCP server looks for the service at `http://127.0.0.1:43120`. If you changed the port, set
-`CANVAS_SERVICE_URL` (for example `http://127.0.0.1:43200`) in the MCP server's environment to match.
+`OPENFLOWKIT_SERVICE_URL` (for example `http://127.0.0.1:43200`) in the MCP server's environment to match.
 A diagram's link is `http://127.0.0.1:<port>/#/p/<project>/<diagram id>`; open it in any browser on the machine.
 Edits in the app are written to the file. Home lists the service's diagrams by project.
 
@@ -155,7 +155,7 @@ plain Docker build has only editable links. To turn on view-only links:
    Turnstile secret. `worker/README.md` has the steps.
 2. Build the app with `VITE_TURNSTILE_SITE_KEY=<site key>` and, for your own Worker,
    `VITE_SHARE_ORIGIN=https://share.example.com`. Without `VITE_SHARE_ORIGIN` the app uses
-   `https://share.canvas.hyperlab.sh`.
+   `https://share.openflowkit.com`.
 3. Add your app's origin to the Worker's `ALLOWED_ORIGINS` variable (comma-separated) so CORS
    lets it through.
 
@@ -166,7 +166,7 @@ link down by its id.
 ## Usage stats
 
 The app sends basic usage stats (which features are used, and how often) to the share
-Worker's origin: `https://share.canvas.hyperlab.sh`, unless you build with `VITE_SHARE_ORIGIN`
+Worker's origin: `https://share.openflowkit.com`, unless you build with `VITE_SHARE_ORIGIN`
 pointing at your own Worker. People can turn them off in Settings.
 
 ## What it does not do
@@ -184,4 +184,4 @@ pointing at your own Worker. People can turn them off in Settings.
 - [FAQ](/faq/): what leaves the browser, and when.
 - [Share links](/share-links/): what the Worker stores and for how long.
 - [MCP server](/mcp-server/): how agent sessions use the service.
-- [The canvas CLI](/cli/): render and check diagrams without hosting anything.
+- [The openflowkit CLI](/cli/): render and check diagrams without hosting anything.

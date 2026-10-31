@@ -3,7 +3,7 @@
 import { deflateRawSync, inflateRawSync } from 'node:zlib';
 
 export const OPEN_LINK_MAX_PAYLOAD = 32 * 1024;
-export const DEFAULT_APP_ORIGIN = 'https://canvas.hyperlab.sh';
+export const DEFAULT_APP_ORIGIN = 'https://app.openflowkit.com';
 
 export function encodeDslPayload(dsl: string): string {
   return deflateRawSync(Buffer.from(dsl, 'utf8')).toString('base64url');

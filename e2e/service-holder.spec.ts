@@ -14,7 +14,7 @@ let url: string;
 
 test.beforeAll(async () => {
   test.setTimeout(240_000);
-  scratch = mkdtempSync(join(tmpdir(), 'canvas-service-holder-'));
+  scratch = mkdtempSync(join(tmpdir(), 'ofk-service-holder-'));
   mkdirSync(join(scratch, 'demo'));
   const app = join(scratch, 'app');
   execFileSync('npx', ['vite', 'build', '--outDir', app, '--emptyOutDir'], { stdio: 'pipe' });
@@ -52,7 +52,7 @@ async function hold(id: string, channel = true): Promise<{ sessionId: string; la
 }
 
 async function openTab(page: Page, id: string, preferences: Record<string, unknown> = {}): Promise<void> {
-  await page.addInitScript((value) => localStorage.setItem('canvas-v2-preferences', JSON.stringify(value)), preferences);
+  await page.addInitScript((value) => localStorage.setItem('openflowkit-v2-preferences', JSON.stringify(value)), preferences);
   await page.goto(`${url}/#/p/demo/${id}`);
   await page.waitForSelector('[data-testid="v2-canvas"]');
   await page.getByTestId('v2-canvas').focus();
@@ -121,7 +121,7 @@ test('a Live comment goes to the holder; with none, or a holder that cannot hear
   const id = await newDiagram('holder-live');
   await openTab(page, id, { liveComments: true });
   await drawShape(page, 'r', 500, 360);
-  const live = page.getByTestId('v2-threads-panel').locator('.canvas-comment-live');
+  const live = page.getByTestId('v2-threads-panel').locator('.ofk-comment-live');
   // Nobody holds the diagram: nothing is posted, and the switch says what to do.
   await comment(page, { x: 520, y: 380 }, 'Nobody home');
   await expect(live.getByRole('switch', { name: 'Live comments' })).toBeDisabled();

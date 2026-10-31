@@ -23,7 +23,7 @@ const LegacyViewPage = lazy(async () => ({ default: (await import('@/opencanvas/
 export const LEGACY_HOME_PATHS = ['/templates', '/settings', '/canvas', '/mcp'] as const;
 /** v1 forwarded `#/docs…` to the docs site. Its pages were rebuilt (phase 9), so old slugs land on its home. */
 const LEGACY_DOCS_PATHS = ['/docs', '/docs/:slug', '/docs/:lang/:slug'] as const;
-const DOCS_SITE = 'https://docs.canvas.hyperlab.sh/';
+const DOCS_SITE = 'https://docs.openflowkit.com/';
 
 function DocsSiteRedirect(): React.JSX.Element {
   useEffect(() => { window.location.replace(DOCS_SITE); }, []);
@@ -60,7 +60,7 @@ function HomeDocument({ then = '' }: { readonly then?: string }): React.JSX.Elem
     return () => { live = false; };
   }, [target]);
   // <Navigate> draws nothing while the editor downloads: the loader stays up through it.
-  return <>{target ? <Navigate to={`/d/${target}${then}`} replace /> : null}<BrandLoader screen label="Loading Canvas" /></>;
+  return <>{target ? <Navigate to={`/d/${target}${then}`} replace /> : null}<BrandLoader screen label="Loading OpenFlowKit" /></>;
 }
 
 /** One editor per document: switching /d/A → /d/B (back, forward) unmounts A's editor, which saves A's pending edit as A. */
@@ -80,7 +80,7 @@ export default function App(): React.JSX.Element {
   return (
     <HashRouter>
       <V2ErrorBoundary>
-        <Suspense fallback={<BrandLoader screen label="Loading Canvas" />}>
+        <Suspense fallback={<BrandLoader screen label="Loading OpenFlowKit" />}>
           <Routes>
             <Route path="/home" element={<HomePage />} />
             <Route path="/flow/:flowId" element={<LegacyFlowRedirect />} />

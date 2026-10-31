@@ -118,14 +118,14 @@ export function V2EditorCanvas(p: EditorCanvasProps): React.JSX.Element {
           onAgent={() => openWorkspace('agent')} />
       ) : null}
       {map.empty ? (
-        <div className="canvas-v2-map-state" data-testid="v2-map-empty">
+        <div className="ofk-v2-map-state" data-testid="v2-map-empty">
           <EmptyState hero={<V2StateHero kind="no-canvas" />} title="No elements yet"
             description="Add people, systems and containers in the model; the map draws them as you go."
             action={<Button variant="primary" onClick={() => openWorkspace('model')}>Open model</Button>} />
         </div>
       ) : null}
       {map.error ? (
-        <div className="canvas-v2-map-state" data-testid="v2-map-error">
+        <div className="ofk-v2-map-state" data-testid="v2-map-error">
           <ErrorState hero={<V2StateHero kind="torn-page" />} title="The map could not be drawn." description={map.error}
             action={<Button variant="primary" onClick={() => map.choose('canvas')}>Back to canvas</Button>} />
         </div>

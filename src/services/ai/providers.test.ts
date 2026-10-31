@@ -103,7 +103,7 @@ describe('Ollama', () => {
 
   it('drops the OLLAMA_ORIGINS advice on a page served from this machine, which Ollama already allows', () => {
     const ollama = providerById('ollama');
-    expect(providerHint(ollama, 'https://canvas.hyperlab.sh')).toMatch(/OLLAMA_ORIGINS/);
+    expect(providerHint(ollama, 'https://app.openflowkit.com')).toMatch(/OLLAMA_ORIGINS/);
     for (const origin of ['http://localhost:5173', 'http://127.0.0.1:4173', 'http://localhost']) {
       expect(providerHint(ollama, origin), origin).not.toMatch(/OLLAMA_ORIGINS/);
     }

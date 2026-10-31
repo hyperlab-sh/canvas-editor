@@ -81,7 +81,7 @@ function Anchored(props: { readonly world: Point2d; readonly className?: string;
   useLayoutEffect(() => {
     if (ref.current) placement?.move(ref.current, props.world);
   }, [placement, props.world]);
-  return <div ref={ref} className={`canvas-comment-anchor ${props.className ?? ''}`} data-testid={props.testId}>{props.children}</div>;
+  return <div ref={ref} className={`ofk-comment-anchor ${props.className ?? ''}`} data-testid={props.testId}>{props.children}</div>;
 }
 
 type Open =
@@ -287,8 +287,8 @@ export function V2Comments(props: Props): React.JSX.Element | null {
         const selected = open?.kind === 'thread' && open.id === thread.id;
         const unread = props.unread?.has(thread.id) ?? false;
         return (
-          <Anchored key={thread.id} world={drag?.id === thread.id ? drag.world : thread.anchor.point} className="canvas-comment-pinned" testId="v2-comment-pin">
-            <button type="button" className="canvas-comment-pin" data-comment-ui data-selected={selected || undefined} data-kind={lead.author.kind}
+          <Anchored key={thread.id} world={drag?.id === thread.id ? drag.world : thread.anchor.point} className="ofk-comment-pinned" testId="v2-comment-pin">
+            <button type="button" className="ofk-comment-pin" data-comment-ui data-selected={selected || undefined} data-kind={lead.author.kind}
               data-unread={unread || undefined} data-resolved={thread.resolved || undefined}
               aria-label={`Comment by ${lead.author.name}${thread.comments.length > 1 ? `, ${thread.comments.length} messages` : ''}${unread ? ', unread' : ''}`}
               aria-expanded={selected} data-dragging={drag?.id === thread.id || undefined} {...pinHandlers(thread.id)}
@@ -308,8 +308,8 @@ export function V2Comments(props: Props): React.JSX.Element | null {
         );
       })}
       {open?.kind === 'composer' ? (
-        <Anchored world={open.world} className="canvas-comment-pinned" testId="v2-comment-composer">
-          <span className="canvas-comment-pin" data-ghost><Avatar kind="human" name={HUMAN_AUTHOR_NAME} size={22} /></span>
+        <Anchored world={open.world} className="ofk-comment-pinned" testId="v2-comment-composer">
+          <span className="ofk-comment-pin" data-ghost><Avatar kind="human" name={HUMAN_AUTHOR_NAME} size={22} /></span>
           <CommentComposer onDraft={onDraft} onSend={create} onCancel={() => setOpen(null)} />
         </Anchored>
       ) : null}

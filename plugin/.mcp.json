@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "canvas": {
+    "openflowkit": {
       "command": "npx",
-      "args": ["-y", "@hyperlab.sh/canvas", "mcp"]
+      "args": ["-y", "openflowkit", "mcp"]
     }
   }
 }

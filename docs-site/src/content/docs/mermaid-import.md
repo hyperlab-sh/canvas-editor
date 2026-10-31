@@ -45,7 +45,7 @@ not kept.
 
 **Copy as Mermaid** in the Export panel writes a flowchart or sequence diagram made from code
 back out as Mermaid text, and lists anything Mermaid cannot carry. Other families, Structurizr
-and D2 have no export: Canvas compiles DSL to the canvas and to SVG, PNG, JSON and motion
+and D2 have no export: OpenFlowKit compiles DSL to the canvas and to SVG, PNG, JSON and motion
 formats. If a round-trip with one of those is a hard requirement, edit in the original language
 and paste again after changes.
 

@@ -106,7 +106,7 @@ test('the agent changes the model over the live bridge under an open Map @gate',
     return route.fulfill({ status: 200, headers: { ...cors, 'content-type': 'application/json' }, body: '{}' });
   });
   await page.addInitScript((port) => {
-    const key = 'canvas-v2-preferences';
+    const key = 'openflowkit-v2-preferences';
     const current = JSON.parse(window.localStorage.getItem(key) ?? '{}');
     window.localStorage.setItem(key, JSON.stringify({ ...current, agentBridgeEnabled: true, bridgePort: port, bridgeToken: '' }));
   }, BRIDGE_PORT);

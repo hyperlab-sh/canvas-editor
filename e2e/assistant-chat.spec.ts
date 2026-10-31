@@ -12,7 +12,7 @@ const PIXEL = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQ
 
 test('talks, draws on request, and keeps the thread per document', async ({ page }) => {
   await page.addInitScript((baseUrl) => {
-    localStorage.setItem('canvas-v2-ai', JSON.stringify({
+    localStorage.setItem('openflowkit-v2-ai', JSON.stringify({
       provider: 'custom', connections: { custom: { apiKey: 'sk-ok', baseUrl, model: 'stub-model' } },
     }));
   }, STUB);
@@ -39,7 +39,7 @@ test('talks, draws on request, and keeps the thread per document', async ({ page
   await expect(panel.getByText('Applied 1 change.')).toBeVisible();
 
   // Both turns are real history: the second request carried the first exchange.
-  await expect(panel.locator('.canvas-message[data-role="user"]')).toHaveCount(2);
+  await expect(panel.locator('.ofk-message[data-role="user"]')).toHaveCount(2);
 
   await page.reload();
   await page.getByRole('toolbar', { name: 'Workspace', exact: true })
@@ -48,7 +48,7 @@ test('talks, draws on request, and keeps the thread per document', async ({ page
   await expect(panel.getByText('Applied to the canvas')).toBeVisible();
 
   await panel.getByRole('button', { name: 'New chat' }).click();
-  await expect(panel.locator('.canvas-message')).toHaveCount(0);
+  await expect(panel.locator('.ofk-message')).toHaveCount(0);
   await expect(composer).toBeFocused();
 
   // An image rides along with the turn; the stub counts what it received.
@@ -57,7 +57,7 @@ test('talks, draws on request, and keeps the thread per document', async ({ page
   await composer.fill('what is this?');
   await composer.press('Enter');
   await expect(panel.getByText('I can see 1 image.')).toBeVisible();
-  await expect(panel.locator('.canvas-v2-turn-images img')).toHaveCount(1);
+  await expect(panel.locator('.ofk-v2-turn-images img')).toHaveCount(1);
   await expect(panel.getByRole('list', { name: 'Attached images' })).toHaveCount(0);
 
   // History lists both chats; the first reopens with its thread.
@@ -71,7 +71,7 @@ test('talks, draws on request, and keeps the thread per document', async ({ page
 
 test('a proposal under review is brought into view and the welcome steps aside @gate', async ({ page }) => {
   await page.addInitScript((baseUrl) => {
-    localStorage.setItem('canvas-v2-ai', JSON.stringify({
+    localStorage.setItem('openflowkit-v2-ai', JSON.stringify({
       provider: 'custom', connections: { custom: { apiKey: 'sk-ok', baseUrl, model: 'stub-model' } },
     }));
   }, STUB);
@@ -101,7 +101,7 @@ test('a proposal under review is brought into view and the welcome steps aside @
 
 test('"make the selected box red and move it right" is one reviewable change and one undo step @gate', async ({ page }) => {
   await page.addInitScript((baseUrl) => {
-    localStorage.setItem('canvas-v2-ai', JSON.stringify({
+    localStorage.setItem('openflowkit-v2-ai', JSON.stringify({
       provider: 'custom', connections: { custom: { apiKey: 'sk-ok', baseUrl, model: 'stub-model' } },
     }));
   }, STUB);
@@ -140,7 +140,7 @@ test('"make the selected box red and move it right" is one reviewable change and
 
 test('an answer in Mermaid is drawn as the diagram it describes, not as a line per node @gate', async ({ page }) => {
   await page.addInitScript((baseUrl) => {
-    localStorage.setItem('canvas-v2-ai', JSON.stringify({
+    localStorage.setItem('openflowkit-v2-ai', JSON.stringify({
       provider: 'custom', connections: { custom: { apiKey: 'sk-ok', baseUrl, model: 'stub-model' } },
     }));
   }, STUB);

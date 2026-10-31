@@ -2,10 +2,10 @@
 
 ## Supported Versions
 
-Security fixes land on the latest `main` and the hosted app at canvas.hyperlab.sh. Older commits, forks
+Security fixes land on the latest `main` and the hosted app at app.openflowkit.com. Older commits, forks
 and self-hosted copies that have not pulled the fix are not patched separately.
 
-The MCP server and CLI (`@hyperlab.sh/canvas` on npm) are versioned on their own; fixes ship in its latest npm release.
+The MCP server and CLI (`openflowkit` on npm) are versioned on their own; fixes ship in its latest npm release.
 
 ## Reporting a Vulnerability
 
@@ -25,7 +25,7 @@ When possible, include:
 
 ## Scope Notes
 
-Canvas is a browser-first, local-first application. Relevant security areas include:
+OpenFlowKit is a browser-first, local-first application. Relevant security areas include:
 
 - persisted local application data
 - imported files (`.json`, Mermaid, D2, Structurizr) and exports
@@ -37,21 +37,21 @@ Canvas is a browser-first, local-first application. Relevant security areas incl
 
 ## Data Storage Model
 
-Documents and keys stay in your browser. The only Canvas server is the share service: it holds the
+Documents and keys stay in your browser. The only OpenFlowKit server is the share service: it holds the
 ciphertext of a diagram you chose to share (below), basic usage stats (turn them off in Settings), and feedback
 you send. No key and no readable diagram is sent to the
 project. A hosted remote MCP endpoint is planned; it is not running today.
 
 ### Diagram data
 
-Documents live in this browser's **IndexedDB** (`canvas-persistence`), with the last good copy kept for
+Documents live in this browser's **IndexedDB** (`openflowkit-persistence`), with the last good copy kept for
 crash recovery. They leave the browser only when you export them, make a share link, send a diagram to an AI
 provider, or connect an agent (below).
 
 ### Share links
 
 **Copy share link** encrypts the whole document in your browser (AES-GCM, a fresh 256-bit key per link) and uploads
-only the ciphertext to `share.canvas.hyperlab.sh`. The key sits in the link's `#` fragment, which browsers never send
+only the ciphertext to `share.openflowkit.com`. The key sits in the link's `#` fragment, which browsers never send
 to a server, so the store cannot read the diagram. The human check is Cloudflare Turnstile: its script loads from
 `challenges.cloudflare.com` only when you make a link, never on page load. Opening a link downloads the ciphertext
 and decrypts it locally. Details: [share links](docs-site/src/content/docs/share-links.md).
@@ -59,7 +59,7 @@ and decrypts it locally. Details: [share links](docs-site/src/content/docs/share
 ### AI provider API keys (bring your own key)
 
 - Keys are entered in the AI assistant's provider dialog and stored in this browser's **localStorage**
-  (`canvas-v2-ai`).
+  (`openflowkit-v2-ai`).
 - Requests go **directly from your browser to the provider you chose** (Anthropic, OpenAI, Google Gemini, Groq,
   NVIDIA, Cerebras, Mistral, OpenRouter, Ollama or any OpenAI-compatible endpoint), and only to that one.
   Nothing is proxied.
@@ -69,7 +69,7 @@ and decrypts it locally. Details: [share links](docs-site/src/content/docs/share
 
 When you press **Connect** in the Connect agent panel, the editor long-polls the MCP server on
 `127.0.0.1` (default port 43119). The server checks the request origin and, when
-`CANVAS_BRIDGE_TOKEN` is set, a token. Agent edits apply as ordinary undoable commands.
+`OPENFLOWKIT_BRIDGE_TOKEN` is set, a token. Agent edits apply as ordinary undoable commands.
 
 ### Other network requests
 

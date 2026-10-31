@@ -10,7 +10,7 @@ Builders, software architects, and engineering teams working under delivery pres
 
 ## Product Purpose
 
-Canvas is a free, local-first, agent-native infinite canvas for technical diagrams. Success means canvas interaction feels immediate, text and canvas round-trip deterministically, and agents can perform every meaningful human action against the same live document model.
+OpenFlowKit is a free, local-first, agent-native infinite canvas for technical diagrams. Success means canvas interaction feels immediate, text and canvas round-trip deterministically, and agents can perform every meaningful human action against the same live document model.
 
 ## Brand Personality
 

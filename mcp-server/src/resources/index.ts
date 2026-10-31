@@ -7,7 +7,7 @@ export function registerResources(server: McpServer): void {
   // The canonical grammar, straight from the repository's src/dsl/grammar.md.
   server.registerResource(
     'grammar',
-    'canvas://docs/grammar',
+    'openflowkit://docs/grammar',
     {
       title: 'OpenFlow grammar',
       description: 'The complete, versioned OpenFlow DSL reference (family headers, statements, attributes, families, loss tables).',
@@ -21,7 +21,7 @@ export function registerResources(server: McpServer): void {
   // Templates exposed both as a catalog and via per-name URI template.
   server.registerResource(
     'templates-catalog',
-    'canvas://templates',
+    'openflowkit://templates',
     {
       title: 'Starter template catalog',
       description: 'JSON list of all available starter templates (name, title, category, summary).',
@@ -51,13 +51,13 @@ export function registerResources(server: McpServer): void {
   // search_icons / find_icons_for tools for targeted queries.
   server.registerResource(
     'icons-catalog',
-    'canvas://icons',
+    'openflowkit://icons',
     {
       title: 'Provider icon catalog',
       description:
         'Full JSON list of every provider icon available for [architecture] nodes ' +
         '(AWS, Azure, GCP, CNCF, developer brand logos). Each entry has provider, slug, label, category. ' +
-        'The 5,000 Standard glyphs are at canvas://icons/tabler and in search_icons.',
+        'The 5,000 Standard glyphs are at openflowkit://icons/tabler and in search_icons.',
       mimeType: 'application/json',
     },
     async (uri) => ({
@@ -74,12 +74,12 @@ export function registerResources(server: McpServer): void {
 
   server.registerResource(
     'icons-by-provider',
-    new ResourceTemplate('canvas://icons/{provider}', {
+    new ResourceTemplate('openflowkit://icons/{provider}', {
       list: async () => {
         const providers = [...new Set((await loadIcons()).map(({ provider }) => provider))].sort();
         return {
           resources: providers.map((provider) => ({
-            uri: `canvas://icons/${provider}`,
+            uri: `openflowkit://icons/${provider}`,
             name: `icons-${provider}`,
             title: `${provider} icons`,
             description: `Icon catalog for the ${provider} provider pack.`,
@@ -116,10 +116,10 @@ export function registerResources(server: McpServer): void {
 
   server.registerResource(
     'template',
-    new ResourceTemplate('canvas://templates/{name}', {
+    new ResourceTemplate('openflowkit://templates/{name}', {
       list: async () => ({
         resources: STARTER_TEMPLATES.map((template) => ({
-          uri: `canvas://templates/${template.name}`,
+          uri: `openflowkit://templates/${template.name}`,
           name: template.name,
           title: template.title,
           description: template.summary,

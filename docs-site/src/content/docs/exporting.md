@@ -44,7 +44,7 @@ reference — the file is the document, not a rendering of it.
 ## What it cannot do
 
 - **No direct PDF file.** PDF is the print dialog; the file is written by the browser and the
-  page setup (margins, headers) belongs to the print dialog, not to Canvas.
+  page setup (margins, headers) belongs to the print dialog, not to OpenFlowKit.
 - **No ZIP of all pages.** All-pages export downloads one file per page.
 - **Mermaid only for flowchart and sequence.** **Copy as Mermaid** in the panel copies a
   flowchart or sequence diagram made from code as Mermaid text; other families have no Mermaid

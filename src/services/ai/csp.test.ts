@@ -62,6 +62,6 @@ describe('Content-Security-Policy connect-src', () => {
   it('drops the telemetry origins without a telemetry promise', () => {
     expect(HEADERS).not.toMatch(/posthog/);
     expect(HEADERS).not.toMatch(/yjs\.dev/);
-    expect(HEADERS).not.toMatch(/canvas\.hyperlab\.sh/);
+    expect(HEADERS).not.toMatch(/openflowkit\.com/);
   });
 });

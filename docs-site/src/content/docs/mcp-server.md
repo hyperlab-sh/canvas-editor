@@ -7,12 +7,12 @@ description: Drive the live editor or edit .openflow.json files from any MCP cli
 Built from the app's own source (`src/agent/manifest.ts`, `src/agent/ops/` and the tool registrations under `mcp-server/src`) on every docs build, so it can't drift. To change it, edit the source.
 :::
 
-Canvas has one set of agent tools. Pick the row for where your agent runs:
+OpenFlowKit has one set of agent tools. Pick the row for where your agent runs:
 
 | Your agent runs… | How to connect | What it can do |
 | --- | --- | --- |
 | **On your computer**: Claude Code, Cursor, VS Code, Claude Desktop, Windsurf | This MCP server | Everything: draws on your open canvas (one undo step per change), edits `.openflow.json` files, maps a codebase, takes screenshots |
-| **In a chat app**: claude.ai, ChatGPT | Add a custom connector with `https://mcp.canvas.hyperlab.sh/mcp` ([steps](/connect-your-agent/#claudeai-and-chatgpt)) | Draws a diagram in the chat as a card, with zoom and Open in Canvas |
+| **In a chat app**: claude.ai, ChatGPT | Add a custom connector with `https://mcp.openflowkit.com/mcp` ([steps](/connect-your-agent/#claudeai-and-chatgpt)) | Draws a diagram in the chat as a card, with zoom and Open in OpenFlowKit |
 | **In your browser** (experimental) | Nothing to install: [WebMCP](/webmcp/) | Reads and edits the diagram you have open |
 
 The server is a stdio process on your machine. It needs no API key of its own and returns
@@ -21,7 +21,7 @@ deterministic results: your MCP client's model does the thinking.
 **Where the diagram shows up.** In live mode (**Connect agent** in the app) it is drawn on the canvas you have open.
 In file mode it is the `.openflow.json` you save, and the result carries an `openUrl` that opens it in the app. Hosts
 that support MCP Apps (Claude Desktop, VS Code) also show a card under the tool call: the picture, zoom, and Open in
-Canvas.
+OpenFlowKit.
 
 **In claude.ai or ChatGPT** the hosted endpoint draws cards in the chat, not on your canvas. It stores nothing and has
 no file, live-editor or codebase tools, so use this server for those.
@@ -32,18 +32,18 @@ Step by step for Claude Code, Claude Desktop, claude.ai, ChatGPT, Cursor, VS Cod
 wrong: [Connect your agent](/connect-your-agent/). The short version, for Claude Code:
 
 ```bash
-claude mcp add -s user canvas -- npx -y @hyperlab.sh/canvas mcp
+claude mcp add -s user openflowkit -- npx -y openflowkit mcp
 ```
 
-Every other local client runs the same command, `npx -y @hyperlab.sh/canvas mcp` (Node 20.11 or newer). Then open the app and
-click **Connect agent**, or open [canvas.hyperlab.sh/#/connect](https://canvas.hyperlab.sh/#/connect).
+Every other local client runs the same command, `npx -y openflowkit mcp` (Node 20.11 or newer). Then open the app and
+click **Connect agent**, or open [app.openflowkit.com/#/connect](https://app.openflowkit.com/#/connect).
 
 ## Two modes
 
 - **Live** — open the app, click **Connect agent**, and every op runs against the document
 you see. The bridge listens on `127.0.0.1:43119` by default (change it in the Connect agent panel;
-the server reads `CANVAS_BRIDGE_PORT`), checks the request's host and origin, and can be gated
-with a shared token (`CANVAS_BRIDGE_TOKEN` on the server, the same token in the panel). Edits land as one undo step per
+the server reads `OPENFLOWKIT_BRIDGE_PORT`), checks the request's host and origin, and can be gated
+with a shared token (`OPENFLOWKIT_BRIDGE_TOKEN` on the server, the same token in the panel). Edits land as one undo step per
 call; `screenshot` returns a real PNG; `fit_view` moves your view. One tab owns the connection, and several agent
 sessions can draw on it through the first server: [how pairing works](/connect-your-agent/#how-drawing-reaches-your-canvas).
 - **File** — `openflow_open` a `.openflow.json` path and the same ops run headlessly on
@@ -59,15 +59,15 @@ created last. Page-scoped ops take a `pageId` from `list_pages`.
 
 With the [local service](/self-hosting/#the-local-service) running, diagrams are `.openflow.json` files in named projects, each with a link, and each is held by at most one agent session. The service is a third mode beside live and file. It is used when a call names a `project` or a `diagram`, or when the session already holds a diagram. It is also used when nothing else is targeted (no `documentId`, no paired editor, no document opened): `create_diagram` then starts or uses the service, and `list_diagrams` lists it if it runs. With an editor paired, name the `project` to get a service diagram. Otherwise live and file mode behave as above.
 
-- **It starts itself.** If nothing answers at `http://127.0.0.1:43120` (set `CANVAS_SERVICE_URL` for another address), the first service call starts `canvas serve` detached and waits up to 10 s for it. It outlives the MCP server, and a second MCP server attaches to it. Projects live in the service's config file: [where, and how to add one](/self-hosting/#projects).
+- **It starts itself.** If nothing answers at `http://127.0.0.1:43120` (set `OPENFLOWKIT_SERVICE_URL` for another address), the first service call starts `openflowkit serve` detached and waits up to 10 s for it. It outlives the MCP server, and a second MCP server attaches to it. Projects live in the service's config file: [where, and how to add one](/self-hosting/#projects). `openflowkit serve --host 0.0.0.0` (or `OPENFLOWKIT_SERVICE_HOST`; the flag wins) binds another address, e.g. inside a container behind a published port; requests must still use Host 127.0.0.1, localhost or [::1], and the service has no authentication. The auto-started service always binds 127.0.0.1.
 - **`list_diagrams`** with no diagram connected lists the projects and their diagrams, with who holds each.
 - **`create_diagram`** takes `project` (optional when the service has exactly one) and `diagramName` (default "Untitled diagram"). It writes `<project folder>/<slug of the name>.openflow.json`, connects this session to it, and the result carries `url`, the diagram's link. With several projects and none named it refuses and lists them. When this session already holds a diagram and no `project` is named, `create_diagram` draws a new frame on that diagram instead of making a file. A name whose file exists gets -2, -3….
 - **`connect_diagram`** (`project`, `diagram`) binds the session to an existing diagram; **`disconnect_diagram`** releases it. Connecting a diagram another session holds fails with that session's label. One session can hold several diagrams: pass `diagram` (the id) to the drawing tool that should act on one. A session that holds none does nothing to any diagram. When the MCP server goes away, its diagrams are released after about 10 s.
-- **`channel`** in `server_info` and `whoami` says whether the session can receive comments left on the canvas. It is true when the client declares the `claude/channel` capability, or when the MCP server's environment has `CANVAS_CHANNEL=1`. Set that variable when you start a session with channels enabled; the plugin's MCP config does not set it. When it is false, every drawing result in service mode ends with: "This session cannot receive comments from the canvas. Restart it with channels enabled."
+- **`channel`** in `server_info` and `whoami` says whether the session can receive comments left on the canvas. It is true when the client declares the `claude/channel` capability, or when the MCP server's environment has `OPENFLOWKIT_CHANNEL=1`. Set that variable when you start a session with channels enabled; the plugin's MCP config does not set it. When it is false, every drawing result in service mode ends with: "This session cannot receive comments from the canvas. Restart it with channels enabled." The editor gets the same flag, so it can keep **Live comments** off for a session that would never see them: the bridge answers it in `/hello` and `/health` (and, when the client declares the channel after the editor paired, as `{ "channel": true }` on the next `/next` poll in place of a request), and the service carries it in its `holder` events and in a diagram's `holder`. Only Claude Code has channels today; see [Live comments](/connect-your-agent/#live-comments).
 
 ### A first diagram
 
-1. Start the agent session with channels enabled (with `CANVAS_CHANNEL=1` in its environment if the client does not declare them), and say "diagram it".
+1. Start the agent session with channels enabled (with `OPENFLOWKIT_CHANNEL=1` in its environment if the client does not declare them), and say "diagram it".
 2. The session makes sure the service runs, starting it if not. If the session has no channel, it tells you to restart it with channels on.
 3. It creates a diagram in the project you name (or the only one) and answers with its link, `http://127.0.0.1:<port>/#/p/<project>/<diagram id>`. It is now connected to that diagram and draws on it.
 4. Open the link in any browser on the machine. Edits you make by hand are written to the file, and what the agent draws appears in every open tab.
@@ -91,7 +91,7 @@ With the [local service](/self-hosting/#the-local-service) running, diagrams are
 | `openflow_create` | Create an empty file-mode document |
 | `openflow_open` | Load a .openflow.json from disk into file mode |
 | `openflow_save` | Write a document back to disk |
-| `render_diagram` | Hosted endpoint only (`https://mcp.canvas.hyperlab.sh/mcp`, or self-host with `npm run start:http`): draw DSL or Mermaid inline in the chat, with an editor link |
+| `render_diagram` | Hosted endpoint only (`https://mcp.openflowkit.com/mcp`, or self-host with `npm run start:http`): draw DSL or Mermaid inline in the chat, with an editor link |
 | `server_info` | Server name, version and capabilities |
 | `validate_openflow_dsl` | Parse DSL with the real parser and return its diagnostics |
 | `whoami` | Which mode the server is in, and which documents it holds |
@@ -321,7 +321,7 @@ Start a thread — mirrors **Comment tool: start a thread with its first comment
 
 ## What it does not do
 
-- **Local by default.** This server runs on your machine over stdio and calls no outside service. The hosted endpoint for chat apps (`https://mcp.canvas.hyperlab.sh/mcp`) is separate, draws cards in the chat only and stores nothing.
+- **Local by default.** This server runs on your machine over stdio and calls no outside service. The hosted endpoint for chat apps (`https://mcp.openflowkit.com/mcp`) is separate, draws cards in the chat only and stores nothing.
 - **No account or key.** Your MCP client's model is the only AI involved.
 - **No raster in file mode.** PNG, GIF, MP4 and WebM need the live editor's canvas.
 - **One tab at a time in live mode.** One editor tab pairs with the bridge. Several agent sessions can share it, but this is not multi-person collaboration.

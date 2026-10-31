@@ -10,18 +10,18 @@ import './system.css';
 
 function tokenStyle(appearance: Appearance): CSSProperties {
   const values: Record<string, string | number> = {
-    '--canvas-font': foundation.font,
-    '--canvas-mono': foundation.mono,
-    '--canvas-ease': foundation.easing,
-    '--canvas-brand': foundation.brand,
+    '--ofk-font': foundation.font,
+    '--ofk-mono': foundation.mono,
+    '--ofk-ease': foundation.easing,
+    '--ofk-brand': foundation.brand,
   };
-  for (const [role, color] of Object.entries(themes[appearance])) values[`--canvas-${role}`] = color;
+  for (const [role, color] of Object.entries(themes[appearance])) values[`--ofk-${role}`] = color;
   for (const [name, value] of Object.entries(materials[appearance]))
-    values[`--canvas-material-${name}`] = value;
+    values[`--ofk-material-${name}`] = value;
   for (const [name, value] of Object.entries(foundation.curve))
-    values[`--canvas-curve-${name}`] = value;
-  values['--canvas-material-blur'] = `${foundation.material.blur}px`;
-  values['--canvas-material-saturate'] = foundation.material.saturate;
+    values[`--ofk-curve-${name}`] = value;
+  values['--ofk-material-blur'] = `${foundation.material.blur}px`;
+  values['--ofk-material-saturate'] = foundation.material.saturate;
   for (const group of [
     'space',
     'radius',
@@ -32,12 +32,12 @@ function tokenStyle(appearance: Appearance): CSSProperties {
     'layout',
   ] as const) {
     for (const [name, value] of Object.entries(foundation[group])) {
-      values[`--canvas-${group}-${name}`] = `${value}${group === 'motion' ? 'ms' : 'px'}`;
+      values[`--ofk-${group}-${name}`] = `${value}${group === 'motion' ? 'ms' : 'px'}`;
     }
   }
   for (const group of ['weight', 'leading', 'layer'] as const) {
     for (const [name, value] of Object.entries(foundation[group]))
-      values[`--canvas-${group}-${name}`] = value;
+      values[`--ofk-${group}-${name}`] = value;
   }
   return values as CSSProperties;
 }
@@ -68,13 +68,13 @@ export function SystemRoot({
       <div
         {...props}
         ref={setElement}
-        className={`canvas-system ${className}`}
-        data-canvas-appearance={appearance}
+        className={`ofk-system ${className}`}
+        data-ofk-appearance={appearance}
         data-density={density}
         style={
           {
             ...styles[appearance],
-            '--canvas-control-size': `${density === 'compact' ? foundation.control.compact : foundation.control.regular}px`,
+            '--ofk-control-size': `${density === 'compact' ? foundation.control.compact : foundation.control.regular}px`,
             colorScheme: appearance,
             ...style,
           } as CSSProperties

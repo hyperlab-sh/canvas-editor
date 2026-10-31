@@ -10,7 +10,7 @@ export function V2StateShell({ testId, children }: { readonly testId: string; re
   const appearance = useV2Appearance(preferences.theme);
   return (
     <SystemRoot appearance={appearance} density={preferences.density}>
-      <main className="canvas-v2-center canvas-v2-state" data-testid={testId}>{children}</main>
+      <main className="ofk-v2-center ofk-v2-state" data-testid={testId}>{children}</main>
     </SystemRoot>
   );
 }

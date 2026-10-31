@@ -68,19 +68,19 @@ describe('the editor hears about the channel', () => {
   });
 });
 
-describe('CANVAS_CHANNEL (D15)', () => {
-  const saved = process.env.CANVAS_CHANNEL;
-  afterEach(() => { if (saved === undefined) delete process.env.CANVAS_CHANNEL; else process.env.CANVAS_CHANNEL = saved; });
+describe('OPENFLOWKIT_CHANNEL (D15)', () => {
+  const saved = process.env.OPENFLOWKIT_CHANNEL;
+  afterEach(() => { if (saved === undefined) delete process.env.OPENFLOWKIT_CHANNEL; else process.env.OPENFLOWKIT_CHANNEL = saved; });
 
   it.each(['server_info', 'whoami'] as const)('%s says true for a client that advertises nothing when the environment sets it to 1', async (name) => {
-    process.env.CANVAS_CHANNEL = '1';
+    process.env.OPENFLOWKIT_CHANNEL = '1';
     expect(await channelOf(await connect({}), name)).toBe(true);
   });
 
   it.each(['server_info', 'whoami'] as const)('%s says false when it is unset or anything but 1', async (name) => {
-    delete process.env.CANVAS_CHANNEL;
+    delete process.env.OPENFLOWKIT_CHANNEL;
     expect(await channelOf(await connect({}), name)).toBe(false);
-    process.env.CANVAS_CHANNEL = '0';
+    process.env.OPENFLOWKIT_CHANNEL = '0';
     expect(await channelOf(await connect({}), name)).toBe(false);
   });
 });

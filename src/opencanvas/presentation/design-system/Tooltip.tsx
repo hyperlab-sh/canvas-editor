@@ -64,7 +64,7 @@ export function Tooltip({
     <>
       <span
         ref={anchorRef}
-        className="canvas-tooltip-anchor"
+        className="ofk-tooltip-anchor"
         onPointerEnter={(e) =>
           e.pointerType !== 'touch' && schedule(foundation.motion.tooltipDelay)
         }
@@ -88,10 +88,10 @@ export function Tooltip({
         gap={placement === 'bottom-start' ? undefined : foundation.space.sm}
         id={id}
         role="tooltip"
-        className="canvas-tooltip"
+        className="ofk-tooltip"
       >
         {content}
-        {shortcut && <kbd className="canvas-kbd">{shortcut}</kbd>}
+        {shortcut && <kbd className="ofk-kbd">{shortcut}</kbd>}
       </Popover>
     </>
   );

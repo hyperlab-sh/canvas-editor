@@ -27,9 +27,9 @@ describe('looksLikeMermaid on our own architecture DSL', () => {
     expect(looksLikeMermaid('mindmap\n  root((Idea))\n')).toBe(true);
   });
 
-  // U3 2026-10-11: one Mermaid-habit node (`DB[cylinder]`) in a valid Canvas architecture read the
+  // U3 2026-10-11: one Mermaid-habit node (`DB[cylinder]`) in a valid OFK architecture read the
   // whole document as Mermaid, and the E003 that came back taught the agent the wrong language.
-  it('keeps an architecture header Canvas when only a glued bracket looks like Mermaid', () => {
+  it('keeps an architecture header OFK when only a glued bracket looks like Mermaid', () => {
     expect(looksLikeMermaid('architecture\ntitle: Shop\n  Web [tech: React] -> API [tech: Go]\n  group Backend {\n    API\n    DB[cylinder]\n  }\n')).toBe(false);
     expect(looksLikeMermaid('architecture\n  A -> \n  [[[ nonsense\n')).toBe(false);
     // Mermaid's own architecture words still decide it, with or without -beta.
@@ -52,7 +52,7 @@ describe('looksLikeMermaid on our own architecture DSL', () => {
 describe('mermaidToDsl', () => {
   it('detects Mermaid headers and leaves DSL alone', () => {
     expect(looksLikeMermaid('flowchart LR\nA --> B')).toBe(true);
-    expect(looksLikeMermaid('%% canvas 1\nflowchart\nA -> B')).toBe(false);
+    expect(looksLikeMermaid('%% ofk 1\nflowchart\nA -> B')).toBe(false);
     expect(looksLikeMermaid('sequenceDiagram\nA->>B: hi')).toBe(true);
     // `-->` is also our dashed edge: DSL-only signals (word direction, `title:`, `A ->`) win over it.
     expect(looksLikeMermaid('flowchart right\nA -> B\nB --> A : no [red]')).toBe(false);

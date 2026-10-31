@@ -4,10 +4,10 @@ import { drawShape, openCanvas } from './helpers';
 import { expect, test, type Page } from './test';
 
 // Usage counts and feedback prompts. The e2e app is a dev build, where counting is off: each spec here opts in with
-// localStorage `canvas.usage` = 'on' (usage.ts honours it in dev only for this). The share Worker is route-stubbed.
+// localStorage `ofk.usage` = 'on' (usage.ts honours it in dev only for this). The share Worker is route-stubbed.
 // npm run e2e:headed -- e2e/feedback.spec.ts
 
-const SHARE = 'https://share.canvas.hyperlab.sh';
+const SHARE = 'https://share.openflowkit.com';
 const TURNSTILE_SCRIPT = 'https://challenges.cloudflare.com/turnstile/v0/api.js*';
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'POST, OPTIONS' };
 
@@ -34,9 +34,9 @@ async function seed(page: Page, feedback: Record<string, unknown> = { firstVisit
   await page.addInitScript((state) => {
     if (sessionStorage.getItem('seeded')) return;
     sessionStorage.setItem('seeded', '1');
-    localStorage.setItem('canvas.usage', 'on');
-    localStorage.setItem('canvas.tips.seen', JSON.stringify(['code', 'connect', 'assistant', 'motion']));
-    localStorage.setItem('canvas.feedback', JSON.stringify(state));
+    localStorage.setItem('ofk.usage', 'on');
+    localStorage.setItem('ofk.tips.seen', JSON.stringify(['code', 'connect', 'assistant', 'motion']));
+    localStorage.setItem('ofk.feedback', JSON.stringify(state));
   }, feedback);
 }
 
@@ -56,7 +56,7 @@ async function exportPng(page: Page): Promise<void> {
   await expect(dialog).toHaveCount(0);
 }
 
-const prompt = (page: Page) => page.locator('.canvas-v2-feedback');
+const prompt = (page: Page) => page.locator('.ofk-v2-feedback');
 
 test('one beacon carries the session and what was used, when the tab hides @gate', async ({ page }) => {
   const sent = await backend(page);
@@ -90,7 +90,7 @@ test('stats turned off in Settings: nothing is sent and the id is gone @gate', a
   await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
   await page.waitForTimeout(500);
   expect(sent.filter((item) => item.path === '/e')).toHaveLength(0);
-  expect(await page.evaluate(() => [localStorage.getItem('canvas.usage'), localStorage.getItem('canvas.usage.id')])).toEqual(['off', null]);
+  expect(await page.evaluate(() => [localStorage.getItem('ofk.usage'), localStorage.getItem('ofk.usage.id')])).toEqual(['off', null]);
 });
 
 test('after an export settles, one question; a thumb and a note post with the human check @gate', async ({ page }) => {
@@ -114,7 +114,7 @@ test('after an export settles, one question; a thumb and a note post with the hu
   const posted = sent.find((item) => item.path === '/feedback')!;
   expect(posted.body).toMatchObject({ kind: 'feature', feature: 'export', rating: 'up', text: 'Transparent background please' });
   expect(posted.token).toBe('stub-token');
-  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('canvas.feedback')!) as { asked: string[]; lastPromptAt: number });
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('ofk.feedback')!) as { asked: string[]; lastPromptAt: number });
   expect(stored.asked).toEqual(['export']);
   // Asked once, ever: another export stays quiet.
   await exportPng(page);
@@ -129,7 +129,7 @@ test('on a third day, the product question walks three steps and sends what was 
   await page.clock.install();
   await openCanvas(page);
   await page.clock.fastForward(21_000);
-  await expect(prompt(page)).toContainText('How would you feel if you could no longer use Canvas?');
+  await expect(prompt(page)).toContainText('How would you feel if you could no longer use OpenFlowKit?');
   await prompt(page).getByRole('button', { name: 'Very disappointed' }).click();
   await expect(prompt(page)).toContainText('What would you pay for?');
   await prompt(page).getByRole('checkbox', { name: 'Sync across devices' }).check({ force: true });
@@ -199,10 +199,10 @@ test('the Pro waitlist: a plan, what you’d pay for, a fair price, an email; th
   const sent = await backend(page);
   await seed(page);
   await page.goto('/#/home');
-  const row = page.getByRole('button', { name: /Canvas Pro/ });
+  const row = page.getByRole('button', { name: /OpenFlowKit Pro/ });
   await expect(row).toContainText('Waitlist');
   await row.click();
-  const dialog = page.getByRole('dialog', { name: 'Canvas Pro' });
+  const dialog = page.getByRole('dialog', { name: 'OpenFlowKit Pro' });
   const next = dialog.getByRole('button', { name: 'Continue' });
   await expect(next).toBeDisabled();
   await dialog.getByRole('radio', { name: /Team/ }).check({ force: true });
@@ -233,5 +233,5 @@ test('the Pro waitlist: a plan, what you’d pay for, a fair price, an email; th
   await expect(done).toBeHidden();
   await expect(row).toContainText('On the list');
   await page.reload();
-  await expect(page.getByRole('button', { name: /Canvas Pro/ })).toContainText('On the list');
+  await expect(page.getByRole('button', { name: /OpenFlowKit Pro/ })).toContainText('On the list');
 });

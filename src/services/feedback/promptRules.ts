@@ -104,7 +104,7 @@ export function recordDismissed(state: FeedbackState, now: number): FeedbackStat
 export const recordAnswered = (state: FeedbackState): FeedbackState => ({ ...state, dismissals: 0 });
 export const recordNever = (state: FeedbackState): FeedbackState => ({ ...state, never: true });
 
-const FEEDBACK_KEY = 'canvas.feedback';
+const FEEDBACK_KEY = 'ofk.feedback';
 const isTime = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
 /** Stored state; anything unreadable reads as a fresh start. */

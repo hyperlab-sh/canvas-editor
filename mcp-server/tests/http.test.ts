@@ -53,9 +53,9 @@ describe('remote MCP endpoint', () => {
     const client = await connect();
     const { tools } = await client.listTools();
     expect(tools.map((t) => t.name).sort()).toEqual(['get_syntax', 'preview_diagram', 'render_diagram']);
-    expect(tools.find((t) => t.name === 'preview_diagram')!._meta).toEqual({ ui: { resourceUri: 'ui://canvas/viewer.html', visibility: ['app'] } });
+    expect(tools.find((t) => t.name === 'preview_diagram')!._meta).toEqual({ ui: { resourceUri: 'ui://openflowkit/viewer.html', visibility: ['app'] } });
     const render = tools.find((t) => t.name === 'render_diagram')!;
-    expect(render._meta).toEqual({ ui: { resourceUri: 'ui://canvas/viewer.html' } });
+    expect(render._meta).toEqual({ ui: { resourceUri: 'ui://openflowkit/viewer.html' } });
     await client.close();
   });
 
@@ -115,7 +115,7 @@ describe('remote MCP endpoint', () => {
 
   it('serves the viewer resource with the MCP Apps mimeType', async () => {
     const client = await connect();
-    const { contents } = await client.readResource({ uri: 'ui://canvas/viewer.html' });
+    const { contents } = await client.readResource({ uri: 'ui://openflowkit/viewer.html' });
     expect(contents[0]!.mimeType).toBe('text/html;profile=mcp-app');
     expect(contents[0]!.text).toBe(VIEWER);
     await client.close();
@@ -226,8 +226,8 @@ describe('remote MCP endpoint', () => {
 
 describe('start:http entry', () => {
   it('starts when invoked through a symlink, the way npm installs bins', async () => {
-    const dir = mkdtempSync(join(tmpdir(), 'canvas-http-bin-'));
-    const bin = join(dir, 'canvas-http');
+    const dir = mkdtempSync(join(tmpdir(), 'openflowkit-http-bin-'));
+    const bin = join(dir, 'openflowkit-http');
     symlinkSync(new URL('../src/http.ts', import.meta.url).pathname, bin);
     const free = createServer();
     await new Promise<void>((done) => free.listen(0, '127.0.0.1', done));

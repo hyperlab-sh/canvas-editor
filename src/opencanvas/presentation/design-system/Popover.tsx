@@ -54,7 +54,7 @@ export interface PopoverProps extends HTMLAttributes<HTMLDivElement> {
  * Export panel lines up with the bar's right edge and clears its bottom, a mid-bar button keeps its own x. */
 function anchorRect(element: HTMLElement | null, passive: boolean) {
   const own = element?.getBoundingClientRect();
-  const card = passive ? null : element?.closest('.canvas-floating-region .canvas-toolbar')?.getBoundingClientRect();
+  const card = passive ? null : element?.closest('.ofk-floating-region .ofk-toolbar')?.getBoundingClientRect();
   if (!own || !card) return own;
   const near = (edge: number, cardEdge: number) => (Math.abs(edge - cardEdge) <= 8 ? cardEdge : edge);
   return { left: near(own.left, card.left), right: near(own.right, card.right), top: near(own.top, card.top), bottom: near(own.bottom, card.bottom) };
@@ -132,7 +132,7 @@ export function Popover({
       // A layer off a context bar opens on the side away from the selection (never over what it restyles),
       // scrolling if it must; with under MIN_AVOIDING_HEIGHT of room there it falls back to the flip above.
       let room = Infinity;
-      const keepOff = !passive && (side === 'top' || side === 'bottom') && anchorRef.current?.closest('.canvas-context') ? avoidRef.current : null;
+      const keepOff = !passive && (side === 'top' || side === 'bottom') && anchorRef.current?.closest('.ofk-context') ? avoidRef.current : null;
       if (keepOff) {
         const away = keepOff.y + keepOff.height / 2 > anchor.bottom ? 'top' : 'bottom';
         const awayRoom = away === 'top' ? anchor.top - gap - inset : vh - inset - anchor.bottom - gap;
@@ -167,8 +167,8 @@ export function Popover({
         left: x,
         top: y,
         maxHeight: Math.min(maxY - minY, room),
-        '--canvas-origin': `${originY} ${originX}`,
-        '--canvas-arrow': `${Math.round(arrow)}px`,
+        '--ofk-origin': `${originY} ${originX}`,
+        '--ofk-arrow': `${Math.round(arrow)}px`,
         visibility: 'visible',
       } as CSSProperties);
     }
@@ -242,7 +242,7 @@ export function Popover({
     <div
       {...props}
       ref={ref}
-      className={`canvas-popover canvas-overlay canvas-enter ${className}`}
+      className={`ofk-popover ofk-overlay ofk-enter ${className}`}
       data-passive={passive || undefined}
       data-side={side}
       style={{ ...box, ...style }}

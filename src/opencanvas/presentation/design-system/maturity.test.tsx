@@ -134,7 +134,7 @@ describe('loading language', () => {
 
   it('renders one placeholder per requested line with a short final line', () => {
     const { container } = render(<SkeletonLines rows={3} />);
-    const lines = container.querySelectorAll('.canvas-skeleton-lines .canvas-skeleton');
+    const lines = container.querySelectorAll('.ofk-skeleton-lines .ofk-skeleton');
     expect(lines).toHaveLength(3);
     expect((lines[2] as HTMLElement).style.width).toBe('62%');
   });
@@ -150,10 +150,10 @@ describe('loading language', () => {
   it('puts a hero in place of the icon and a quiet way out beside the recovery', () => {
     const { container } = render(<ErrorState hero={<svg data-testid="hero" />} title="Damaged" onRetry={vi.fn()}
       secondary={<button type="button">Back to home</button>} />);
-    expect(container.querySelector('.canvas-empty')).toHaveAttribute('data-hero');
+    expect(container.querySelector('.ofk-empty')).toHaveAttribute('data-hero');
     expect(screen.getByTestId('hero').closest('[aria-hidden="true"]')).not.toBeNull();
-    expect(container.querySelector('.canvas-empty-icon .canvas-icon')).toBeNull();
-    const actions = container.querySelector('.canvas-empty-actions');
+    expect(container.querySelector('.ofk-empty-icon .ofk-icon')).toBeNull();
+    const actions = container.querySelector('.ofk-empty-actions');
     expect([...actions!.querySelectorAll('button')].map((button) => button.textContent)).toEqual(['Try again', 'Back to home']);
   });
 });
@@ -166,10 +166,10 @@ describe('layered surfaces', () => {
         <Dialog open={false} onClose={() => {}} title="Second" description="Two" />
       </>
     );
-    const headings = Array.from(container.querySelectorAll('.canvas-dialog-header h2'));
+    const headings = Array.from(container.querySelectorAll('.ofk-dialog-header h2'));
     expect(headings).toHaveLength(2);
     expect(headings[0].id).not.toBe(headings[1].id);
-    const described = Array.from(container.querySelectorAll('.canvas-dialog-description'));
+    const described = Array.from(container.querySelectorAll('.ofk-dialog-description'));
     expect(described[0].id).not.toBe(described[1].id);
   });
 

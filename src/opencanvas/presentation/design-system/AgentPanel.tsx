@@ -36,10 +36,10 @@ export function AgentPanel({ messages, composer, empty, streaming, ...panel }: A
     return () => { follow.disconnect(); element.removeEventListener('scroll', onScroll); };
   }, []);
   return (
-    <Panel {...panel} className={`canvas-agent-panel ${panel.className ?? ''}`}>
+    <Panel {...panel} className={`ofk-agent-panel ${panel.className ?? ''}`}>
       <div
         ref={thread}
-        className="canvas-thread"
+        className="ofk-thread"
         role="log"
         aria-live="polite"
         aria-relevant="additions"
@@ -47,19 +47,19 @@ export function AgentPanel({ messages, composer, empty, streaming, ...panel }: A
       >
         {messages.length === 0 && !streaming && empty}
         {messages.map((m) => (
-          <article key={m.id} className="canvas-message" data-role={m.role}>
-            {m.at && <time className="canvas-caption">{m.at}</time>}
-            <div className="canvas-message-body">{m.content}</div>
+          <article key={m.id} className="ofk-message" data-role={m.role}>
+            {m.at && <time className="ofk-caption">{m.at}</time>}
+            <div className="ofk-message-body">{m.content}</div>
             {m.attachment}
           </article>
         ))}
         {streaming && (
-          <article className="canvas-message" data-role="agent" data-streaming>
+          <article className="ofk-message" data-role="agent" data-streaming>
             <p>{streaming}</p>
           </article>
         )}
       </div>
-      <div className="canvas-thread-composer">{composer}</div>
+      <div className="ofk-thread-composer">{composer}</div>
     </Panel>
   );
 }

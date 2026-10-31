@@ -39,7 +39,7 @@ const sidebar = [
     : []),
 ];
 
-const SITE = 'https://docs.canvas.hyperlab.sh';
+const SITE = 'https://docs.openflowkit.com';
 
 export default defineConfig({
   site: SITE,
@@ -50,7 +50,7 @@ export default defineConfig({
   },
   integrations: [
     starlight({
-      title: 'Canvas',
+      title: 'OpenFlowKit',
       description: `${TAGLINE} ${SUBLINE}`,
       // Starlight writes og:title and og:description per page; the card image
       // and its size are the site's.
@@ -71,11 +71,11 @@ export default defineConfig({
       disable404Route: true,
       favicon: '/favicon.svg',
       logo: {
-        src: './src/assets/logo-canvas.svg',
-        alt: 'Canvas',
+        src: './src/assets/Logo_openflowkit.svg',
+        alt: 'OpenFlowKit',
       },
       editLink: {
-        baseUrl: 'https://github.com/hyperlab-sh/canvas-editor/edit/main/docs-site/',
+        baseUrl: 'https://github.com/openflowkit/openflowkit/edit/main/docs-site/',
       },
       // English only: root locale keeps clean URLs (/introduction, not /en/introduction).
       defaultLocale: 'root',
@@ -86,9 +86,9 @@ export default defineConfig({
         themes: ['github-light', 'github-dark'],
         styleOverrides: {
           borderRadius: '12px',
-          borderColor: 'var(--canvas-border)',
+          borderColor: 'var(--ofk-border)',
           // Code sits on the app's warm surface, not the themes' cool greys.
-          codeBackground: 'var(--canvas-surface)',
+          codeBackground: 'var(--ofk-surface)',
           codeFontFamily: 'var(--sl-font-mono)',
           uiFontFamily: 'var(--sl-font)',
           frames: { frameBoxShadowCssValue: 'none' },

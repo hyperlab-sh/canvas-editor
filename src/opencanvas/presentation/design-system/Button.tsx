@@ -24,7 +24,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       ref={ref}
       type={props.type ?? 'button'}
       disabled={disabled}
-      className={`canvas-button ${className}`}
+      className={`ofk-button ${className}`}
       data-variant={variant}
       aria-busy={busy || undefined}
       aria-disabled={disabled || busy || undefined}
@@ -37,7 +37,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         onClick?.(event);
       }}
     >
-      {busy && <span className="canvas-busy" aria-hidden="true" />}
+      {busy && <span className="ofk-busy" aria-hidden="true" />}
       {children}
     </button>
   );
@@ -54,7 +54,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
     <Button
       {...props}
       ref={ref}
-      className={`canvas-icon-button ${className}`}
+      className={`ofk-icon-button ${className}`}
       aria-label={label}
     >
       <span aria-hidden="true">{icon}</span>

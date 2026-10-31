@@ -23,7 +23,7 @@ export function Skeleton({
   return (
     <span
       aria-hidden="true"
-      className={`canvas-skeleton ${className}`}
+      className={`ofk-skeleton ${className}`}
       style={{ width, height, borderRadius: radius, ...style }}
     />
   );
@@ -33,7 +33,7 @@ export function Skeleton({
 export function SkeletonLines({ rows = 3, gap = 8 }: { rows?: number; gap?: number }) {
   const count = Math.max(1, Math.floor(rows));
   return (
-    <span aria-hidden="true" className="canvas-skeleton-lines" style={{ gap }}>
+    <span aria-hidden="true" className="ofk-skeleton-lines" style={{ gap }}>
       {Array.from({ length: count }, (_, i) => (
         <Skeleton key={i} width={i === count - 1 && count > 1 ? '62%' : '100%'} />
       ))}
@@ -50,8 +50,8 @@ export function Spinner({
   size?: 'sm' | 'md' | 'lg';
 }) {
   return (
-    <span className="canvas-spinner" data-size={size} role="status" aria-label={label}>
-      <span className="canvas-busy" aria-hidden="true" />
+    <span className="ofk-spinner" data-size={size} role="status" aria-label={label}>
+      <span className="ofk-busy" aria-hidden="true" />
     </span>
   );
 }
@@ -71,10 +71,10 @@ export function Progress({ label, hideLabel, value, max = 100, className = '' }:
   const clamped = determinate ? Math.max(0, Math.min(max, value)) : 0;
   const percent = determinate ? (clamped / max) * 100 : undefined;
   return (
-    <div className={`canvas-progress ${className}`} data-hide-label={hideLabel || undefined}>
-      <span className="canvas-progress-label">{label}</span>
+    <div className={`ofk-progress ${className}`} data-hide-label={hideLabel || undefined}>
+      <span className="ofk-progress-label">{label}</span>
       <div
-        className="canvas-progress-track"
+        className="ofk-progress-track"
         role="progressbar"
         aria-label={label}
         aria-valuemin={0}
@@ -83,7 +83,7 @@ export function Progress({ label, hideLabel, value, max = 100, className = '' }:
         aria-valuetext={determinate ? `${Math.round(percent!)}%` : 'In progress'}
       >
         <div
-          className="canvas-progress-fill"
+          className="ofk-progress-fill"
           data-indeterminate={determinate ? undefined : true}
           style={determinate ? { width: `${percent}%` } : undefined}
         />
@@ -101,15 +101,15 @@ export function Thinking({
   detail?: ReactNode;
 }) {
   return (
-    <span className="canvas-thinking" role="status">
-      <span className="canvas-thinking-dots" aria-hidden="true">
+    <span className="ofk-thinking" role="status">
+      <span className="ofk-thinking-dots" aria-hidden="true">
         <i />
         <i />
         <i />
       </span>
-      <span className="canvas-thinking-label">
+      <span className="ofk-thinking-label">
         {label}
-        {detail && <span className="canvas-caption"> · {detail}</span>}
+        {detail && <span className="ofk-caption"> · {detail}</span>}
       </span>
     </span>
   );

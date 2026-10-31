@@ -29,7 +29,7 @@ export function V2CodePanel({
   selectAll?: boolean;
 }) {
   // ponytail: an empty editor shows the placeholder, not "document is empty".
-  // Foreign syntax (Mermaid, Structurizr, D2) arrives without Canvas's parse diagnostics (the workspace drops
+  // Foreign syntax (Mermaid, Structurizr, D2) arrives without OpenFlowKit's parse diagnostics (the workspace drops
   // them); what is left is the conversion's own report, which must show — a failed Convert would look dead otherwise.
   const errors = code.trim() ? diagnostics.filter((item) => item.severity !== 'info') : [];
   const editorRef = useRef<HTMLTextAreaElement>(null);
@@ -89,7 +89,7 @@ export function V2CodePanel({
     setSuggestions([]);
   };
   return (
-    <Panel title="Diagram as code" onClose={onClose} autoFocus={autoFocus} className="canvas-v2-workspace-panel canvas-v2-code-panel"
+    <Panel title="Diagram as code" onClose={onClose} autoFocus={autoFocus} className="ofk-v2-workspace-panel ofk-v2-code-panel"
       onKeyDown={(event) => {
         // ⌘↵ and ⌘⇧M work from anywhere in the panel, not only inside the source.
         // A key the source already handled (⌘↵ accepting a suggestion) is not a second command.
@@ -97,20 +97,20 @@ export function V2CodePanel({
         if (event.shiftKey && event.key.toLowerCase() === 'm' && convertFrom) { event.preventDefault(); convertFrom.convert(); }
         else if (event.key === 'Enter') { event.preventDefault(); if (!generating && code.trim()) onGenerate(); }
       }}>
-      <div className="canvas-v2-panel-stack">
-        <div className="canvas-code-caption"><span>Source</span><span>Paste Canvas, Mermaid, Structurizr or D2</span></div>
-        {canvasEdited ? <p className="canvas-v2-code-warning" role="status">Canvas edited — regenerate will overwrite those changes.</p> : null}
+      <div className="ofk-v2-panel-stack">
+        <div className="ofk-code-caption"><span>Source</span><span>Paste OpenFlowKit, Mermaid, Structurizr or D2</span></div>
+        {canvasEdited ? <p className="ofk-v2-code-warning" role="status">Canvas edited — regenerate will overwrite those changes.</p> : null}
         {convertFrom ? (
-          <div className="canvas-v2-code-mermaid" role="status">
+          <div className="ofk-v2-code-mermaid" role="status">
             <Icon icon={IconTransform} />
             <span>{convertFrom.label} detected. Generate converts it.</span>
             <Button onClick={convertFrom.convert}>Convert <kbd>{platformKeys('⌘⇧M')}</kbd></Button>
           </div>
         ) : null}
-        <div className="canvas-v2-code-editor-wrap">
-          <pre ref={highlightRef} className="canvas-v2-code-highlight" aria-hidden="true">{highlighted}</pre>
+        <div className="ofk-v2-code-editor-wrap">
+          <pre ref={highlightRef} className="ofk-v2-code-highlight" aria-hidden="true">{highlighted}</pre>
           <textarea
-            ref={editorRef} id="v2-code" className="canvas-v2-code-editor" spellCheck={false} value={code} aria-label="Diagram source"
+            ref={editorRef} id="v2-code" className="ofk-v2-code-editor" spellCheck={false} value={code} aria-label="Diagram source"
             placeholder={'flowchart\nStart -> Build -> Ship\nBuild [diamond]'}
             aria-describedby={errors.length ? 'v2-code-keys v2-code-diagnostics' : 'v2-code-keys'}
             aria-invalid={errors.some((item) => item.severity === 'error') || undefined}
@@ -126,15 +126,15 @@ export function V2CodePanel({
             if (event.ctrlKey && event.key === ' ') { event.preventDefault(); openSuggestions('all'); return; }
             // Tab indents; Shift+Tab and Esc leave (WCAG 2.1.2). Esc lands on Close, so a second Esc closes the panel.
             if (event.key === 'Tab' && !event.shiftKey) { event.preventDefault(); insert('  '); }
-            if (event.key === 'Escape') { event.preventDefault(); event.currentTarget.closest('.canvas-panel')?.querySelector<HTMLElement>('.canvas-panel-header button')?.focus(); }
+            if (event.key === 'Escape') { event.preventDefault(); event.currentTarget.closest('.ofk-panel')?.querySelector<HTMLElement>('.ofk-panel-header button')?.focus(); }
             }}
           />
-          <span id="v2-code-keys" className="canvas-visually-hidden">Tab indents. Esc leaves the editor.</span>
-          {suggestions.length ? <div id="v2-code-suggestions" role="listbox" className="canvas-v2-code-suggestions">
+          <span id="v2-code-keys" className="ofk-visually-hidden">Tab indents. Esc leaves the editor.</span>
+          {suggestions.length ? <div id="v2-code-suggestions" role="listbox" className="ofk-v2-code-suggestions">
             {suggestions.slice(0, 12).map((suggestion, index) => <button type="button" role="option" aria-selected={index === suggestionIndex} key={suggestion} onPointerDown={(event) => event.preventDefault()} onClick={() => chooseSuggestion(suggestion)}>{suggestion}</button>)}
           </div> : null}
         </div>
-        <div id="v2-code-diagnostics" className="canvas-v2-code-diagnostics" aria-live="polite" hidden={errors.length === 0}>
+        <div id="v2-code-diagnostics" className="ofk-v2-code-diagnostics" aria-live="polite" hidden={errors.length === 0}>
           {errors.slice(0, 8).map((item, index) => (
             <button type="button" key={`${item.line}:${item.col}:${item.code}:${index}`} data-tone={item.severity} onClick={() => {
               const editor = editorRef.current;
@@ -144,8 +144,8 @@ export function V2CodePanel({
             }}><span>{item.code}</span><strong>Line {item.line}</strong>{item.message}</button>
           ))}
         </div>
-        <footer className="canvas-v2-panel-footer canvas-v2-code-footer">
-          <span className="canvas-code-palette-label">Diagram palette, applied on Generate</span>
+        <footer className="ofk-v2-panel-footer ofk-v2-code-footer">
+          <span className="ofk-code-palette-label">Diagram palette, applied on Generate</span>
           <Segmented<DiagramPaletteName> label="Diagram palette" value={palette}
             onChange={onPaletteChange}
             options={DIAGRAM_PALETTES.map(({ id, label, hint }) => ({ value: id, label, title: hint }))} />

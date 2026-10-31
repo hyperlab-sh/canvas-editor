@@ -39,7 +39,7 @@ describe('download all, then import', () => {
     const documents = await readAllDocuments(repo);
     expect(documents.map(({ name }) => name).sort()).toEqual(['Alpha', 'Beta']);
 
-    const file = fileOf(JSON.stringify(buildV2Backup(documents)), 'canvas-backup-2026-10-12.json');
+    const file = fileOf(JSON.stringify(buildV2Backup(documents)), 'openflowkit-backup-2026-10-12.json');
     const report = await importFiles([file], repo, mint);
     expect(report).toMatchObject({ count: 2, problems: [], draw: null });
     expect((await repo.listDocuments()).map(({ name }) => name).sort()).toEqual(['Alpha', 'Alpha', 'Beta']);
@@ -49,7 +49,7 @@ describe('download all, then import', () => {
   // Found by the gate 2026-10-12: a backup without its .json extension (renamed, or a browser's temp download) was skipped.
   it('opens a backup whose file name lost its extension', async () => {
     const repo = repository();
-    const file = fileOf(JSON.stringify(buildV2Backup([named('a', 'Alpha')])), 'canvas-backup');
+    const file = fileOf(JSON.stringify(buildV2Backup([named('a', 'Alpha')])), 'openflowkit-backup');
     expect(await importFiles([file], repo, mint)).toMatchObject({ count: 1, fromBackup: true, problems: [] });
   });
 

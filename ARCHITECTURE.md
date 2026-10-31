@@ -1,6 +1,6 @@
 # Architecture
 
-How Canvas turns text into a canvas and back, and where each piece lives. Read this before
+How OpenFlowKit turns text into a canvas and back, and where each piece lives. Read this before
 your first PR. The code rules are in [AGENTS.md](AGENTS.md#code-rules); setup is in
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -43,7 +43,7 @@ from a generated one.
 | Application | `src/opencanvas/application/` | Use cases over the domain: session and history, DSL → command, selection, the AI assistant, Map navigation. |
 | Infrastructure | `src/opencanvas/infrastructure/` | Pixi renderers and overlays (`pixi/`), exporters (`export/`). |
 | Presentation | `src/opencanvas/presentation/` | React. `v2/` is the editor and home, `design-system/` the shared components and tokens. |
-| Services | `src/services/` | I/O: IndexedDB storage (`canvas-persistence`), AI providers (Anthropic, OpenAI, Google, Ollama wire formats), GitHub reads, share links, feedback, importers, ELK runtime. |
+| Services | `src/services/` | I/O: IndexedDB storage (`openflowkit-persistence`), AI providers (Anthropic, OpenAI, Google, Ollama wire formats), GitHub reads, share links, feedback, importers, ELK runtime. |
 
 Domain and language code import no React, Pixi or DOM. That is what lets the same compiler run
 in the browser, in the MCP server and in the CLI. The editor page
@@ -80,7 +80,7 @@ its input with zod and returns **one reversible command** plus a JSON-safe resul
   headless ELK, canonical SVG, no raster.
 - **CLI.** `mcp-server/src/cli.ts` and `cliCommands.ts`: `render`, `convert`, `validate`, `op` and
   `ops` over the same registry, plus `discover`, `drift`, `build`, `map`, and `mcp` (starts the
-  server). Bare `canvas` at a terminal prints a welcome (`mcp-server/src/lib/welcome.ts`).
+  server). Bare `openflowkit` at a terminal prints a welcome (`mcp-server/src/lib/welcome.ts`).
 - **Remote MCP Apps.** `mcp-server/src/http.ts` (`npm run start:http`) serves `render_diagram` with
   an inline viewer from `mcp-server/src/remote/`; it stores nothing.
 - **In the browser (WebMCP).** `src/agent/webMcp.ts` registers the ops with a browser agent that
@@ -107,20 +107,20 @@ manifest disagree.
   caches the facts. Nothing is cloned.
 - **Map mode in the editor**: `src/opencanvas/presentation/v2/map/useV2MapMode.ts`, with
   navigation, focus and motion in `src/opencanvas/application/map/`, drawn by the same Pixi host.
-- **Offline map page.** `canvas map . --html` inlines the model into the DOM viewer in
+- **Offline map page.** `openflowkit map . --html` inlines the model into the DOM viewer in
   `src/viewer/map/` (built by `vite.map-viewer.config.ts` into `mcp-server/src/generated-viewer/`).
 
 ## Outside the app
 
 | Path | What |
 |---|---|
-| `worker/` | Cloudflare Worker for share links (`share.canvas.hyperlab.sh`, R2 plus a Quota Durable Object). It stores ciphertext only; the key stays in the link's `#` fragment. |
-| `mcp-server/`, `cli/` | npm packages. `@hyperlab.sh/canvas-mcp` is the engine (bins `canvas`, `canvas-mcp`); `@hyperlab.sh/canvas` is the public name and pins the engine at the same version. The root package is private. |
+| `worker/` | Cloudflare Worker for share links (`share.openflowkit.com`, R2 plus a Quota Durable Object). It stores ciphertext only; the key stays in the link's `#` fragment. |
+| `mcp-server/`, `cli/` | npm packages. `@openflowkit/openflowkit-mcp` is the engine (bins `openflowkit`, `openflowkit-mcp`); `openflowkit` is the public name and pins the engine at the same version. The root package is private. |
 | `Dockerfile`, `nginx/` | Self-hosting: build the app, serve `dist` with nginx on port 3045. `docker-publish.yml` pushes the image to GHCR. |
 | `docs-site/` | Astro Starlight docs. The DSL reference is generated from `src/dsl/grammar.md`. |
 | `skills/`, `plugin/`, `.claude-plugin/` | The agent skill and the Claude Code / Codex plugin packaging. |
 | `e2e/` | Playwright. Specs tagged `@gate` are the merge gate; `@local` needs a real GPU. |
-| `architecture.canvas` | This repo's own C4 model, rendered to `architecture.svg`. Check it with `canvas drift .`. |
+| `architecture.ofk` | This repo's own C4 model, rendered to `architecture.svg`. Check it with `openflowkit drift .`. |
 
 ## Where to start reading
 

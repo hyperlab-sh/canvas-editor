@@ -4,9 +4,9 @@ import path from 'node:path';
 import { findAgentOp, runAgentOp, type SceneDocumentV1 } from './agent.js';
 import { loadFileCapabilities } from './fileCapabilities.js';
 
-/** Where the picture of a saved file goes: beside it, `.openflow.json` / `.canvas` / `.json` swapped for `.svg`, else `.svg` appended. */
+/** Where the picture of a saved file goes: beside it, `.openflow.json` / `.ofk` / `.json` swapped for `.svg`, else `.svg` appended. */
 export function svgBeside(file: string): string {
-  const suffix = /\.(openflow\.json|canvas|json)$/i;
+  const suffix = /\.(openflow\.json|ofk|json)$/i;
   return suffix.test(file) ? file.replace(suffix, '.svg') : `${file}.svg`;
 }
 

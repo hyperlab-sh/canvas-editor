@@ -18,7 +18,7 @@ export function CanvasFeedbackOverlay({
   appearance: Appearance;
 }) {
   return (
-    <svg aria-hidden="true" focusable="false" className="canvas-canvas-feedback">
+    <svg aria-hidden="true" focusable="false" className="ofk-canvas-feedback">
       {items.map((item) => {
         if (
           ![item.x, item.y, item.width, item.height].every(Number.isFinite) ||
@@ -51,7 +51,7 @@ export function CanvasFeedbackOverlay({
                   y={y - feedback.handlePx / 2}
                   width={feedback.handlePx}
                   height={feedback.handlePx}
-                  fill="var(--canvas-surface)"
+                  fill="var(--ofk-surface)"
                 />
               ))}
             {feedback.marker !== 'handles' && feedback.marker !== 'none' && (

@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest something Canvas should do.
+description: Suggest something OpenFlowKit should do.
 labels: [enhancement]
 body:
   - type: textarea

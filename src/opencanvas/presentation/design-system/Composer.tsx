@@ -84,7 +84,7 @@ export function Composer({
   }
   return (
     <form
-      className="canvas-composer canvas-overlay"
+      className="ofk-composer ofk-overlay"
       aria-busy={busy || undefined}
       onSubmit={(e) => {
         e.preventDefault();
@@ -92,7 +92,7 @@ export function Composer({
       }}
     >
       {mentions.length > 0 && (
-        <ul className="canvas-composer-mentions" aria-label="Context">
+        <ul className="ofk-composer-mentions" aria-label="Context">
           {mentions.map((m) => (
             <li key={m.id}>
               <span>@{m.label}</span>
@@ -109,7 +109,7 @@ export function Composer({
           ))}
         </ul>
       )}
-      <label htmlFor={id} className="canvas-visually-hidden">
+      <label htmlFor={id} className="ofk-visually-hidden">
         {placeholder}
       </label>
       <textarea
@@ -126,7 +126,7 @@ export function Composer({
         }}
         onKeyDown={onKeyDown}
       />
-      <div className="canvas-composer-bar">
+      <div className="ofk-composer-bar">
         {onAddMention && (
           <IconButton
             variant="quiet"
@@ -145,7 +145,7 @@ export function Composer({
             { value: 'document', label: t.document },
           ]}
         />
-        <span className="canvas-composer-spacer" />
+        <span className="ofk-composer-spacer" />
         {provider}
         {busy ? (
           <Button variant="secondary" onClick={onCancel}>

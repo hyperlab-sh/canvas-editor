@@ -1,11 +1,11 @@
-# The remote MCP endpoint: https://mcp.canvas.hyperlab.sh/mcp (src/worker.ts).
+# The remote MCP endpoint: https://mcp.openflowkit.com/mcp (src/worker.ts).
 # Deploy: npm run deploy:remote (builds the data and agent bundle first).
-name = "canvas-mcp"
+name = "openflowkit-mcp"
 main = "src/worker.ts"
 compatibility_date = "2026-03-18"
 compatibility_flags = ["nodejs_compat"]
 
-routes = [{ pattern = "mcp.canvas.hyperlab.sh", custom_domain = true }]
+routes = [{ pattern = "mcp.openflowkit.com", custom_domain = true }]
 workers_dev = false
 
 # The viewer card is imported as a string.
@@ -18,8 +18,8 @@ binding = "ASSETS"
 run_worker_first = true
 
 [vars]
-APP_ORIGIN = "https://canvas.hyperlab.sh"
-ALLOWED_HOSTS = "mcp.canvas.hyperlab.sh,localhost,127.0.0.1"
+APP_ORIGIN = "https://app.openflowkit.com"
+ALLOWED_HOSTS = "mcp.openflowkit.com,localhost,127.0.0.1"
 
 # A render has a 15 s deadline; ELK cannot be pre-empted, so the CPU limit is the hard stop.
 [limits]

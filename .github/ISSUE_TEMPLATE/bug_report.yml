@@ -29,18 +29,18 @@ body:
     attributes:
       label: Where
       options:
-        - canvas.hyperlab.sh
+        - app.openflowkit.com
         - Local checkout (npm run dev)
         - Self-hosted (Docker)
         - MCP server / agent
-        - canvas CLI or PR Action
+        - openflowkit CLI or PR Action
     validations:
       required: true
   - type: input
     id: version
     attributes:
       label: Version
-      description: The commit SHA for a checkout, or the `canvas` version (`npx @hyperlab.sh/canvas --version`) for the MCP server and CLI.
+      description: The commit SHA for a checkout, or the `openflowkit` version (`npx openflowkit --version`) for the MCP server and CLI.
   - type: input
     id: environment
     attributes:

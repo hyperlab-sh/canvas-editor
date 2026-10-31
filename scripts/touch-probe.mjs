@@ -16,8 +16,8 @@ try {
   await page.waitForFunction(() => window.__V2__?.getState());
   await page.locator('canvas').waitFor();
   // Top lane: document bar and workspace rail must not overlap.
-  const bar = await page.locator('.canvas-v2-document-bar').boundingBox();
-  const rail = await page.locator('.canvas-v2-workspace-rail').boundingBox();
+  const bar = await page.locator('.ofk-v2-document-bar').boundingBox();
+  const rail = await page.locator('.ofk-v2-workspace-rail').boundingBox();
   assert.ok(bar.y + bar.height <= rail.y, `top lane overlap: bar bottom ${bar.y + bar.height} rail top ${rail.y}`);
   // Double-tap on empty canvas → new text node with the editor open.
   await touch('touchStart', [[200, 400]]); await touch('touchEnd', []);
@@ -27,7 +27,7 @@ try {
   await page.keyboard.type('hi'); await page.keyboard.press('Escape');
   await page.waitForTimeout(100);
   // Pinch: two fingers spreading doubles the zoom.
-  const zoomLabel = () => page.locator('.canvas-floating-region[data-slot="bottom-start"]').innerText().then((t) => Number(/(\d+)%/.exec(t)?.[1]));
+  const zoomLabel = () => page.locator('.ofk-floating-region[data-slot="bottom-start"]').innerText().then((t) => Number(/(\d+)%/.exec(t)?.[1]));
   const zoom0 = await zoomLabel();
   await touch('touchStart', [[150, 500]]);
   await touch('touchStart', [[150, 500], [250, 500]]);

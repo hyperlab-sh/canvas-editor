@@ -14,7 +14,7 @@ export function useV2CanvasWheel(
   // Safari trackpad pinch: gesturestart anchors, gesturechange scales from it.
   const pinchRef = useRef<{ zoom: number; anchor: Point2d } | null>(null);
   useEffect(() => {
-    const root = sectionRef.current?.closest<HTMLElement>('.canvas-v2');
+    const root = sectionRef.current?.closest<HTMLElement>('.ofk-v2');
     if (!root) return;
     const onWheel = (event: WheelEvent) => {
       if (event.ctrlKey || event.metaKey || event.target instanceof HTMLCanvasElement) event.preventDefault();

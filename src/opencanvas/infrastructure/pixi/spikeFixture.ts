@@ -101,7 +101,7 @@ function fixtureLabel(index: number): string {
     25: 'Payment may retry safely',
     26: 'ALT',
     27: 'Payment worker',
-    28: 'console.canvas.local',
+    28: 'console.openflowkit.local',
     29: 'Checkout',
   };
   return labels[index] ?? `Service ${index + 1}`;

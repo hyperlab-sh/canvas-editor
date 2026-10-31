@@ -40,7 +40,7 @@ describe('live comment events', () => {
   it('always declares the claude/channel capability, and the instructions explain the tag', async () => {
     const { client } = await start();
     expect(client.getServerCapabilities()?.experimental).toMatchObject({ 'claude/channel': {} });
-    expect(INSTRUCTIONS).toMatch(/<channel source="canvas" thread_id/);
+    expect(INSTRUCTIONS).toMatch(/<channel source="openflowkit" thread_id/);
     expect(INSTRUCTIONS).toMatch(/If live comments are on/);
   });
 

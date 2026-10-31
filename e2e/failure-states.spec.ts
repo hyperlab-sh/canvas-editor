@@ -53,9 +53,9 @@ test('a damaged diagram offers the diagnostic and a way back @gate', async ({ pa
   await page.goto('/#/home');
   // Home creates the database from its own chunk; a version-less open before that would create an empty one.
   await expect.poll(() => page.evaluate(async () =>
-    (await indexedDB.databases()).some(({ name }) => name === 'canvas-persistence'))).toBe(true);
+    (await indexedDB.databases()).some(({ name }) => name === 'openflowkit-persistence'))).toBe(true);
   await page.evaluate(() => new Promise<void>((resolve, reject) => {
-    const open = indexedDB.open('canvas-persistence');
+    const open = indexedDB.open('openflowkit-persistence');
     open.onsuccess = () => {
       const tx = open.result.transaction('v2Documents', 'readwrite');
       tx.objectStore('v2Documents').put({ id: 'doc-broken', revision: 1, schemaVersion: 1, savedAt: new Date().toISOString(), document: { garbage: true } });
@@ -90,8 +90,8 @@ test('agent bridge with nothing listening waits for the agent instead of failing
   await page.goto('/');
   await page.getByRole('toolbar', { name: 'Workspace', exact: true }).getByRole('button', { name: 'Connect agent', exact: true }).click();
   await page.locator('summary', { hasText: 'Connection settings' }).click();
-  await page.locator('#canvas-bridge-port').fill(String(port));
-  await page.locator('#canvas-bridge-port').blur();
+  await page.locator('#ofk-bridge-port').fill(String(port));
+  await page.locator('#ofk-bridge-port').blur();
   await page.getByRole('button', { name: 'Connect', exact: true }).click();
   const panel = page.getByRole('complementary', { name: 'Connect agent' });
   await expect(panel).toHaveAttribute('data-status', 'waiting', { timeout: 15_000 });

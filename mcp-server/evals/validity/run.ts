@@ -105,7 +105,7 @@ async function main(): Promise<void> {
   const limit = Number.parseInt(process.env.EVAL_LIMIT ?? '', 10);
   const all = JSON.parse(await readFile(resolve(HERE, 'prompts.json'), 'utf8')) as Prompt[];
   const prompts = Number.isFinite(limit) ? all.slice(0, limit) : all;
-  const skill = (await readFile(resolve(REPO, 'skills/canvas/SKILL.md'), 'utf8')).replace(/^---\n[\s\S]*?\n---\n/, '');
+  const skill = (await readFile(resolve(REPO, 'skills/openflowkit/SKILL.md'), 'utf8')).replace(/^---\n[\s\S]*?\n---\n/, '');
   const client = await connect();
 
   const cases = prompts.flatMap((prompt) => (['mermaid', 'dsl'] as const).map((format) => ({ prompt, format })));

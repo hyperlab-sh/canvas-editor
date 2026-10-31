@@ -41,10 +41,10 @@ test('Find in Map opens the boxes around a match, keeps what was open, selects a
   const box = page.getByRole('searchbox', { name: 'Find in map' });
   await expect(box).toBeVisible();
   await box.fill('orders');
-  await expect(page.locator('.canvas-v2-find-count')).toContainText('found');
+  await expect(page.locator('.ofk-v2-find-count')).toContainText('found');
   // Matches step in tree order: Enter until the one inside the shut box is reached.
   // Each Enter waits for its own step (the count moves; the first match is Customer, already selected) and its move.
-  const count = page.locator('.canvas-v2-find-count');
+  const count = page.locator('.ofk-v2-find-count');
   for (let i = 0; i < 3 && !(await selected(page)).includes('shop.api.orders'); i++) {
     const was = await count.textContent();
     await page.keyboard.press('Enter');
@@ -93,7 +93,7 @@ test('Escape right after a reveal leaves the restored selection alone once the l
   await page.keyboard.press('Meta+f');
   const box = page.getByRole('searchbox', { name: 'Find in map' });
   await box.fill('validates');
-  await expect(page.locator('.canvas-v2-find-count')).toHaveText('1 found');
+  await expect(page.locator('.ofk-v2-find-count')).toHaveText('1 found');
   // Enter opens shop.api (its layout is on the way); Escape closes find before the box is drawn.
   await page.keyboard.press('Enter');
   await page.keyboard.press('Escape');
@@ -109,7 +109,7 @@ test('stepping fast through matches ends on the last one asked for @gate', async
   await page.keyboard.press('Meta+f');
   const box = page.getByRole('searchbox', { name: 'Find in map' });
   await box.fill('orders');
-  await expect(page.locator('.canvas-v2-find-count')).toContainText('found');
+  await expect(page.locator('.ofk-v2-find-count')).toContainText('found');
   // customer, then orders (inside the shut shop.api), then database, with no wait between the keys.
   await page.keyboard.press('Enter');
   await page.keyboard.press('Enter');
@@ -117,5 +117,5 @@ test('stepping fast through matches ends on the last one asked for @gate', async
   await expect.poll(async () => (await mapState(page)).nodes).toContain('shop.api.orders');
   await settled(page);
   await expect.poll(() => selected(page)).toEqual(['shop.database']);
-  await expect(page.locator('.canvas-v2-find-count')).toHaveText('3 of 3');
+  await expect(page.locator('.ofk-v2-find-count')).toHaveText('3 of 3');
 });

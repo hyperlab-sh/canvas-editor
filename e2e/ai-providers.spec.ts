@@ -19,7 +19,7 @@ async function openProviderDialog(page: Page) {
 
 /** The endpoint section starts open when the provider has no default URL (Custom). */
 async function showEndpoint(dialog: ReturnType<Page['getByRole']>) {
-  const details = dialog.locator('details.canvas-connection-details');
+  const details = dialog.locator('details.ofk-connection-details');
   if (!(await details.evaluate((element) => (element as HTMLDetailsElement).open))) await details.locator('summary').click();
 }
 
@@ -81,7 +81,7 @@ test('sends the Anthropic wire and warns where the browser may refuse', async ({
 
 test('the Endpoint disclosure shows one chevron, not the native marker too @gate', async ({ page }) => {
   const dialog = await openProviderDialog(page);
-  const summary = dialog.locator('details.canvas-connection-details > summary');
+  const summary = dialog.locator('details.ofk-connection-details > summary');
   await expect(summary).toHaveCSS('list-style-type', 'none');
   await expect(summary).toHaveCSS('display', 'flex');
 });

@@ -266,15 +266,15 @@ export function V2ExportMenu({
   return (
     <Popover role="dialog" aria-label={title} open={open} anchorRef={anchorRef} onClose={onClose} placement={placement}>
       <PopoverHeader title={title} onClose={onClose} />
-      <div className="canvas-v2-properties canvas-v2-export">
+      <div className="ofk-v2-properties ofk-v2-export">
         {sharingOnly ? null : <>
         {/* The one export no other diagram tool has: a row of its own, not a footnote. */}
-        <button type="button" className="canvas-v2-export-animate" aria-label="Animate this page…" disabled={pageEmpty}
+        <button type="button" className="ofk-v2-export-animate" aria-label="Animate this page…" disabled={pageEmpty}
           onClick={() => { onClose(); onOpenAnimation(); }}>
-          <span className="canvas-v2-share-glyph" aria-hidden="true"><Icon icon={IconMovie} /></span>
-          <span className="canvas-v2-share-text">
-            <span className="canvas-v2-share-title">Animate this page</span>
-            <span className="canvas-v2-share-detail">GIF, MP4, WebM or animated SVG</span>
+          <span className="ofk-v2-share-glyph" aria-hidden="true"><Icon icon={IconMovie} /></span>
+          <span className="ofk-v2-share-text">
+            <span className="ofk-v2-share-title">Animate this page</span>
+            <span className="ofk-v2-share-detail">GIF, MP4, WebM or animated SVG</span>
           </span>
           <Icon icon={IconChevronRight} />
         </button>
@@ -289,7 +289,7 @@ export function V2ExportMenu({
             { value: 'page', label: 'Page' },
             { value: 'document', label: 'All pages', title: effectiveFormat === 'pdf' ? 'One sheet per page' : 'One file per page' },
           ]} />
-        <p className="canvas-caption canvas-v2-export-caption">{caption}</p>
+        <p className="ofk-caption ofk-v2-export-caption">{caption}</p>
         {effectiveFormat === 'png' ? (
           <Segmented<'1' | '2'> label="Size" showLabel value={scale === 2 ? '2' : '1'}
             onChange={(value) => setScale(value === '2' ? 2 : 1)}
@@ -307,12 +307,12 @@ export function V2ExportMenu({
               { value: 'transparent', label: 'Transparent', title: 'No background rectangle' },
             ]} />
         ) : null}
-        <div className="canvas-v2-export-actions">
+        <div className="ofk-v2-export-actions">
           <Button variant="primary" disabled={busy || empty} onClick={() => { void run('download'); }}>
             <Icon icon={IconDownload} /> {effectiveFormat === 'pdf' ? 'Print / PDF' : 'Download'}
           </Button>
         </div>
-        <div className="canvas-v2-export-copies">
+        <div className="ofk-v2-export-copies">
           {effectiveFormat === 'png' ? (
             <Button variant="secondary" disabled={busy || empty} onClick={() => { void run('copy-png'); }}>
               <Icon icon={IconPhoto} /> Copy PNG
@@ -326,39 +326,39 @@ export function V2ExportMenu({
         </div>
         </>}
         {sharingOnly ? (
-          <div className="canvas-v2-share">
-            <div className="canvas-v2-share-kinds" role="radiogroup" aria-label="Kind of link">
+          <div className="ofk-v2-share">
+            <div className="ofk-v2-share-kinds" role="radiogroup" aria-label="Kind of link">
               {linkKinds.map(({ value, icon, title, detail, available }) => (
-                <label key={value} className="canvas-v2-share-kind" data-disabled={available ? undefined : 'true'}>
-                  <input type="radio" name="canvas-share-kind" value={value} checked={kind === value} disabled={!available}
+                <label key={value} className="ofk-v2-share-kind" data-disabled={available ? undefined : 'true'}>
+                  <input type="radio" name="ofk-share-kind" value={value} checked={kind === value} disabled={!available}
                     onChange={() => setLinkKind(value)} />
-                  <span className="canvas-v2-share-glyph" aria-hidden="true"><Icon icon={icon} /></span>
-                  <span className="canvas-v2-share-text">
-                    <span className="canvas-v2-share-title">{title}</span>
-                    <span className="canvas-v2-share-detail">{detail}</span>
+                  <span className="ofk-v2-share-glyph" aria-hidden="true"><Icon icon={icon} /></span>
+                  <span className="ofk-v2-share-text">
+                    <span className="ofk-v2-share-title">{title}</span>
+                    <span className="ofk-v2-share-detail">{detail}</span>
                   </span>
                 </label>
               ))}
             </div>
-            <p className="canvas-v2-share-effect" aria-live="polite">
+            <p className="ofk-v2-share-effect" aria-live="polite">
               {kind === 'snapshot' ? 'Viewers can look at every page and make their own copy, but never change yours.'
                 : kind === 'code' ? `Opens “${frameName(mermaidTarget!)}” as their own copy to change. Copy again after you edit.`
                   : 'No link can be made here. Send the file instead; it opens in any browser.'}
             </p>
             {kind ? (
-              <Button variant="primary" className="canvas-v2-share-copy" disabled={sharing !== null}
+              <Button variant="primary" className="ofk-v2-share-copy" disabled={sharing !== null}
                 aria-label={kind === 'code' ? 'Copy editable link' : 'Copy view-only link'}
                 onClick={() => { void (kind === 'code' ? copyCodeLink() : copyShareLink()); }}>
                 <Icon icon={IconLink} /> {sharing ? 'Working…' : 'Copy link'}
               </Button>
             ) : (
-              <Button variant="primary" className="canvas-v2-share-copy"
+              <Button variant="primary" className="ofk-v2-share-copy"
                 onClick={() => { void buildV2Export({ document: whole, format: 'json', scope: 'document', pageId }).then(downloadV2Export); }}>
                 <Icon icon={IconDownload} /> Download file
               </Button>
             )}
-            <div className="canvas-v2-share-foot">
-              <a href="https://docs.canvas.hyperlab.sh/share-links/" target="_blank" rel="noreferrer">How sharing works</a>
+            <div className="ofk-v2-share-foot">
+              <a href="https://docs.openflowkit.com/share-links/" target="_blank" rel="noreferrer">How sharing works</a>
               {kind === 'snapshot' && latestLink ? (
                 <Button variant="quiet" disabled={sharing !== null} onClick={() => { void deleteLink(); }}>
                   <Icon icon={IconLinkOff} /> Delete link

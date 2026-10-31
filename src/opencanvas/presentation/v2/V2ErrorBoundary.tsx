@@ -1,6 +1,6 @@
 import { Component, type ComponentType, type ErrorInfo, type ReactNode } from 'react';
 
-const RELOADED_KEY = 'canvas-stale-chunk-reload';
+const RELOADED_KEY = 'ofk-stale-chunk-reload';
 const reloadPage = () => window.location.reload();
 
 /** A new deploy replaces hashed chunks under open tabs: reload once to pick up the new build. Returns whether it reloaded. */
@@ -37,7 +37,7 @@ export class V2ErrorBoundary extends Component<{ readonly children: ReactNode; r
     const reload = this.props.reload ?? reloadPage;
     if (ErrorScreen) return <ErrorScreen reload={reload} />;
     return (
-      <div className="canvas-boot">
+      <div className="ofk-boot">
         {screenFailed && <p role="alert">Something went wrong. <button type="button" onClick={reload}>Reload</button></p>}
       </div>
     );

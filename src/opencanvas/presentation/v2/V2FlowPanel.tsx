@@ -35,20 +35,20 @@ export function V2FlowPanel({ playback, model, onClose, onCopy }: V2FlowPanelPro
   const total = flat.length;
   const name = (id: string | undefined) => id ? model?.elements.find((element) => element.id === id)?.name ?? id : undefined;
   return (
-    <section ref={ref} tabIndex={-1} className="canvas-v2-flow" aria-label={`Flow ${flow.name}`}>
-      <header className="canvas-v2-flow-head">
-        <span className="canvas-v2-flow-title">{flow.name}</span>
-        <span className="canvas-v2-flow-count" aria-live="polite">
+    <section ref={ref} tabIndex={-1} className="ofk-v2-flow" aria-label={`Flow ${flow.name}`}>
+      <header className="ofk-v2-flow-head">
+        <span className="ofk-v2-flow-title">{flow.name}</span>
+        <span className="ofk-v2-flow-count" aria-live="polite">
           Step {stepIndex + 1} of {total}
         </span>
         <IconButton label="Close flow" variant="quiet" onClick={onClose} icon={<Icon icon={IconX} />} />
       </header>
-      <ol className="canvas-v2-flow-timeline">
+      <ol className="ofk-v2-flow-timeline">
         {flat.map((entry, index) => (
           <li key={entry.step.id}>
             <button
               type="button"
-              className="canvas-v2-flow-tick"
+              className="ofk-v2-flow-tick"
               data-state={index === stepIndex ? 'current' : index < stepIndex ? 'done' : 'todo'}
               data-kind={entry.step.kind}
               aria-current={index === stepIndex ? 'step' : undefined}
@@ -58,11 +58,11 @@ export function V2FlowPanel({ playback, model, onClose, onCopy }: V2FlowPanelPro
           </li>
         ))}
       </ol>
-      <p className="canvas-v2-flow-step" data-kind={step.step.kind}>
-        <span className="canvas-v2-flow-kind">{KIND_LABEL[step.step.kind]}</span>
+      <p className="ofk-v2-flow-step" data-kind={step.step.kind}>
+        <span className="ofk-v2-flow-kind">{KIND_LABEL[step.step.kind]}</span>
         <span>{stepText(step.step.kind, step.step.label, name(step.step.from), name(step.step.to))}</span>
       </p>
-      <div className="canvas-v2-flow-controls">
+      <div className="ofk-v2-flow-controls">
         <IconButton label="Previous step" variant="quiet" onClick={playback.prev} disabled={stepIndex === 0}
           icon={<Icon icon={IconPlayerTrackPrev} />} />
         <Button variant="primary" selected={playing} onClick={playback.toggle}
@@ -72,7 +72,7 @@ export function V2FlowPanel({ playback, model, onClose, onCopy }: V2FlowPanelPro
         </Button>
         <IconButton label="Next step" variant="quiet" onClick={playback.next} disabled={stepIndex >= total - 1}
           icon={<Icon icon={IconPlayerTrackNext} />} />
-        <span className="canvas-v2-flow-exports">
+        <span className="ofk-v2-flow-exports">
           <Button variant="quiet" onClick={() => onCopy('mermaid')}>Mermaid</Button>
           <Button variant="quiet" onClick={() => onCopy('plantuml')}>PlantUML</Button>
           <Button variant="quiet" onClick={() => onCopy('sequence')}>Sequence</Button>

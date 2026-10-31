@@ -27,12 +27,12 @@ function loadManifest() {
 }
 
 function viewMarkup(view, family) {
-  const alt = `${family} diagram rendered by Canvas from the source beside it`;
-  const images = `<img class="canvas-example-light" src="/examples/${xml(view.light)}" alt="${xml(alt)}" width="${view.width}" height="${view.height}" loading="lazy" decoding="async">`
-    + `<img class="canvas-example-dark" src="/examples/${xml(view.dark)}" alt="${xml(alt)}" width="${view.width}" height="${view.height}" loading="lazy" decoding="async">`;
+  const alt = `${family} diagram rendered by OpenFlowKit from the source beside it`;
+  const images = `<img class="ofk-example-light" src="/examples/${xml(view.light)}" alt="${xml(alt)}" width="${view.width}" height="${view.height}" loading="lazy" decoding="async">`
+    + `<img class="ofk-example-dark" src="/examples/${xml(view.dark)}" alt="${xml(alt)}" width="${view.width}" height="${view.height}" loading="lazy" decoding="async">`;
   return view.name
-    ? `<div class="canvas-example-view">${images}<span class="canvas-example-view-name">${xml(view.name)}</span></div>`
-    : `<div class="canvas-example-view">${images}</div>`;
+    ? `<div class="ofk-example-view">${images}<span class="ofk-example-view-name">${xml(view.name)}</span></div>`
+    : `<div class="ofk-example-view">${images}</div>`;
 }
 
 function figureFor(value, file) {
@@ -45,7 +45,7 @@ function figureFor(value, file) {
   const named = entry.views.length > 1;
   const views = entry.views.map((view) => viewMarkup(named ? view : { ...view, name: '' }, entry.family)).join('');
   return [
-    `<figure class="canvas-example" data-family="${xml(entry.family)}"><div class="canvas-example-render">${views}</div><div class="canvas-example-source">`,
+    `<figure class="ofk-example" data-family="${xml(entry.family)}"><div class="ofk-example-render">${views}</div><div class="ofk-example-source">`,
     '</div></figure>',
   ];
 }

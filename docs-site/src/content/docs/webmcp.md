@@ -10,7 +10,7 @@ extensions). Claude in Chrome does not use it. For an agent you use every day, r
 :::
 
 WebMCP lets a web page give its tools to an agent that runs in the browser. When your browser supports it,
-the Canvas editor registers its agent tools with the browser. An agent there can then read and edit the
+the OpenFlowKit editor registers its agent tools with the browser. An agent there can then read and edit the
 diagram you have open, with no install, port or token. When the browser does not support it, the editor
 does nothing and loads nothing extra.
 

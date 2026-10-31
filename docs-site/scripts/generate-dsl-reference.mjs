@@ -27,7 +27,7 @@ async function main() {
   // Drop the "this file is the language" status paragraph; the page is public. A §0 design
   // record, if one ever returns, is not reference: strip it as the MCP copy does.
   const body = grammar
-    .replace(/^# Canvas grammar — version 1\n/, '')
+    .replace(/^# OFK grammar — version 1\n/, '')
     .replace(/^Status:.*\n(?:.*\n)*?\n/m, '')
     .replace(/^## 0\. [^\n]*\n[\s\S]*?(?=^## )/m, '')
     .replace('§0 prior art · ', '')

@@ -82,9 +82,9 @@ describe('importV1Workspace', () => {
   });
 
   it('reports an unreadable source without filing it under a document', async () => {
-    const storage = memoryStorage({ 'canvas-documents-fallback': '{not json' });
+    const storage = memoryStorage({ 'openflowkit-documents-fallback': '{not json' });
     const report = await run(storage);
-    expect(report.failures.map((failure) => failure.name)).toEqual(['canvas-documents-fallback']);
+    expect(report.failures.map((failure) => failure.name)).toEqual(['openflowkit-documents-fallback']);
     expect(Object.keys(readV1ImportMarker(storage)!.docs).sort()).toEqual(rows.map((row) => row.id).sort());
   });
   it('takes a v1 edit made after the import: replaces an untouched copy, keeps both when v2 edited it too', async () => {
@@ -140,7 +140,7 @@ describe('v1 backup file', () => {
 
   it('backs up the localStorage copies when IndexedDB will not open, as v1 read them then', async () => {
     const blocked = { open: () => { throw new DOMException('blocked', 'SecurityError'); } } as unknown as IDBFactory;
-    const backup = await buildV1Backup(blocked, memoryStorage({ 'canvas-documents-fallback': JSON.stringify([rows[0]]) }));
+    const backup = await buildV1Backup(blocked, memoryStorage({ 'openflowkit-documents-fallback': JSON.stringify([rows[0]]) }));
     expect(backup.documents.map((row) => row.id)).toEqual([rows[0]!.id]);
   });
 
@@ -161,7 +161,7 @@ describe('v1 backup file', () => {
 describe('withoutV1Params', () => {
   it('drops a v1 room link and the cutover reload marker, keeps the rest, and leaves clean URLs alone', () => {
     expect(withoutV1Params('?room=r1&secret=s3')).toBe('');
-    expect(withoutV1Params('?utm_source=x&room=r1&secret=s3&canvas-reload=1')).toBe('?utm_source=x');
+    expect(withoutV1Params('?utm_source=x&room=r1&secret=s3&ofk-reload=1')).toBe('?utm_source=x');
     expect(withoutV1Params('?utm_source=x')).toBeNull();
     expect(withoutV1Params('')).toBeNull();
   });

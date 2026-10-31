@@ -7,7 +7,7 @@
 // so a random web page cannot drive the editor.
 //
 // One port, many agents: each agent session starts its own MCP server, and only
-// the first binds the port. A later one that finds a Canvas server there
+// the first binds the port. A later one that finds an OpenFlowKit server there
 // becomes its guest and sends its ops through `POST /call` (local servers only),
 // so every agent draws on the one paired canvas. When the holder exits, the
 // guest takes the port and the editor re-pairs with it.
@@ -57,7 +57,7 @@ interface PendingCall {
 
 export interface LiveBridgeOptions {
   readonly port: number;
-  /** Required on every request when set (CANVAS_BRIDGE_TOKEN). */
+  /** Required on every request when set (OPENFLOWKIT_BRIDGE_TOKEN). */
   readonly token?: string;
   readonly callTimeoutMs?: number;
   /** Least gap between attempts to take a port another process held (default 3 s). */
@@ -79,7 +79,7 @@ export class LiveBridge {
   /** The tab that said hello last, and the tab whose poll is parked; null for an app without tab ids. */
   private tab: string | null = null;
   private parkedTab: string | null = null;
-  /** Guest mode: the holder's last /health. Set only while another Canvas server owns the port and can share. */
+  /** Guest mode: the holder's last /health. Set only while another OpenFlowKit server owns the port and can share. */
   private holder: BridgeHealth | null = null;
   /** Why the port's owner cannot be shared (another program, a refused token, another protocol). */
   private holderProblem: string | null = null;
@@ -114,7 +114,7 @@ export class LiveBridge {
   }
 
   /**
-   * Starts listening and resolves with the bound port. When another Canvas server owns the port and
+   * Starts listening and resolves with the bound port. When another OpenFlowKit server owns the port and
    * can share it, resolves too, as its guest (status().state 'shared'); otherwise rejects with EADDRINUSE.
    */
   async start(): Promise<number> {
@@ -237,23 +237,23 @@ export class LiveBridge {
     } catch (error) {
       // Slow is not gone: a holder busy with a big layout keeps the canvas; only a closed or reset socket hands the port over.
       if ((error as { code?: string }).code === 'ETIMEDOUT') {
-        throw new Error(`The Canvas MCP server that holds the canvas did not answer "${op}" in time. Check the canvas (get_document) before repeating it.`);
+        throw new Error(`The OpenFlowKit MCP server that holds the canvas did not answer "${op}" in time. Check the canvas (get_document) before repeating it.`);
       }
       // The holder exited: take the port now, so the editor re-pairs with this server.
       this.holder = null;
       await this.start().catch(() => undefined);
       throw new Error(this.server
-        ? `The Canvas MCP server that held the canvas exited during "${op}"; this one holds port ${port} now and the editor re-pairs by itself within seconds. Check the canvas (get_document) before repeating "${op}".`
-        : `The Canvas MCP server on port ${port} did not answer "${op}".`);
+        ? `The OpenFlowKit MCP server that held the canvas exited during "${op}"; this one holds port ${port} now and the editor re-pairs by itself within seconds. Check the canvas (get_document) before repeating "${op}".`
+        : `The OpenFlowKit MCP server on port ${port} did not answer "${op}".`);
     }
     const body = reply.body as { ok?: boolean; output?: unknown; error?: string; health?: BridgeHealth } | null;
     if (body?.health && this.holder) this.holder = body.health;
-    if (reply.status !== 200 || !body) throw new Error(body?.error ?? `The Canvas MCP server on port ${port} answered ${reply.status}.`);
+    if (reply.status !== 200 || !body) throw new Error(body?.error ?? `The OpenFlowKit MCP server on port ${port} answered ${reply.status}.`);
     if (!body.ok) throw new Error(body.error ?? 'The editor reported an error.');
     return body.output;
   }
 
-  /** Asks whoever owns the port who it is: 'shared' (a compatible Canvas server), 'refused' (anything else), or 'gone'. */
+  /** Asks whoever owns the port who it is: 'shared' (a compatible OpenFlowKit server), 'refused' (anything else), or 'gone'. */
   private async probeHolder(): Promise<'shared' | 'refused' | 'gone'> {
     const port = this.options.port;
     const was = this.holder;
@@ -263,21 +263,21 @@ export class LiveBridge {
     if (!('status' in reply) && reply.code === 'ETIMEDOUT' && was) return 'shared';
     this.holder = null;
     if (!('status' in reply)) {
-      // Something holds the port but did not answer in time: most likely a Canvas server busy with a layout, so say that
+      // Something holds the port but did not answer in time: most likely an OpenFlowKit server busy with a layout, so say that
       // (the next whoami or tool call probes again) rather than "another program".
       this.holderProblem = reply.code === 'ETIMEDOUT'
-        ? `The server holding port ${port} did not answer in time (a Canvas server busy with a big layout, most likely). Try again in a few seconds; until then this one can only edit files (openflow_open).`
+        ? `The server holding port ${port} did not answer in time (an OpenFlowKit server busy with a big layout, most likely). Try again in a few seconds; until then this one can only edit files (openflow_open).`
         : null;
       return reply.code === 'ECONNREFUSED' ? 'gone' : 'refused';
     }
     const health = reply.body as Partial<BridgeHealth> | null;
     if (reply.status === 401) {
-      this.holderProblem = `Another Canvas MCP server owns port ${port} and refused this server's token (the two hold different CANVAS_BRIDGE_TOKEN values), so this one can only edit files (openflow_open).`;
+      this.holderProblem = `Another OpenFlowKit MCP server owns port ${port} and refused this server's token (the two hold different OPENFLOWKIT_BRIDGE_TOKEN values), so this one can only edit files (openflow_open).`;
     } else if (reply.status !== 200 || health?.name !== MCP_SERVER_NAME) {
       this.holderProblem = null;
     } else if (health.protocol !== BRIDGE_PROTOCOL_VERSION || health.share !== SHARE_PROTOCOL) {
-      this.holderProblem = `Another Canvas MCP server (${health.version ?? 'an unknown version'}) owns port ${port} and cannot share its canvas with this one (${MCP_SERVER_VERSION}): their bridge protocols differ. `
-        + 'Restart the older agent session (or update its canvas) so both run the same version; until then this one can only edit files (openflow_open).';
+      this.holderProblem = `Another OpenFlowKit MCP server (${health.version ?? 'an unknown version'}) owns port ${port} and cannot share its canvas with this one (${MCP_SERVER_VERSION}): their bridge protocols differ. `
+        + 'Restart the older agent session (or update its openflowkit) so both run the same version; until then this one can only edit files (openflow_open).';
     } else {
       this.holder = health as BridgeHealth;
       this.holderProblem = null;
@@ -304,7 +304,7 @@ export class LiveBridge {
         response.on('error', reject);
         response.on('end', () => {
           let parsed: unknown = null;
-          try { parsed = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { /* not JSON: not a Canvas server */ }
+          try { parsed = JSON.parse(Buffer.concat(chunks).toString('utf8')); } catch { /* not JSON: not an OpenFlowKit server */ }
           resolve({ status: response.statusCode ?? 0, body: parsed });
         });
       });
@@ -380,7 +380,7 @@ export class LiveBridge {
         return;
       }
       if (url.pathname === '/call' && (request.method !== 'POST' || isFromBrowser(request))) {
-        this.respond(response, 403, { error: '/call is for Canvas MCP servers on this machine, not web pages.' });
+        this.respond(response, 403, { error: '/call is for OpenFlowKit MCP servers on this machine, not web pages.' });
         return;
       }
       // A preflight cannot carry the token it asks permission to send: origin-check it, nothing more.

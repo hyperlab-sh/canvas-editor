@@ -5,7 +5,7 @@ describe('svgBeside', () => {
   it.each([
     ['a/flow.openflow.json', 'a/flow.svg'],
     ['a/flow.json', 'a/flow.svg'],
-    ['architecture.canvas', 'architecture.svg'],
+    ['architecture.ofk', 'architecture.svg'],
     ['A/Flow.OpenFlow.JSON', 'A/Flow.svg'],
     ['notes.txt', 'notes.txt.svg'],
     ['noext', 'noext.svg'],

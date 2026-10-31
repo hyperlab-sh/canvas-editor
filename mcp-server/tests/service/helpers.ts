@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import type { ServiceConfig } from '../../src/service/config.js';
 
 export async function tempDir(): Promise<string> {
-  return mkdtemp(join(tmpdir(), 'canvas-service-'));
+  return mkdtemp(join(tmpdir(), 'ofk-service-'));
 }
 
 export async function tempConfig(...names: string[]): Promise<ServiceConfig> {

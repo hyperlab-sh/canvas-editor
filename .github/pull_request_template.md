@@ -9,7 +9,7 @@
 - [ ] A UI change has a Playwright check and screenshots in light and dark
 - [ ] `npm run verify` passes (paste the last lines below), or, with no display, the unit checks plus `npm run e2e:ci -- --grep @gate`
 - [ ] No new dependency, or one line on why it is needed
-- [ ] A change people will notice has one line under `[Unreleased]` in [CHANGELOG.md](https://github.com/hyperlab-sh/canvas-editor/blob/main/CHANGELOG.md)
+- [ ] A change people will notice has one line under `[Unreleased]` in [CHANGELOG.md](https://github.com/openflowkit/openflowkit/blob/main/CHANGELOG.md)
 
 ```
 <verify output>

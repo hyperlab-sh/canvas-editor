@@ -3,7 +3,7 @@ title: Quick start
 description: From an empty canvas to an exported diagram in five minutes — shapes, connectors, code, export.
 ---
 
-Open [canvas.hyperlab.sh](https://canvas.hyperlab.sh). There is nothing to install and no
+Open [app.openflowkit.com](https://app.openflowkit.com). There is nothing to install and no
 account. To run your own copy instead, see [Self-hosting](/self-hosting/).
 
 ## 1. Draw something

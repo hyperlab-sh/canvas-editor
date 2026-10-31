@@ -1,6 +1,6 @@
-# Canvas grammar — version 1
+# OFK grammar — version 1
 
-Status: grammar version 1 (`%% canvas 1`), implemented; the §8.11 later families are reserved, not rendered yet.
+Status: grammar version 1 (`%% ofk 1`), implemented; the §8.11 later families are reserved, not rendered yet.
 This file is the language: the parser, the MCP `get_syntax` tool, the docs-site reference and
 the BYOK prompt all read this file (or a build-time copy of it), so there is exactly one
 grammar.
@@ -24,12 +24,12 @@ Where we are consciously worse:
 - **Terser than the tersest DSLs? No.** Every edge is a full `A -> B` line in canonical form; chains
   and fans are accepted but expanded. Cost: longer canonical text. Gain: line = statement,
   so patches, diffs and diagnostics are one-to-one.
-- **Fewer shapes than some rival DSLs (45+).** canvas 1 has 16 shape words (§5.1). Cost: some Mermaid
+- **Fewer shapes than some rival DSLs (45+).** ofk 1 has 16 shape words (§5.1). Cost: some Mermaid
   `@{shape}` names degrade to `rect` with a warning. Gain: every shape has a Pixi renderer
   before the word exists in the grammar.
 - **No user-defined element kinds (no `specification` block).** Cost: bespoke taxonomies use
   `[kind: x]` and get plain styling. Gain: agents never need to read a spec block first.
-- **No Markdown in labels, no `!include`, no multi-board composition in canvas 1.** Cost: D2
+- **No Markdown in labels, no `!include`, no multi-board composition in ofk 1.** Cost: D2
   layers/scenarios and Structurizr `!include` import as flattened text with a warning.
 - **Keywords are case-sensitive lowercase.** `Group -> X` is a node named "Group". Cost:
   an LLM that capitalises `Flowchart` gets a node instead of a family (with warning W110
@@ -113,7 +113,7 @@ paths (§9.2); in a non-model statement `a.b = X` → warning W120 and the id is
 
 ### 3.1 Version pragma
 ```
-%% canvas 1
+%% ofk 1
 ```
 Optional on input, first non-blank line when present. Always emitted first by the
 serializer. Missing → assumed current version, info I002. Higher than current → warning
@@ -231,7 +231,7 @@ by vocabulary; the same word means the same thing everywhere. Two words of the s
 → last wins, warning W130. Unknown word → warning W131, kept verbatim in
 `metadata.dsl.unknownAttrs` and re-emitted last (round-trip safe).
 
-### 5.1 Vocabulary (canvas 1)
+### 5.1 Vocabulary (ofk 1)
 - **shape** (nodes): `rect` (default), `rounded`, `circle`, `ellipse`, `diamond`,
   `cylinder`, `hexagon`, `cloud`, `doc`, `note`, `parallelogram`, `person`, `queue`,
   `component`, `browser`, `mobile`. Aliases (not canonical): `box`→`rect`, `oval`→`ellipse`,
@@ -242,7 +242,7 @@ by vocabulary; the same word means the same thing everywhere. Two words of the s
   `cyan`→`teal`. Hex kept verbatim (lowercase canonical).
 - **fill**: `pastel` (default, not emitted), `bold`, `outline`.
 - **style flags**: nodes `shadow`; edges `dashed` (same as `-->`; canonical uses the arrow),
-  `thick`, `invisible`, `flow` (animated). Text: `italic`, `bold-text` — reserved, W131 in canvas 1.
+  `thick`, `invisible`, `flow` (animated). Text: `italic`, `bold-text` — reserved, W131 in ofk 1.
 - **icon**: `set/name` (`aws/lambda`, `gcp/pubsub`, `tech/react`) resolved against
   `src/services/shapeLibrary` packs; a bare word that is a known icon name (`server`,
   `database` — note `database` is a shape alias first; use `icon: database` to force).
@@ -297,7 +297,7 @@ belongs to a group, (d) has no edges, or (e) shares its name with a group (§4).
 
 ### 6.4 Canonical form
 `format(text) = serialize(parse(text))`. Canonical text is exactly:
-1. `%% canvas 1`
+1. `%% ofk 1`
 2. family line with direction only if not the family default
 3. `title: …` if present
 4. one blank line if 5–7 is non-empty
@@ -699,7 +699,7 @@ test: random bytes → diagnostics only).
 | code | when | hint |
 |---|---|---|
 | I001 | trailing comment dropped | move comment to its own line |
-| I002 | no version pragma | `%% canvas 1` added on save |
+| I002 | no version pragma | `%% ofk 1` added on save |
 | I003 | no family line | `architecture` assumed |
 | I010 | slug renumbered because an explicit id took it | — |
 | W001 | pragma version newer than parser | parsed as version 1 |
@@ -736,7 +736,7 @@ MCP returns the array as-is plus `summary: { info, warning, error }` counts.
 
 ## 11. Import targets — loss tables
 
-Importers produce Canvas text + `Diagnostic[]` (source `import`, W180 for drops) — never
+Importers produce OFK text + `Diagnostic[]` (source `import`, W180 for drops) — never
 throw. Column key: **1:1** = round-trips back to equivalent source; **degrades** = kept
 with changed fidelity; **dropped** = W180.
 
@@ -747,7 +747,7 @@ built on the repo's own DOM-free per-family parsers (`detectMermaidDiagramType` 
 `parseMermaidByType`), which already carry the semantics and the 56-fixture corpus —
 Mermaid's own parser needs a browser and returns a different model, so it is not used for
 conversion. Losses are surfaced as W180 diagnostics in the code panel.
-| Mermaid | Canvas | fidelity |
+| Mermaid | OFK | fidelity |
 |---|---|---|
 | `flowchart LR/TD/…` | `flowchart right/down/…` | 1:1 |
 | `A[text]`, `A(text)`, `A([ ])`, `A[[ ]]`, `A[( )]`, `A(( ))`, `A{ }`, `A{{ }}`, `A[/ /]` | `a = text [rect|rounded|ellipse|component|cylinder|circle|diamond|hexagon|parallelogram]` | 1:1 |
@@ -780,7 +780,7 @@ conversion. Losses are surfaced as W180 diagnostics in the code panel.
 | `journey`, `gantt`, `pie`, `timeline`, `sankey-beta`, `C4Context` etc. (Mermaid C4) | — | not converted (error names the convertible types) |
 
 ### 11.2 Structurizr DSL
-| Structurizr | Canvas | fidelity |
+| Structurizr | OFK | fidelity |
 |---|---|---|
 | `workspace "n" "d" { }` | `title: n` | 1:1 (desc dropped) |
 | `model { }`, `views { }` | same blocks | 1:1 |
@@ -804,7 +804,7 @@ conversion. Losses are surfaced as W180 diagnostics in the code panel.
 
 ## 12. Versioning
 
-- Grammar version is an integer. `%% canvas N`. Parser knows `CURRENT = 1`.
+- Grammar version is an integer. `%% ofk N`. Parser knows `CURRENT = 1`.
 - A version bump is required only for a change that makes previously canonical text parse
   differently. Adding a keyword, attribute word, family or diagnostic is *not* a bump
   (old text still parses the same; old parsers see new words as unknown attrs / nodes).
@@ -847,7 +847,7 @@ Frontend -> Backend -> Database
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 architecture
 
 Frontend -> Backend
@@ -868,7 +868,7 @@ Ship [process] -> End [terminator]
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 flowchart
 
 Start [ellipse]
@@ -902,7 +902,7 @@ API Gateway -> Resize : invoke
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 architecture down
 title: Image upload
 
@@ -930,7 +930,7 @@ this line has no meaning ]]]
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 flowchart
 
 Cache [cylinder, chartreuse, octahedron]
@@ -950,7 +950,7 @@ API -> api2
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 architecture
 
 API [blue]
@@ -972,7 +972,7 @@ WAF -> Origin
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 architecture
 
 group Edge {
@@ -996,7 +996,7 @@ A -> C : side [from: bottom, to: top]
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 flowchart right
 
 A [pin: 0,0]
@@ -1025,7 +1025,7 @@ alt found {
 deactivate API
 note over Browser, API : cached 60s
 ```
-canonical: input with `%% canvas 1` prepended and a blank line after `sequence` (sequence
+canonical: input with `%% ofk 1` prepended and a blank line after `sequence` (sequence
 keeps strict line order; only the header is normalised).
 
 ### 14.9 Sequence with par and self-call
@@ -1037,7 +1037,7 @@ par { Worker -> Queue : ack } and { Worker -> Metrics : emit }
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 sequence
 
 Worker -> Worker : poll
@@ -1064,7 +1064,7 @@ F [fork]
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 state
 
 F [fork]
@@ -1091,7 +1091,7 @@ users 1:N orders: places
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 erd
 
 users {
@@ -1119,7 +1119,7 @@ Order "1" --> "*" Item : has
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 class
 
 Order {
@@ -1146,7 +1146,7 @@ central: Product
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 mindmap
 central: Product
 
@@ -1167,7 +1167,7 @@ checkout main
 merge feature [tag: v1.1]
 cherry-pick start-work
 ```
-canonical: input with `%% canvas 1` prepended and a blank line after `gitgraph`.
+canonical: input with `%% ofk 1` prepended and a blank line after `gitgraph`.
 
 ### 14.15 Notes and links
 input:
@@ -1177,7 +1177,7 @@ note Cache : evicts LRU
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 architecture
 
 Cache [cylinder, link: https://wiki/cache]
@@ -1201,7 +1201,7 @@ views {
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 architecture
 
 model {
@@ -1235,7 +1235,7 @@ views { view container of Shop }
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 architecture
 
 model {
@@ -1269,7 +1269,7 @@ views {
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 architecture
 
 model {
@@ -1305,7 +1305,7 @@ views { view deployment of Shop in Prod }
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 architecture
 
 model {
@@ -1343,7 +1343,7 @@ flow "Checkout" {
 ```
 canonical:
 ```
-%% canvas 1
+%% ofk 1
 architecture
 
 model {
@@ -1378,9 +1378,9 @@ flowchart LR
   end
   style D fill:#f9f
 ```
-Canvas canonical:
+OFK canonical:
 ```
-%% canvas 1
+%% ofk 1
 flowchart right
 
 a = Start
@@ -1415,9 +1415,9 @@ workspace "Shop" {
   }
 }
 ```
-Canvas canonical:
+OFK canonical:
 ```
-%% canvas 1
+%% ofk 1
 architecture
 title: Shop
 
@@ -1442,17 +1442,17 @@ views {
 diagnostics: W180 "autoLayout separations dropped" (none here since none given).
 
 ### 14.23 Empty / whitespace / garbage
-input: `"   \n\n"` → canonical `%% canvas 1\narchitecture\n`, diagnostics E001.
+input: `"   \n\n"` → canonical `%% ofk 1\narchitecture\n`, diagnostics E001.
 input: 3 KB of random bytes → some W101/W102 lines, never a throw; canonical is
-`%% canvas 1\narchitecture\n` plus whatever nodes survived.
+`%% ofk 1\narchitecture\n` plus whatever nodes survived.
 
 ---
 
 ## Appendix A — `get_syntax` cheat-sheet (≤ 60 lines; returned verbatim by MCP)
 
 ```
-Canvas diagram language, v1. One statement per line. // comment. Bad lines are skipped with a warning.
-Line 1 (optional): %% canvas 1     Line 2 (optional): family [direction]  → flowchart | architecture (default) |
+OFK diagram language, v1. One statement per line. // comment. Bad lines are skipped with a warning.
+Line 1 (optional): %% ofk 1     Line 2 (optional): family [direction]  → flowchart | architecture (default) |
   sequence | state | erd | class | mindmap | gitgraph | chart | wireframe ; direction: down | right | left | up
 title: My diagram         PALETTE   appearance: pastel | paper | builder | mono  (compile-time colours)
 ICONS     icons: auto | off   (icons from labels; icon: none opts one node out)

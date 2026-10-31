@@ -25,7 +25,7 @@ RUN npm run build
 FROM nginx:1.30-alpine AS runtime
 
 COPY nginx/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --chmod=0755 nginx/ai-proxy.sh /docker-entrypoint.d/40-canvas-ai-proxy.sh
+COPY --chmod=0755 nginx/ai-proxy.sh /docker-entrypoint.d/40-openflowkit-ai-proxy.sh
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 3045

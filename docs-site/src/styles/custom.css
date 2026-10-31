@@ -1,4 +1,4 @@
-/* Canvas docs: the app's own visual system, so the docs read as part of
+/* OpenFlowKit docs: the app's own visual system, so the docs read as part of
    the product. Values mirror src/opencanvas/presentation/design-system/tokens.ts:
    warm neutrals, Inter, radii 8/12/16, orange only for the primary action (the
    accessible accent, not the 3.1:1 brand seed the app allows itself),
@@ -37,21 +37,21 @@
   --sl-color-black: #fdfdfb;
   --sl-color-bg-inline-code: #efefec;
   --sl-color-backdrop-overlay: rgb(37 39 36 / 0.32);
-  --canvas-bg: #f7f7f5;
-  --canvas-surface: #fdfdfb;
-  --canvas-raised: #efefec;
-  --canvas-text: #252724;
-  --canvas-muted: #62665f;
-  --canvas-border: #dedfd9;
-  --canvas-border-strong: #c9cbc3;
-  --canvas-dot: rgb(83 87 80 / 0.2);
-  --canvas-inverse: #252724;
-  --canvas-on-inverse: #fdfdfb;
-  --canvas-primary: #b63e14;
-  --canvas-primary-hover: #99330f;
-  --canvas-on-primary: #fdfdfb;
-  --canvas-shadow-overlay: 0 2px 4px rgb(37 39 36 / 0.06), 0 16px 40px rgb(37 39 36 / 0.12);
-  --canvas-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --ofk-canvas: #f7f7f5;
+  --ofk-surface: #fdfdfb;
+  --ofk-raised: #efefec;
+  --ofk-text: #252724;
+  --ofk-muted: #62665f;
+  --ofk-border: #dedfd9;
+  --ofk-border-strong: #c9cbc3;
+  --ofk-dot: rgb(83 87 80 / 0.2);
+  --ofk-inverse: #252724;
+  --ofk-on-inverse: #fdfdfb;
+  --ofk-primary: #b63e14;
+  --ofk-primary-hover: #99330f;
+  --ofk-on-primary: #fdfdfb;
+  --ofk-shadow-overlay: 0 2px 4px rgb(37 39 36 / 0.06), 0 16px 40px rgb(37 39 36 / 0.12);
+  --ofk-ease: cubic-bezier(0.23, 1, 0.32, 1);
 
   /* Type: one 1.25 step scale, the app's weights, never display type in docs. */
   --sl-text-h1: 2.25rem;
@@ -104,20 +104,20 @@
   --sl-color-black: #191b19;
   --sl-color-bg-inline-code: #2e322c;
   --sl-color-backdrop-overlay: rgb(0 0 0 / 0.5);
-  --canvas-bg: #191b19;
-  --canvas-surface: #232622;
-  --canvas-raised: #2e322c;
-  --canvas-text: #f1f2ec;
-  --canvas-muted: #a3ab9c;
-  --canvas-border: #41483c;
-  --canvas-border-strong: #57604f;
-  --canvas-dot: rgb(193 198 186 / 0.26);
-  --canvas-inverse: #f1f2ec;
-  --canvas-on-inverse: #191b19;
-  --canvas-primary: #ffb18e;
-  --canvas-primary-hover: #ffc6ad;
-  --canvas-on-primary: #301b12;
-  --canvas-shadow-overlay: 0 2px 4px rgb(0 0 0 / 0.3), 0 16px 40px rgb(0 0 0 / 0.4);
+  --ofk-canvas: #191b19;
+  --ofk-surface: #232622;
+  --ofk-raised: #2e322c;
+  --ofk-text: #f1f2ec;
+  --ofk-muted: #a3ab9c;
+  --ofk-border: #41483c;
+  --ofk-border-strong: #57604f;
+  --ofk-dot: rgb(193 198 186 / 0.26);
+  --ofk-inverse: #f1f2ec;
+  --ofk-on-inverse: #191b19;
+  --ofk-primary: #ffb18e;
+  --ofk-primary-hover: #ffc6ad;
+  --ofk-on-primary: #301b12;
+  --ofk-shadow-overlay: 0 2px 4px rgb(0 0 0 / 0.3), 0 16px 40px rgb(0 0 0 / 0.4);
 
   --sl-color-blue-low: #222521;
   --sl-color-blue: #57604f;
@@ -141,7 +141,7 @@
 /* A neutral wordmark like the app's title bar, not an orange headline. */
 .site-title {
   gap: 0.6rem;
-  color: var(--canvas-text);
+  color: var(--ofk-text);
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -156,24 +156,24 @@
    phone it stays Starlight's bare glyph. */
 @media (min-width: 50rem) {
   site-search button[data-open-modal] {
-    border-color: var(--canvas-border);
+    border-color: var(--ofk-border);
     border-radius: 8px;
-    background-color: var(--canvas-surface);
+    background-color: var(--ofk-surface);
     transition: border-color 150ms ease;
   }
 }
 
 @media (hover: hover) {
   site-search button[data-open-modal]:hover {
-    border-color: var(--canvas-border-strong);
-    color: var(--canvas-text);
+    border-color: var(--ofk-border-strong);
+    color: var(--ofk-text);
   }
 }
 
 site-search button > kbd {
   border-radius: 4px;
-  background-color: var(--canvas-raised);
-  color: var(--canvas-muted);
+  background-color: var(--ofk-raised);
+  color: var(--ofk-muted);
 }
 
 /* The theme picker sits beside the header links, without Starlight's divider. */
@@ -186,15 +186,15 @@ site-search button > kbd {
 button.sl-menu-button {
   background: transparent;
   box-shadow: none;
-  color: var(--canvas-text);
+  color: var(--ofk-text);
 }
 
 /* Selected chrome is inverse neutral; orange is reserved for the primary action. */
 .sidebar-content a[aria-current='page'],
 .sidebar-content a[aria-current='page']:hover,
 .sidebar-content a[aria-current='page']:focus {
-  color: var(--canvas-on-inverse);
-  background-color: var(--canvas-inverse);
+  color: var(--ofk-on-inverse);
+  background-color: var(--ofk-inverse);
   font-weight: 500;
 }
 
@@ -206,8 +206,8 @@ button.sl-menu-button {
 
 @media (hover: hover) {
   .sidebar-content a:not([aria-current='page']):hover {
-    background-color: var(--canvas-raised);
-    color: var(--canvas-text);
+    background-color: var(--ofk-raised);
+    color: var(--ofk-text);
   }
 }
 
@@ -216,7 +216,7 @@ button.sl-menu-button {
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--canvas-muted);
+  color: var(--ofk-muted);
 }
 
 /* A nested group (diagram types) is a sub-heading, not a second shout. */
@@ -235,42 +235,42 @@ button.sl-menu-button {
 /* ---------- Search (Pagefind) ---------- */
 
 #starlight__search {
-  --pagefind-ui-primary: var(--canvas-text);
+  --pagefind-ui-primary: var(--ofk-text);
   --pagefind-ui-text: var(--sl-color-text);
-  --pagefind-ui-background: var(--canvas-surface);
-  --pagefind-ui-border: var(--canvas-border);
-  --pagefind-ui-tag: var(--canvas-raised);
+  --pagefind-ui-background: var(--ofk-surface);
+  --pagefind-ui-border: var(--ofk-border);
+  --pagefind-ui-tag: var(--ofk-raised);
   --pagefind-ui-border-radius: 8px;
   --pagefind-ui-font: var(--sl-font);
 }
 
 #starlight__search input:focus {
-  --pagefind-ui-border: var(--canvas-border-strong);
-  outline: 2px solid var(--canvas-text);
+  --pagefind-ui-border: var(--ofk-border-strong);
+  outline: 2px solid var(--ofk-text);
   outline-offset: -1px;
 }
 
 #starlight__search .pagefind-ui__result-link {
-  color: var(--canvas-text);
+  color: var(--ofk-text);
 }
 
 #starlight__search .pagefind-ui__search-clear::before {
-  background-color: var(--canvas-muted);
+  background-color: var(--ofk-muted);
 }
 
 #starlight__search .pagefind-ui__search-clear:focus {
-  outline-color: var(--canvas-text);
+  outline-color: var(--ofk-text);
 }
 
 #starlight__search mark {
   background: var(--sl-color-accent-low);
-  color: var(--canvas-text);
+  color: var(--ofk-text);
 }
 
 site-search dialog {
-  border-color: var(--canvas-border);
-  background-color: var(--canvas-bg);
-  box-shadow: var(--canvas-shadow-overlay);
+  border-color: var(--ofk-border);
+  background-color: var(--ofk-canvas);
+  box-shadow: var(--ofk-shadow-overlay);
 }
 
 @media (min-width: 50rem) {
@@ -285,7 +285,7 @@ site-search dialog:focus {
 }
 
 site-search button[data-close-modal] {
-  color: var(--canvas-muted);
+  color: var(--ofk-muted);
 }
 
 /* ---------- Prose ---------- */
@@ -299,7 +299,7 @@ h1#_top {
   font-weight: 650;
   letter-spacing: -0.025em;
   line-height: 1.15;
-  color: var(--canvas-text);
+  color: var(--ofk-text);
 }
 
 /* The title band and the body are one page, not two panels. */
@@ -309,7 +309,7 @@ h1#_top {
 }
 
 .sl-markdown-content :is(h1, h2, h3, h4) {
-  color: var(--canvas-text);
+  color: var(--ofk-text);
   font-weight: 600;
   letter-spacing: -0.015em;
 }
@@ -327,12 +327,12 @@ h1#_top {
 .sl-markdown-content > p:first-child {
   font-size: 1.125rem;
   line-height: 1.65;
-  color: var(--canvas-text);
+  color: var(--ofk-text);
 }
 
 .sl-markdown-content a:not(:where(.not-content *)) {
-  color: var(--canvas-text);
-  text-decoration-color: var(--canvas-border-strong);
+  color: var(--ofk-text);
+  text-decoration-color: var(--ofk-border-strong);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
   transition: text-decoration-color 150ms ease;
@@ -354,18 +354,18 @@ h1#_top {
 }
 
 .sl-markdown-content th {
-  color: var(--canvas-text);
+  color: var(--ofk-text);
   font-weight: 600;
   background: transparent;
 }
 
 .sl-markdown-content :not(pre) > code {
-  background: var(--canvas-raised);
-  border: 1px solid var(--canvas-border);
+  background: var(--ofk-raised);
+  border: 1px solid var(--ofk-border);
   border-radius: 6px;
   padding: 0.05rem 0.3rem;
   font-size: 0.85em;
-  color: var(--canvas-text);
+  color: var(--ofk-text);
   overflow-wrap: anywhere;
 }
 
@@ -400,8 +400,8 @@ h1#_top {
 
 .starlight-aside--note,
 .starlight-aside--tip {
-  border-color: var(--canvas-border);
-  border-inline-start-color: var(--canvas-border-strong);
+  border-color: var(--ofk-border);
+  border-inline-start-color: var(--ofk-border-strong);
 }
 
 /* "Generated" notes are provenance, not a warning: one quiet line. */
@@ -410,7 +410,7 @@ h1#_top {
   border: 0;
   background: none;
   font-size: 0.8125rem;
-  color: var(--canvas-muted);
+  color: var(--ofk-muted);
 }
 
 .starlight-aside[aria-label='Generated'] .starlight-aside__title {
@@ -423,7 +423,7 @@ h1#_top {
 
 /* Prev / next: a quiet pair of links, lighter than the headings above. */
 .pagination-links a {
-  border-color: var(--canvas-border);
+  border-color: var(--ofk-border);
   border-radius: 12px;
   box-shadow: none;
   transition: border-color 150ms ease;
@@ -432,38 +432,38 @@ h1#_top {
 .pagination-links .link-title {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--canvas-text);
+  color: var(--ofk-text);
 }
 
 @media (hover: hover) {
   .pagination-links a:hover {
-    border-color: var(--canvas-border-strong);
+    border-color: var(--ofk-border-strong);
   }
 }
 
 /* ---------- Product screenshots ---------- */
 
-.canvas-screen {
+.ofk-screen {
   margin: 1.5rem 0;
-  border: 1px solid var(--canvas-border);
+  border: 1px solid var(--ofk-border);
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: var(--canvas-shadow-overlay);
+  box-shadow: var(--ofk-shadow-overlay);
   line-height: 0;
 }
 
-.canvas-screen img {
+.ofk-screen img {
   width: 100%;
   height: auto;
   border-radius: 0;
 }
 
-.canvas-screen-dark,
-:root[data-theme='dark'] .canvas-screen-light {
+.ofk-screen-dark,
+:root[data-theme='dark'] .ofk-screen-light {
   display: none;
 }
 
-:root[data-theme='dark'] .canvas-screen-dark {
+:root[data-theme='dark'] .ofk-screen-dark {
   display: block;
 }
 
@@ -473,36 +473,36 @@ h1#_top {
    (tall) diagram sits beside its source; a wide one takes the full row and the
    source wraps below it. The 1px gap on a border-coloured box draws the divider
    in whichever direction the wrap chose. Diagrams never upscale. */
-.canvas-example {
+.ofk-example {
   display: flex;
   flex-wrap: wrap;
   gap: 1px;
   margin: 1.5rem 0;
-  border: 1px solid var(--canvas-border);
+  border: 1px solid var(--ofk-border);
   border-radius: 12px;
   overflow: hidden;
-  background: var(--canvas-border);
+  background: var(--ofk-border);
 }
 
 /* Starlight spaces adjacent prose blocks; inside a figure the gap does that. */
-.canvas-example > *,
-.canvas-example-render > * {
+.ofk-example > *,
+.ofk-example-render > * {
   margin: 0;
 }
 
-.canvas-example-render {
+.ofk-example-render {
   flex: 1 1 auto;
   display: grid;
   gap: 1rem;
   align-content: center;
   min-width: 0;
   padding: 1.5rem 1.25rem;
-  background-color: var(--canvas-bg);
-  background-image: radial-gradient(circle, var(--canvas-dot) 1px, transparent 1.2px);
+  background-color: var(--ofk-canvas);
+  background-image: radial-gradient(circle, var(--ofk-dot) 1px, transparent 1.2px);
   background-size: 16px 16px;
 }
 
-.canvas-example-view {
+.ofk-example-view {
   display: grid;
   gap: 0.4rem;
   justify-items: safe center;
@@ -510,49 +510,49 @@ h1#_top {
   overscroll-behavior-x: contain;
 }
 
-.canvas-example-view img {
+.ofk-example-view img {
   max-width: 100%;
   width: auto;
   height: auto;
 }
 
-.canvas-example-view-name {
+.ofk-example-view-name {
   font-size: 0.75rem;
-  color: var(--canvas-muted);
+  color: var(--ofk-muted);
 }
 
-.canvas-example-dark {
+.ofk-example-dark {
   display: none;
 }
 
-:root[data-theme='dark'] .canvas-example-light {
+:root[data-theme='dark'] .ofk-example-light {
   display: none;
 }
 
-:root[data-theme='dark'] .canvas-example-dark {
+:root[data-theme='dark'] .ofk-example-dark {
   display: block;
 }
 
-.canvas-example-source {
+.ofk-example-source {
   flex: 1 1 20rem;
   min-width: 0;
-  background: var(--canvas-surface);
+  background: var(--ofk-surface);
 }
 
 /* The source panel stretches to the row (no height of its own, or flex would
    not stretch it); its code block fills that height. */
-.canvas-example-source .expressive-code,
-.canvas-example-source figure,
-.canvas-example-source pre {
+.ofk-example-source .expressive-code,
+.ofk-example-source figure,
+.ofk-example-source pre {
   height: 100%;
   margin: 0;
 }
 
-.canvas-example-source .expressive-code .frame {
+.ofk-example-source .expressive-code .frame {
   box-shadow: none;
 }
 
-.canvas-example-source pre {
+.ofk-example-source pre {
   border: 0 !important;
   border-radius: 0 !important;
   font-size: 0.8125rem;
@@ -562,7 +562,7 @@ h1#_top {
 @media (max-width: 50em) {
   /* On a phone a wide diagram keeps its drawn size (12px labels stay 12px)
      and scrolls sideways; `safe center` keeps its left edge reachable. */
-  .canvas-example-view img {
+  .ofk-example-view img {
     max-width: none;
   }
 }

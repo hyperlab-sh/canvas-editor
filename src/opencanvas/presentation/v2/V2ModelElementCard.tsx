@@ -15,7 +15,7 @@ import { ElementKindIcon } from './V2ElementKindIcon';
 
 export function ElementLinks({ links }: { readonly links: readonly string[] }): React.JSX.Element {
   return (
-    <span className="canvas-v2-model-links">
+    <span className="ofk-v2-model-links">
       {links.map((link) => safeHttpsUrl(link)
         ? <a key={link} href={link} target="_blank" rel="noopener noreferrer"><Icon icon={IconExternalLink} />{link.split('/').pop()}</a>
         : <span key={link}>{link}</span>)}
@@ -27,7 +27,7 @@ export function ElementLinks({ links }: { readonly links: readonly string[] }): 
 export function RelationNote({ relation }: { readonly relation: Pick<ArchRelation, 'label' | 'tech' | 'link'> }): React.JSX.Element {
   const { link } = relation;
   return (
-    <span className="canvas-v2-model-hint">
+    <span className="ofk-v2-model-hint">
       {relation.label ?? 'Unlabelled relationship'}{relation.tech ? ` · ${relation.tech}` : ''}
       {link ? <>{' · '}{safeHttpsUrl(link)
         ? <a href={link} target="_blank" rel="noopener noreferrer">Source<Icon icon={IconExternalLink} /></a> : link}</> : null}
@@ -117,8 +117,8 @@ export interface ElementCardProps {
 
 function Section({ title, count, children }: { readonly title: string; readonly count?: number; readonly children: ReactNode }): React.JSX.Element {
   return (
-    <section className="canvas-v2-card-sec">
-      <h3 className="canvas-v2-card-sec-title">{title}{count === undefined ? null : <span>{count}</span>}</h3>
+    <section className="ofk-v2-card-sec">
+      <h3 className="ofk-v2-card-sec-title">{title}{count === undefined ? null : <span>{count}</span>}</h3>
       {children}
     </section>
   );
@@ -158,22 +158,22 @@ export function V2ModelElementCard(props: ElementCardProps): React.JSX.Element {
     const other = nameOf(relation[otherEnd]);
     return (
       <li key={`${relation.id}:${via ?? ''}`}>
-        <span className="canvas-v2-card-arrow" aria-hidden="true">{otherEnd === 'to' ? '→' : '←'}</span>
-        <span className="canvas-v2-card-rel">
-          <button type="button" className="canvas-v2-model-relation-link" aria-label={`Inspect ${other}`} onClick={() => props.onInspect(relation[otherEnd])}>{other}</button>
+        <span className="ofk-v2-card-arrow" aria-hidden="true">{otherEnd === 'to' ? '→' : '←'}</span>
+        <span className="ofk-v2-card-rel">
+          <button type="button" className="ofk-v2-model-relation-link" aria-label={`Inspect ${other}`} onClick={() => props.onInspect(relation[otherEnd])}>{other}</button>
           <RelationNote relation={relation} />
-          {via ? <span className="canvas-v2-model-hint">via {nameOf(via)}</span> : null}
+          {via ? <span className="ofk-v2-model-hint">via {nameOf(via)}</span> : null}
         </span>
       </li>
     );
   });
 
   return (
-    <div className="canvas-v2-card">
-      <nav className="canvas-v2-card-nav" aria-label="Element path">
-        <button ref={backRef} type="button" className="canvas-v2-card-back" onClick={props.onBack}><Icon icon={IconArrowLeft} />All elements</button>
+    <div className="ofk-v2-card">
+      <nav className="ofk-v2-card-nav" aria-label="Element path">
+        <button ref={backRef} type="button" className="ofk-v2-card-back" onClick={props.onBack}><Icon icon={IconArrowLeft} />All elements</button>
         {ancestors.length > 0 ? (
-          <ol className="canvas-v2-card-path">
+          <ol className="ofk-v2-card-path">
             {ancestors.map((ancestor) => (
               <li key={ancestor.id}>
                 <button type="button" onClick={() => props.onInspect(ancestor.id)}>{ancestor.name}</button>
@@ -184,17 +184,17 @@ export function V2ModelElementCard(props: ElementCardProps): React.JSX.Element {
         ) : null}
       </nav>
 
-      <header className="canvas-v2-card-ident">
-        <span className="canvas-v2-card-tile" aria-hidden="true"><ElementKindIcon kind={element.kind} /></span>
-        <input ref={nameRef} className="canvas-v2-card-name" aria-label="Name" title={element.name} readOnly={readOnly} {...name} />
-        <p className="canvas-v2-card-sub" title={elementPathRef(index, element.id)}>
+      <header className="ofk-v2-card-ident">
+        <span className="ofk-v2-card-tile" aria-hidden="true"><ElementKindIcon kind={element.kind} /></span>
+        <input ref={nameRef} className="ofk-v2-card-name" aria-label="Name" title={element.name} readOnly={readOnly} {...name} />
+        <p className="ofk-v2-card-sub" title={elementPathRef(index, element.id)}>
           {modelKindLabel(element)}{element.tech ? ` · ${element.tech}` : ''}
           {descendantCount > 0 ? ` · ${descendantCount} inside` : ''}
         </p>
       </header>
 
-      <div className="canvas-v2-card-actions">
-        {props.mapAction ? <Button className="canvas-v2-card-primary" onClick={props.mapAction.run}>{props.mapAction.label}</Button> : null}
+      <div className="ofk-v2-card-actions">
+        {props.mapAction ? <Button className="ofk-v2-card-primary" onClick={props.mapAction.run}>{props.mapAction.label}</Button> : null}
         {props.childView ? <Button onClick={props.onOpenView}>Open {viewKindLabel(props.childView)} view</Button> : null}
         {canCreateView ? <Button onClick={props.onCreateView}>Create {element.kind === 'system' ? 'Container' : 'Component'} view</Button> : null}
         {readOnly ? null : (
@@ -214,7 +214,7 @@ export function V2ModelElementCard(props: ElementCardProps): React.JSX.Element {
       </div>
 
       {confirming ? (
-        <div className="canvas-v2-card-confirm" onKeyDown={(event) => {
+        <div className="ofk-v2-card-confirm" onKeyDown={(event) => {
           if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); setConfirming(false); }
         }}>
           <p role="alert">Remove {element.name}{descendantCount > 0 ? ` and ${descendantCount} inside` : ''} from every view?</p>
@@ -226,26 +226,26 @@ export function V2ModelElementCard(props: ElementCardProps): React.JSX.Element {
       ) : null}
 
       {!props.inCurrentView ? (
-        <p className="canvas-v2-card-note"><Icon icon={IconArrowsSplit2} />Not shown in this view.
+        <p className="ofk-v2-card-note"><Icon icon={IconArrowsSplit2} />Not shown in this view.
           {props.onAddToView && !readOnly ? <Button onClick={props.onAddToView}><Icon icon={IconPlus} />Add to this view</Button> : null}</p>
       ) : null}
 
       <Section title="About">
-        <label className="canvas-v2-card-field"><span>Technology</span>
+        <label className="ofk-v2-card-field"><span>Technology</span>
           <input placeholder="e.g. React, Go, Postgres" readOnly={readOnly} {...tech} /></label>
-        <label className="canvas-v2-card-field"><span>Description</span>
+        <label className="ofk-v2-card-field"><span>Description</span>
           <textarea rows={2} placeholder="What it does" readOnly={readOnly} {...desc} /></label>
-        <label className="canvas-v2-card-field"><span>Tags</span>
+        <label className="ofk-v2-card-field"><span>Tags</span>
           <input placeholder="e.g. core, payments" readOnly={readOnly} {...tags} /></label>
-        <label className="canvas-v2-card-field"><span>Links</span>
+        <label className="ofk-v2-card-field"><span>Links</span>
           <textarea rows={2} placeholder="One link per line" readOnly={readOnly} {...links} /></label>
-        {element.instanceOf ? <p className="canvas-v2-card-field"><span>Instance of</span><span>{nameOf(element.instanceOf)}</span></p> : null}
-        {element.links.length > 0 ? <div className="canvas-v2-card-links"><ElementLinks links={element.links} /></div> : null}
+        {element.instanceOf ? <p className="ofk-v2-card-field"><span>Instance of</span><span>{nameOf(element.instanceOf)}</span></p> : null}
+        {element.links.length > 0 ? <div className="ofk-v2-card-links"><ElementLinks links={element.links} /></div> : null}
         {element.links.flatMap((link) => {
           const file = link.split('/').pop() ?? link;
           const adr = props.adrs.find((candidate) => candidate.path.endsWith(file));
           return adr ? [
-            <details key={adr.path} className="canvas-v2-model-adr">
+            <details key={adr.path} className="ofk-v2-model-adr">
               <summary>{file}<Icon icon={IconChevronDown} /></summary>
               <pre>{adr.text}</pre>
             </details>,
@@ -255,23 +255,23 @@ export function V2ModelElementCard(props: ElementCardProps): React.JSX.Element {
 
       {talksTo.length > 0 ? (
         <Section title="Talks to" count={talksTo.length}>
-          <ul className="canvas-v2-card-list" aria-label={`${element.name} talks to`}>{relationRows(talksTo, 'to')}</ul>
+          <ul className="ofk-v2-card-list" aria-label={`${element.name} talks to`}>{relationRows(talksTo, 'to')}</ul>
         </Section>
       ) : null}
       {usedBy.length > 0 ? (
         <Section title="Used by" count={usedBy.length}>
-          <ul className="canvas-v2-card-list" aria-label={`${element.name} is used by`}>{relationRows(usedBy, 'from')}</ul>
+          <ul className="ofk-v2-card-list" aria-label={`${element.name} is used by`}>{relationRows(usedBy, 'from')}</ul>
         </Section>
       ) : null}
       {talksTo.length === 0 && usedBy.length === 0 ? (
-        <p className="canvas-v2-card-note">{props.inCurrentView ? 'No relationships yet. Draw a connector to another element to add one.' : 'No relationships yet.'}</p>
+        <p className="ofk-v2-card-note">{props.inCurrentView ? 'No relationships yet. Draw a connector to another element to add one.' : 'No relationships yet.'}</p>
       ) : null}
       {children.length > 0 ? (
         <Section title="Inside" count={children.length}>
-          <ul className="canvas-v2-card-list" aria-label={`Inside ${element.name}`}>
+          <ul className="ofk-v2-card-list" aria-label={`Inside ${element.name}`}>
             {children.map((child) => (
               <li key={child.id}>
-                <button type="button" className="canvas-v2-card-child" onClick={() => props.onInspect(child.id)}>
+                <button type="button" className="ofk-v2-card-child" onClick={() => props.onInspect(child.id)}>
                   <ElementKindIcon kind={child.kind} />
                   <span>{child.name}</span>
                   <span>{child.tech ?? modelKindLabel(child)}</span>

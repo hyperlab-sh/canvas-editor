@@ -116,7 +116,7 @@ async function serveApp(context: RouteContext): Promise<RouteReply> {
     },
   });
   if (!(await stat(index).catch(() => null))?.isFile()) {
-    return { status: 503, raw: { type: 'text/plain; charset=utf-8', data: `The app is not built: ${index} does not exist. Build it, or point --app / CANVAS_APP_DIR at the build.\n` } };
+    return { status: 503, raw: { type: 'text/plain; charset=utf-8', data: `The app is not built: ${index} does not exist. Build it, or point --app / OPENFLOWKIT_APP_DIR at the build.\n` } };
   }
   let relative: string;
   try {
@@ -141,7 +141,7 @@ export function buildRoutes(): Route[] {
       method: 'GET', path: '/health',
       handle: async ({ deps }) => ({
         status: 200,
-        json: { ok: true, service: 'canvas-service', version: MCP_SERVER_VERSION, host: deps.host(), port: deps.port(), projects: deps.config.projects.map((p) => p.name), pid: process.pid },
+        json: { ok: true, service: 'openflowkit-service', version: MCP_SERVER_VERSION, host: deps.host(), port: deps.port(), projects: deps.config.projects.map((p) => p.name), pid: process.pid },
       }),
     },
     {

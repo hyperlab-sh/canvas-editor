@@ -42,7 +42,7 @@ test('emoji search inserts a glyph and undo removes it', async ({ page }) => {
   expect(errors).toEqual([]);
   // The picker closes onto its trigger: the shortcut still lands.
   await expect.poll(() => page.evaluate(() =>
-    Boolean((document.activeElement as HTMLElement)?.closest?.('.canvas-v2')))).toBe(true);
+    Boolean((document.activeElement as HTMLElement)?.closest?.('.ofk-v2')))).toBe(true);
   await page.keyboard.press('Meta+z');
   await expect.poll(async () => (await state(page)).nodes.length).toBe(0);
 });
@@ -50,7 +50,7 @@ test('emoji search inserts a glyph and undo removes it', async ({ page }) => {
 test('a png becomes an image node with an asset id, and survives a reload', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('v2-canvas').focus();
-  const dir = mkdtempSync(join(tmpdir(), 'canvas-e2e-'));
+  const dir = mkdtempSync(join(tmpdir(), 'ofk-e2e-'));
   const file = join(dir, 'pixel.png');
   writeFileSync(file, Buffer.from(PNG_BASE64, 'base64'));
 

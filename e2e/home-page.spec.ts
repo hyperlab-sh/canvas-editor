@@ -56,7 +56,7 @@ test('each way in opens the panel it names @gate', async ({ page }) => {
   for (const [card, panel] of [['Describe it to AI', 'AI assistant'], ['Paste code or Mermaid', 'Diagram as code'], ['Connect your agent', 'Connect agent']] as const) {
     await page.goto('/#/home');
     await page.getByRole('button', { name: new RegExp(`^${card}`) }).click();
-    await expect(page.locator('.canvas-panel').getByText(panel, { exact: true }).first()).toBeVisible();
+    await expect(page.locator('.ofk-panel').getByText(panel, { exact: true }).first()).toBeVisible();
   }
   await page.goto('/#/home');
   await page.getByRole('button', { name: /^Blank canvas/ }).click();
@@ -75,7 +75,7 @@ test('a drawn diagram shows its real thumbnail on home, and the menu leads back 
   await page.getByRole('button', { name: 'Canvas menu' }).click();
   await page.getByRole('menuitem', { name: 'Home', exact: true }).click();
   await expect(page).toHaveURL(/#\/home$/);
-  const preview = page.getByRole('list', { name: 'Diagrams' }).locator('img.canvas-home-preview-image');
+  const preview = page.getByRole('list', { name: 'Diagrams' }).locator('img.ofk-home-preview-image');
   await expect(preview).toHaveCount(1);
   await expect(preview).toHaveAttribute('src', /^data:image\/svg\+xml/);
 });

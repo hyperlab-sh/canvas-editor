@@ -1,4 +1,4 @@
--- Usage beacons (POST /e) and feedback (POST /feedback). Apply: npx wrangler d1 migrations apply canvas-data --remote
+-- Usage beacons (POST /e) and feedback (POST /feedback). Apply: npx wrangler d1 migrations apply openflowkit-data --remote
 -- One row per beacon. `user` is HMAC(USAGE_SALT, install id): stable across days, never the raw id.
 -- Each USAGE_EVENTS entry (src/services/usage/usageEvents.ts) is a column; a new event needs a new migration.
 CREATE TABLE sessions (

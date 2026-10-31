@@ -64,7 +64,7 @@ export function ProposalBar({ view, labels, onAccept, onDismiss, onUndo }: Propo
           view.phase === 'working' ? 'working' : view.phase === 'applied' ? 'applied' : 'ready'
         ]);
   return (
-    <section className="canvas-proposal" aria-label={title}>
+    <section className="ofk-proposal" aria-label={title}>
       <div>
         <Status
           live
@@ -77,7 +77,7 @@ export function ProposalBar({ view, labels, onAccept, onDismiss, onUndo }: Propo
         {'scopeLabel' in view && <p>{view.scopeLabel}</p>}
         {'summary' in view && <p>{view.summary}</p>}
       </div>
-      <div className="canvas-proposal-actions">
+      <div className="ofk-proposal-actions">
         {view.phase === 'ready' && (
           <Button variant="primary" disabled={stale} busy={busy} onClick={accept}>
             {labels.accept}

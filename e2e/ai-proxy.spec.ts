@@ -1,5 +1,5 @@
 // The Custom provider through a self-hosted server's AI proxy (/ai-proxy, same origin): the dev server forwards it to the
-// stub as nginx/ai-proxy.sh does in the Docker image (playwright.config sets CANVAS_AI_UPSTREAM). No CORS involved,
+// stub as nginx/ai-proxy.sh does in the Docker image (playwright.config sets OPENFLOWKIT_AI_UPSTREAM). No CORS involved,
 // the reply streams, the browser's Origin stays behind, and a proxy that cannot answer says so.
 import { expect, test, type Page } from './test';
 

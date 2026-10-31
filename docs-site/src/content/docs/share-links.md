@@ -13,7 +13,7 @@ click **Copy link**.
 | What is uploaded | The document, encrypted in your browser first | Nothing |
 | Where it lives | On the share server until you delete it | Only in the link itself |
 | Size limit | 1 MB | About 32 KB of compressed code |
-| Needs | The share server (on for canvas.hyperlab.sh) | Nothing; works on any copy of Canvas |
+| Needs | The share server (on for app.openflowkit.com) | Nothing; works on any copy of OpenFlowKit |
 
 Use a **view-only link** to show someone the finished document. Use an **editable copy** to
 hand someone a diagram they will change: a teammate, an issue, a pull request.
@@ -39,7 +39,7 @@ What follows from that:
   kept. A deleted link stops opening. Clearing your browser data loses the token, so keep it in
   mind before you do.
 - **No expiry today.** A link stays until it is deleted.
-- **Edit in Canvas** in a shared view copies the document into the viewer's own browser.
+- **Edit in OpenFlowKit** in a shared view copies the document into the viewer's own browser.
   Their changes never reach yours.
 - Only our own encrypted format is stored. It is not general file hosting.
 - Uploads need a human check and are rate limited per network.
@@ -65,7 +65,7 @@ code in **Diagram as code**, drawn and ready to change.
 - **The link never changes.** It is the code at the moment you copied it. Copy again after you
   edit.
 
-Your agent's MCP viewer uses the same link for **Open in Canvas**.
+Your agent's MCP viewer uses the same link for **Open in OpenFlowKit**.
 
 ## What is not allowed
 
@@ -78,7 +78,7 @@ Do not share links to:
 ## Report a link
 
 Send the full link, or just its id (the 32 characters after `#/s/`), to
-hello@canvas.hyperlab.sh with "Report a link" in the subject.
+hello@openflowkit.com with "Report a link" in the subject.
 
 We cannot read the diagram, so we act on the link you send. We remove the link by its id. After
 that it no longer opens for anyone.

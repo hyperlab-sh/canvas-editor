@@ -28,7 +28,7 @@ export function MapRepoForm({ onMapRepo, initial = '' }: { readonly onMapRepo: (
   const [address, setAddress] = useState(initial);
   const [error, setError] = useState<string | null>(null);
   return (
-    <form className="canvas-v2-map-repo-form" aria-label="Map a GitHub repo" noValidate onSubmit={(event) => {
+    <form className="ofk-v2-map-repo-form" aria-label="Map a GitHub repo" noValidate onSubmit={(event) => {
       event.preventDefault();
       const repo = repoToMap(address);
       if (repo) onMapRepo(repo); else setError('Enter owner/repo or a github.com address.');
@@ -56,7 +56,7 @@ export function V2MapStart({ busy, onStartModel, onMapRepo, onAgent }: Props): R
       )}
       below={(
         <>
-          <p className="canvas-v2-welcome-or" aria-hidden="true">or</p>
+          <p className="ofk-v2-welcome-or" aria-hidden="true">or</p>
           <MapRepoForm onMapRepo={onMapRepo} />
         </>
       )}

@@ -137,7 +137,7 @@ describe('canonical SVG export', () => {
     const svg = exportCanonicalSvg(createTestDocument({ nodes }), { iconArt });
     expect(svg.split(ts).length - 1).toBe(1);
     expect(svg.split(pg).length - 1).toBe(1);
-    expect(svg.match(/<use href="#canvas-icon-/g)).toHaveLength(21);
+    expect(svg.match(/<use href="#ofk-icon-/g)).toHaveLength(21);
     // Every <use> names a symbol that exists, and the picture stays well-formed XML.
     const parsed = new DOMParser().parseFromString(svg, 'image/svg+xml');
     expect(parsed.getElementsByTagName('parsererror')).toHaveLength(0);

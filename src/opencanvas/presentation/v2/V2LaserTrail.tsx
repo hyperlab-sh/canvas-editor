@@ -42,7 +42,7 @@ export function V2LaserTrail(props: { readonly sectionRef: RefObject<HTMLElement
   }, [props.sectionRef]);
 
   return (
-    <svg className="canvas-v2-laser" aria-hidden="true" data-testid="v2-laser">
+    <svg className="ofk-v2-laser" aria-hidden="true" data-testid="v2-laser">
       <path ref={pathRef} fill="none" stroke="#ef4444" strokeOpacity="0.55" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
       <circle ref={dotRef} r="0" fill="#ef4444" />
     </svg>

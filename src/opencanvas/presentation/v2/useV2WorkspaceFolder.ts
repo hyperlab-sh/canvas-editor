@@ -23,7 +23,7 @@ interface V2WorkspaceFolderOptions {
 }
 
 /**
- * A folder workspace (phase 5.7): `architecture.canvas`, `views/*.snap` and
+ * A folder workspace (phase 5.7): `architecture.ofk`, `views/*.snap` and
  * `adr/*.md`, opened through the File System Access API. Loading goes through
  * the normal generate path, so opening a folder is undoable like any compile.
  */
@@ -52,14 +52,14 @@ export function useV2WorkspaceFolder(options: V2WorkspaceFolderOptions): V2Works
       setAdrs(contents.adrs);
       setStatus('open');
       if (!contents.dsl) {
-        // An empty folder takes the next generated workspace as its architecture.canvas.
+        // An empty folder takes the next generated workspace as its architecture.ofk.
         syncedRef.current = { folder: picked, text: null, snaps: null, pending: false };
-        optionsRef.current.onToast('Folder opened, nothing to draw yet', 'warning', 'Add architecture.canvas, or paste a workspace and generate.');
+        optionsRef.current.onToast('Folder opened, nothing to draw yet', 'warning', 'Add architecture.ofk, or paste a workspace and generate.');
         return;
       }
       if (!await optionsRef.current.onLoad(contents.dsl, contents.snaps)) {
         // Nothing drawn: the canvas does not hold this folder's workspace, so nothing may be written back over it.
-        optionsRef.current.onToast(`Couldn’t draw architecture.canvas in ${picked.name}`, 'danger', 'Fix it in the code panel. Nothing is written to the folder until it draws.');
+        optionsRef.current.onToast(`Couldn’t draw architecture.ofk in ${picked.name}`, 'danger', 'Fix it in the code panel. Nothing is written to the folder until it draws.');
         return;
       }
       syncedRef.current = { folder: picked, text: null, snaps: null, pending: true };
@@ -83,7 +83,7 @@ export function useV2WorkspaceFolder(options: V2WorkspaceFolderOptions): V2Works
     const snaps = JSON.stringify(document.pages.map(snapOfPage));
     if (!folder || synced?.folder !== folder || (dsl === synced.text && snaps === synced.snaps)) return;
     const loaded = synced.pending;
-    // An unchanged text is not rewritten: the user's own formatting of architecture.canvas stays.
+    // An unchanged text is not rewritten: the user's own formatting of architecture.ofk stays.
     const text = dsl === synced.text ? null : dsl;
     Object.assign(synced, { text: dsl, snaps, pending: false });
     if (loaded) return;

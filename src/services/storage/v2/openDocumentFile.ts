@@ -11,7 +11,7 @@ export function defaultLegacyNodeSize(node: JsonObject) {
   return (productionNodeCatalogEntry(String(node.type)) ?? productionNodeCatalogEntry('custom'))?.size ?? null;
 }
 
-const OPENS = 'Canvas opens the .json files it exports, from this version or the previous one.';
+const OPENS = 'OpenFlowKit opens the .json files it exports, from this version or the previous one.';
 
 /** Where JSON.parse left an `Infinity` (`1e400`): the path to the first number that is not finite. */
 function unreadableNumberPath(value: unknown, path = ''): string | null {
@@ -29,7 +29,7 @@ type OpenedDocumentFile = { readonly document: SceneDocumentV1; readonly notice?
 
 /**
  * A `.json` file the user opens: our own export (canonical JSON, any supported
- * schema version) or a V1 Canvas file (`{ nodes, edges }`). The result is
+ * schema version) or a V1 OpenFlowKit file (`{ nodes, edges }`). The result is
  * a fresh document under `id`, so opening a file never overwrites the one it
  * was exported from.
  */
@@ -41,14 +41,14 @@ export function documentFromFileText(text: string, id: string, now = new Date().
     return { error: `It isn’t valid JSON. ${OPENS}` };
   }
   const badNumber = unreadableNumberPath(parsed);
-  if (badNumber !== null) return { error: `It has a number Canvas can’t read${badNumber ? ` (${badNumber})` : ''}. ${OPENS}` };
-  if (!isJsonObject(parsed)) return { error: `It isn’t a Canvas diagram. ${OPENS}` };
+  if (badNumber !== null) return { error: `It has a number OpenFlowKit can’t read${badNumber ? ` (${badNumber})` : ''}. ${OPENS}` };
+  if (!isJsonObject(parsed)) return { error: `It isn’t an OpenFlowKit diagram. ${OPENS}` };
   if (parsed.format === SCENE_DOCUMENT_FORMAT) {
     const migrated = migrateSceneDocument({ ...parsed, id });
     if (migrated.success === true) return { document: { ...migrated.document, updatedAt: now } };
     return {
       error: migrated.reason === 'newer-schema'
-        ? `This file was saved by a newer Canvas (schema ${migrated.schemaVersion}). Update to open it.`
+        ? `This file was saved by a newer OpenFlowKit (schema ${migrated.schemaVersion}). Update to open it.`
         : `Invalid document: ${migrated.issues[0]?.message ?? 'unknown issue'}`,
     };
   }
@@ -68,5 +68,5 @@ export function documentFromFileText(text: string, id: string, now = new Date().
       return { error: error instanceof Error ? error.message : 'Invalid V1 document.' };
     }
   }
-  return { error: `It isn’t a Canvas diagram. ${OPENS}` };
+  return { error: `It isn’t an OpenFlowKit diagram. ${OPENS}` };
 }

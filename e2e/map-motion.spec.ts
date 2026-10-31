@@ -139,7 +139,7 @@ test('reduced motion lands the end state at once with the arrows visible and no 
 function wideModel(): string {
   const services = Array.from({ length: 14 }, (_, c) => `  container W${c} [tech: Go]`).join('\n');
   const relations = Array.from({ length: 13 }, (_, c) => ` hub.W${c} -> hub.W${c + 1} : feeds [tech: gRPC]`).join('\n');
-  return `%% canvas 1\narchitecture\ntitle: Wide\nmodel {\n system Hub {\n${services}\n }\n${relations}\n}\nviews {\n view landscape\n}\n`;
+  return `%% ofk 1\narchitecture\ntitle: Wide\nmodel {\n system Hub {\n${services}\n }\n${relations}\n}\nviews {\n view landscape\n}\n`;
 }
 const READABLE_FLOOR = 0.7;
 const zoomOf = (page: Page): Promise<number> => page.evaluate(() => {
@@ -260,7 +260,7 @@ function bigModel({ systems: S, services: V, parts: P }: Shape): string {
     ...Array.from({ length: S - 1 }, (_, s) => ` S${s}.C${s}x0 -> S${s + 1}.C${s + 1}x1 : calls`),
     ...Array.from({ length: S }, (_, s) => Array.from({ length: V - 1 }, (_, c) => ` S${s}.C${s}x${c} -> S${s}.C${s}x${c + 1} : feeds`).join('\n')),
   ].join('\n');
-  return `%% canvas 1\narchitecture\ntitle: Big\nmodel {\n${systems}\n${relations}\n}\nviews {\n view landscape\n}\n`;
+  return `%% ofk 1\narchitecture\ntitle: Big\nmodel {\n${systems}\n${relations}\n}\nviews {\n view landscape\n}\n`;
 }
 
 /** Opens everything but the last service, then the last one (the measured move, camera landing on it); returns the motion numbers. */

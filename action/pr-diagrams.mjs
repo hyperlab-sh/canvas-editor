@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Shows how diagrams changed in a PR: one upserted comment, before/after SVGs as artifacts.
-// Plain Node + git + the `gh` CLI + the canvas CLI (env CANVAS_CLI). No server.
+// Plain Node + git + the `gh` CLI + the openflowkit CLI (env OFK_CLI). No server.
 // Usage: node pr-diagrams.mjs [--dry-run]   (dry run prints the comment, never calls gh, never commits)
 import { spawnSync } from 'node:child_process';
 import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
@@ -12,9 +12,9 @@ import {
 
 const dryRun = process.argv.includes('--dry-run');
 const env = process.env;
-const cli = env.CANVAS_CLI || 'npx -y @hyperlab.sh/canvas@0.2.4';
-const commentAuthor = env.CANVAS_COMMENT_AUTHOR || 'github-actions[bot]';
-const refreshSvg = env.CANVAS_REFRESH_SVG === 'true';
+const cli = env.OFK_CLI || 'npx -y openflowkit@0.2.4';
+const commentAuthor = env.OFK_COMMENT_AUTHOR || 'github-actions[bot]';
+const refreshSvg = env.OFK_REFRESH_SVG === 'true';
 const token = env.GITHUB_TOKEN || env.GH_TOKEN || '';
 const BIG = 256 * 1024 * 1024;
 
@@ -26,10 +26,10 @@ function run(cmd, args, { input, cwd, allow = [0] } = {}) {
   return r;
 }
 const git = (args, opts) => run('git', args, opts).stdout;
-/** The CLI is a shell command line (`npx -y @hyperlab.sh/canvas@latest`), so run it through sh with real argv. */
+/** The CLI is a shell command line (`npx -y openflowkit@latest`), so run it through sh with real argv. */
 // The CLI never sees a token: every *TOKEN* variable is dropped from its environment.
-const canvasEnv = () => Object.fromEntries(Object.entries(process.env).filter(([key]) => !/token/i.test(key)));
-const canvas = (args) => spawnSync('sh', ['-c', `${cli} "$@"`, 'sh', ...args], { encoding: 'utf8', maxBuffer: BIG, env: canvasEnv() });
+const ofkEnv = () => Object.fromEntries(Object.entries(process.env).filter(([key]) => !/token/i.test(key)));
+const ofk = (args) => spawnSync('sh', ['-c', `${cli} "$@"`, 'sh', ...args], { encoding: 'utf8', maxBuffer: BIG, env: ofkEnv() });
 const firstLine = (r) => (r.stderr || r.stdout || `exit ${r.status}`).trim().split('\n').find((l) => l.trim()) ?? `exit ${r.status}`;
 const gitShow = (ref, file) => {
   const r = spawnSync('git', ['show', `${ref}:${file}`], { encoding: 'buffer', maxBuffer: BIG });
@@ -49,7 +49,7 @@ process.chdir(root);
 const mergeBase = run('git', ['merge-base', pr.base.sha, headSha], { allow: [0, 1] }).stdout.trim();
 if (!mergeBase) throw new Error('no merge base: check out with fetch-depth: 0');
 
-const matches = pathMatcher(env.CANVAS_PATHS || '.openflow.json,.canvas');
+const matches = pathMatcher(env.OFK_PATHS || '.openflow.json,.ofk');
 const changed = parseNameStatus(git(['diff', '--name-status', '-z', '-M', mergeBase, headSha]))
   .filter((c) => matches(c.path) || (c.oldPath && matches(c.oldPath)));
 if (changed.length === 0) { console.error('pr-diagrams: no matching diagram changed; nothing to post'); process.exit(0); }
@@ -75,23 +75,23 @@ function inspectUnsafe(side, file, content) {
   const fail = (what, r) => result.errors.push(`${label}: ${what} failed: ${firstLine(r)}`);
   let docFile = src;
   if (isDocument(file)) {
-    const exp = canvas(['op', 'export', '--doc', src, '--args', JSON.stringify({ format: 'svg', scope: 'page' })]);
+    const exp = ofk(['op', 'export', '--doc', src, '--args', JSON.stringify({ format: 'svg', scope: 'page' })]);
     if (exp.status !== 0) { fail('render', exp); return result; }
     result.svg = JSON.parse(exp.stdout).output.files[0].text;
-    const dsl = canvas(['op', 'get_diagram', '--doc', src]);
+    const dsl = ofk(['op', 'get_diagram', '--doc', src]);
     if (dsl.status === 0) result.dsl = JSON.parse(dsl.stdout).output.dsl ?? null;
     if (result.dsl === null) result.notes.push(`${label}: no DSL source to diff; compare the SVGs`);
   } else {
-    const render = canvas(['render', src, '-o', svgOut]);
+    const render = ofk(['render', src, '-o', svgOut]);
     if (render.status !== 0) { fail('render', render); return result; }
     result.svg = readFileSync(svgOut, 'utf8');
     result.dsl = content.toString('utf8'); // already DSL: the source is the canonical text
     docFile = `${src}.converted.openflow.json`;
-    if (canvas(['convert', src, '-o', docFile]).status !== 0) docFile = null;
+    if (ofk(['convert', src, '-o', docFile]).status !== 0) docFile = null;
   }
   writeFileSync(svgOut, result.svg);
   if (docFile) {
-    const doc = canvas(['op', 'get_document', '--doc', docFile]);
+    const doc = ofk(['op', 'get_document', '--doc', docFile]);
     if (doc.status === 0) {
       const out = JSON.parse(doc.stdout).output;
       result.counts = { nodes: out.nodes.filter((n) => n.kind !== 'frame').length, connectors: out.connectors.length };
@@ -112,7 +112,7 @@ function dslDiff(file, before, after) {
 }
 
 function driftOf(modelFile) {
-  const r = canvas(['drift', root, '--model', modelFile, '--json']);
+  const r = ofk(['drift', root, '--model', modelFile, '--json']);
   if (r.status === 2 && /no C4 model/.test(r.stderr)) return {};
   if (r.status !== 0 && r.status !== 1) return { error: `drift failed: ${firstLine(r)}` };
   try { return { summary: summarizeDrift(JSON.parse(r.stdout)) }; } catch { return { error: 'drift printed no JSON' }; }
@@ -132,8 +132,8 @@ for (const c of changed) {
   entry.before = before?.counts; entry.after = after?.counts;
   // Diff only when each existing side produced DSL: a failed side already has its error line.
   if ((!before || before.dsl != null) && (!after || after.dsl != null)) entry.diff = dslDiff(c.path, before?.dsl, after?.dsl);
-  // ponytail: drift only for .canvas (the C4 model lives there); a .openflow.json's model is not read — upgrade: drift over its DSL frame.
-  if (after?.svg != null && /\.canvas$/i.test(c.path)) {
+  // ponytail: drift only for .ofk (the C4 model lives there); a .openflow.json's model is not read — upgrade: drift over its DSL frame.
+  if (after?.svg != null && /\.ofk$/i.test(c.path)) {
     const d = driftOf(after.src);
     if (d.error) entry.errors.push(d.error); else if (d.summary) entry.drift = d.summary;
   }

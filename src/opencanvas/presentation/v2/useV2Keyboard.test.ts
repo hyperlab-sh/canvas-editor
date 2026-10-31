@@ -275,7 +275,7 @@ describe('keyOwnedByTarget', () => {
     expect(keyOwnedByTarget(event(button, { key: ' ' }))).toBe(true);
     expect(keyOwnedByTarget(event(item))).toBe(true);
     const link = document.createElement('a');
-    link.href = 'https://docs.canvas.hyperlab.sh/';
+    link.href = 'https://docs.openflowkit.com/';
     expect(keyOwnedByTarget(event(link, { key: 'Enter' }))).toBe(true);
     expect(keyOwnedByTarget(event(document.createElement('textarea'), { key: 'q' }))).toBe(true);
     expect(keyOwnedByTarget(event(document.createElement('section'), { defaultPrevented: true }))).toBe(true);

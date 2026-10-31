@@ -21,12 +21,12 @@ async function write(root: string, relative: string, content: string): Promise<v
 }
 
 async function tempRoot(): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), 'canvas-map-'));
+  const root = await mkdtemp(join(tmpdir(), 'openflowkit-map-'));
   tempDirs.push(root);
   return root;
 }
 
-describe('canvas map', () => {
+describe('openflowkit map', () => {
   it('summarises a small TS repo with a Dockerfile', async () => {
     const root = await tempRoot();
     await write(root, 'web/package.json', '{"name":"web"}');
@@ -59,10 +59,10 @@ describe('canvas map', () => {
 
   it('exits 1 with one line for a path that is not a directory', async () => {
     const { io, out, err } = capture();
-    expect(await main(['map', join(tmpdir(), 'canvas-no-such-dir-xyz')], io)).toBe(1);
+    expect(await main(['map', join(tmpdir(), 'openflowkit-no-such-dir-xyz')], io)).toBe(1);
     expect(out).toEqual([]);
     expect(err).toHaveLength(1);
-    expect(err[0]).toMatch(/^canvas map: ".*" is not a directory\.$/);
+    expect(err[0]).toMatch(/^openflowkit map: ".*" is not a directory\.$/);
   });
 
   it('exits 1 when the directory has no source files', async () => {

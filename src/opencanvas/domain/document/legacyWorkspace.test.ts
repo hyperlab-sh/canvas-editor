@@ -11,8 +11,8 @@ const FIXTURES = 'src/services/storage/v2/__fixtures__/v1';
 type Json = Record<string, any>;
 const read = (file: string): Json => JSON.parse(readFileSync(`${FIXTURES}/${file}`, 'utf8'));
 const indexedDb = read('indexeddb.json').indexedDb;
-const fallback = read('localstorage-fallback.json').localStorage['canvas-documents-fallback'] as string;
-const tabState = read('premarch-tabs.json').indexedDb.flowMetadata.find((row: Json) => row.id === 'canvas-storage').value as string;
+const fallback = read('localstorage-fallback.json').localStorage['openflowkit-documents-fallback'] as string;
+const tabState = read('premarch-tabs.json').indexedDb.flowMetadata.find((row: Json) => row.id === 'openflowkit-storage').value as string;
 const manifest = read('manifest.json') as Record<string, string>;
 
 const sources: LegacyWorkspaceSources = { documents: indexedDb.documents, fallback, tabStates: [tabState] };

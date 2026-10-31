@@ -30,7 +30,7 @@ describe('v1 import notice', () => {
 
     // Clicking through marks it seen.
     again.mock.calls[0]![0].action.onClick();
-    expect(localStorage.getItem('canvas.v1ImportNotice')).toBeNull();
+    expect(localStorage.getItem('ofk.v1ImportNotice')).toBeNull();
   });
 
   it('stays quiet when nothing came over', async () => {

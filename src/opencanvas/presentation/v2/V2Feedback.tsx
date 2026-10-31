@@ -22,7 +22,7 @@ const PAY: readonly (readonly [PayOption, string])[] = [
   ['collaboration', 'Real-time collaboration'], ['private_repos', 'Private repos and PR checks, hosted'],
   ['sync', 'Sync across devices'], ['free', 'Nothing, free is great'],
 ];
-const PRODUCT_STEPS = ['How would you feel if you could no longer use Canvas?', 'What would you pay for?', 'Want product updates? (optional)'];
+const PRODUCT_STEPS = ['How would you feel if you could no longer use OpenFlowKit?', 'What would you pay for?', 'Want product updates? (optional)'];
 /** The prompt sits above Help, bottom right: clear of the tools, the selection and the panels. */
 const ANCHOR = '[role="toolbar"][aria-label="Help"] button';
 /** Matches the exit fade in v2EditorPage.css. */
@@ -104,21 +104,21 @@ export function V2FeedbackPrompt({ prompt, hidden, onFinish, onToast }: {
   if (!found) return null;
 
   const title = prompt.kind === 'product' ? PRODUCT_STEPS[step]! : step === 0 ? FEATURE_TITLE[prompt.feature] : 'What would make it better?';
-  const never = <Button variant="quiet" className="canvas-v2-feedback-never" onClick={() => leave('never')}>Don’t ask again</Button>;
+  const never = <Button variant="quiet" className="ofk-v2-feedback-never" onClick={() => leave('never')}>Don’t ask again</Button>;
   return (
     <Popover open passive anchorRef={anchor} onClose={close} placement="top-end" gap={10}
-      className="canvas-v2-tip canvas-v2-feedback" data-prompt={prompt.kind} data-leaving={leaving || undefined}
+      className="ofk-v2-tip ofk-v2-feedback" data-prompt={prompt.kind} data-leaving={leaving || undefined}
       style={out ? { visibility: 'hidden' } : undefined}>
-      <section ref={layer} className="canvas-v2-tip-card" aria-label="Feedback" aria-live="polite">
-        <div className="canvas-v2-tip-head">
-          <span className="canvas-v2-tip-glyph" aria-hidden="true"><Icon icon={IconMessageCircle} /></span>
+      <section ref={layer} className="ofk-v2-tip-card" aria-label="Feedback" aria-live="polite">
+        <div className="ofk-v2-tip-head">
+          <span className="ofk-v2-tip-glyph" aria-hidden="true"><Icon icon={IconMessageCircle} /></span>
           <strong id={`${textId}-title`}>{title}</strong>
           <IconButton variant="quiet" label="Close" icon={<Icon icon={IconX} />} onClick={close} />
         </div>
-        <div className="canvas-v2-feedback-step" key={step}>
+        <div className="ofk-v2-feedback-step" key={step}>
           {prompt.kind === 'feature' && step === 0 ? (
-            <div className="canvas-v2-feedback-row">
-              <div className="canvas-v2-feedback-thumbs" role="group" aria-labelledby={`${textId}-title`}>
+            <div className="ofk-v2-feedback-row">
+              <div className="ofk-v2-feedback-thumbs" role="group" aria-labelledby={`${textId}-title`}>
                 <IconButton variant="secondary" label="Thumbs up" icon={<Icon icon={IconThumbUp} />} onClick={() => { setRating('up'); setStep(1); }} />
                 <IconButton variant="secondary" label="Thumbs down" icon={<Icon icon={IconThumbDown} />} onClick={() => { setRating('down'); setStep(1); }} />
               </div>
@@ -126,44 +126,44 @@ export function V2FeedbackPrompt({ prompt, hidden, onFinish, onToast }: {
             </div>
           ) : null}
           {prompt.kind === 'feature' && step === 1 ? (
-            <form className="canvas-v2-feedback-form" onSubmit={(event) => { event.preventDefault(); send(); }}>
-              <textarea id={textId} className="canvas-v2-feedback-text" rows={3} autoFocus maxLength={MAX_FEEDBACK_TEXT}
+            <form className="ofk-v2-feedback-form" onSubmit={(event) => { event.preventDefault(); send(); }}>
+              <textarea id={textId} className="ofk-v2-feedback-text" rows={3} autoFocus maxLength={MAX_FEEDBACK_TEXT}
                 aria-labelledby={`${textId}-title`} placeholder="Optional" value={text} onChange={(event) => setText(event.target.value)} />
-              <div className="canvas-v2-tip-actions">
+              <div className="ofk-v2-tip-actions">
                 <Button type="submit" variant="primary" busy={sending} disabled={sending}>Send</Button>
               </div>
             </form>
           ) : null}
           {prompt.kind === 'product' && step === 0 ? (
             <>
-              <div className="canvas-v2-feedback-choices" role="group" aria-labelledby={`${textId}-title`}>
+              <div className="ofk-v2-feedback-choices" role="group" aria-labelledby={`${textId}-title`}>
                 {PMF.map(([value, label]) => (
                   <Button key={value} variant="secondary" onClick={() => { setPmf(value); setStep(1); }}>{label}</Button>
                 ))}
               </div>
-              <div className="canvas-v2-feedback-row"><span className="canvas-v2-feedback-count">1 of 3</span>{never}</div>
+              <div className="ofk-v2-feedback-row"><span className="ofk-v2-feedback-count">1 of 3</span>{never}</div>
             </>
           ) : null}
           {prompt.kind === 'product' && step === 1 ? (
             <>
-              <div className="canvas-v2-feedback-checks" role="group" aria-labelledby={`${textId}-title`}>
+              <div className="ofk-v2-feedback-checks" role="group" aria-labelledby={`${textId}-title`}>
                 {PAY.map(([value, label]) => (
                   <Checkbox key={value} label={label} checked={pay.includes(value)}
                     onChange={(event) => setPay((current) => (event.target.checked ? [...current, value] : current.filter((item) => item !== value)))} />
                 ))}
               </div>
-              <div className="canvas-v2-feedback-row">
-                <span className="canvas-v2-feedback-count">2 of 3</span>
+              <div className="ofk-v2-feedback-row">
+                <span className="ofk-v2-feedback-count">2 of 3</span>
                 <Button variant="primary" onClick={() => setStep(2)}>Next</Button>
               </div>
             </>
           ) : null}
           {prompt.kind === 'product' && step === 2 ? (
-            <form className="canvas-v2-feedback-form" onSubmit={(event) => { event.preventDefault(); send(); }}>
+            <form className="ofk-v2-feedback-form" onSubmit={(event) => { event.preventDefault(); send(); }}>
               <Field label="Email" type="email" autoFocus maxLength={MAX_FEEDBACK_EMAIL} placeholder="you@example.com"
                 value={email} onChange={(event) => setEmail(event.target.value)} />
-              <div className="canvas-v2-feedback-row">
-                <span className="canvas-v2-feedback-count">3 of 3</span>
+              <div className="ofk-v2-feedback-row">
+                <span className="ofk-v2-feedback-count">3 of 3</span>
                 <Button type="submit" variant="primary" busy={sending} disabled={sending}>Send</Button>
               </div>
             </form>
@@ -203,10 +203,10 @@ export function V2FeedbackDialog({ open, onClose, onToast }: {
         <Button variant="quiet" onClick={onClose}>Cancel</Button>
         <Button variant="primary" busy={sending} disabled={!text.trim() || sending} onClick={send}>Send</Button>
       </>}>
-      <div className="canvas-v2-feedback-form">
-        <div className="canvas-field">
+      <div className="ofk-v2-feedback-form">
+        <div className="ofk-field">
           <label htmlFor={id}>Your feedback</label>
-          <textarea ref={field} id={id} className="canvas-v2-feedback-text" rows={5} maxLength={MAX_FEEDBACK_TEXT} value={text}
+          <textarea ref={field} id={id} className="ofk-v2-feedback-text" rows={5} maxLength={MAX_FEEDBACK_TEXT} value={text}
             onChange={(event) => setText(event.target.value)}
             onKeyDown={(event) => { if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) { event.preventDefault(); send(); } }} />
         </div>

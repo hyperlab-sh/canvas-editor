@@ -6,9 +6,9 @@ import type { UsageBeacon, UsageEntry, UsageEvent } from './usageEvents';
 /** package.json's version, injected by vite.config.ts. */
 export const APP_VERSION: string = import.meta.env.VITE_APP_VERSION ?? '0.0.0';
 
-const SWITCH_KEY = 'canvas.usage';
-const ID_KEY = 'canvas.usage.id';
-const FIRST_SEEN_KEY = 'canvas.usage.firstSeen';
+const SWITCH_KEY = 'ofk.usage';
+const ID_KEY = 'ofk.usage.id';
+const FIRST_SEEN_KEY = 'ofk.usage.firstSeen';
 /** A hidden tab sends at most this often; pagehide always sends. Beacons share the Worker's daily request cap with share links. */
 const HIDDEN_SEND_GAP_MS = 5 * 60_000;
 const APP_ERROR_CAP = 50;
@@ -48,7 +48,7 @@ export function entryOf(hash: string): UsageEntry {
 export const isViewerRoute = (hash: string): boolean => /^#\/s\//.test(hash);
 
 export interface UsageEnvironment {
-  /** localStorage `canvas.usage`: 'off' (Settings), 'on' (opts a dev build in, for e2e), or null. */
+  /** localStorage `ofk.usage`: 'off' (Settings), 'on' (opts a dev build in, for e2e), or null. */
   readonly switch: string | null;
   readonly storage: boolean;
   readonly gpc: boolean;

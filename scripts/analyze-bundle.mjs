@@ -53,7 +53,7 @@ function renderReport(entries) {
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Canvas Bundle Report</title>
+    <title>OpenFlowKit Bundle Report</title>
     <style>
       :root {
         color-scheme: light;

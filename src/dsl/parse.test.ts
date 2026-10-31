@@ -4,7 +4,7 @@ import { parse } from './parse';
 
 describe('parse', () => {
   it('parses headers, chains, labels, attrs, reverse and bidirectional edges', () => {
-    const diagram = parse(`%% canvas 1\nflowchart right\nA [circle, red] -> B -> C : ships [thick]\nD <- C\nD <-> E`);
+    const diagram = parse(`%% ofk 1\nflowchart right\nA [circle, red] -> B -> C : ships [thick]\nD <- C\nD <-> E`);
     expect(diagram).toMatchObject({ version: 1, family: 'flowchart', direction: 'right' });
     expect(diagram.statements).toHaveLength(4);
     expect(diagram.statements[0]).toMatchObject({ kind: 'edge', from: { label: 'A', attributes: [{ value: 'circle' }, { value: 'red' }] }, to: { label: 'B' } });

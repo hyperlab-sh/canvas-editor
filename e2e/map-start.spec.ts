@@ -128,7 +128,7 @@ test('the welcome and the Map start screen put the logo, title and buttons in th
   await openCanvas(page);
   const measure = () => page.evaluate(() => {
     const top = (selector: string) => document.querySelector(selector)!.getBoundingClientRect().toJSON();
-    return { logo: top('.canvas-v2-welcome-center > img'), title: top('.canvas-v2-welcome h1'), actions: top('.canvas-v2-welcome-actions') };
+    return { logo: top('.ofk-v2-welcome-center > img'), title: top('.ofk-v2-welcome h1'), actions: top('.ofk-v2-welcome-actions') };
   });
   await expect(page.getByTestId('v2-welcome')).toBeVisible();
   const canvas = await measure();

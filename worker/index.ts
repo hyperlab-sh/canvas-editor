@@ -52,7 +52,7 @@ export interface Env {
   RATE_LIMITER?: RateLimiterLike;
   /** Looser per-IP limit for usage beacons and feedback (many people can share one office IP); absent: no limit. */
   EVENT_LIMITER?: RateLimiterLike;
-  /** Comma-separated app origins allowed by CORS. Default: https://canvas.hyperlab.sh. localhost and 127.0.0.1 are always allowed (dev). */
+  /** Comma-separated app origins allowed by CORS. Default: https://app.openflowkit.com. localhost and 127.0.0.1 are always allowed (dev). */
   ALLOWED_ORIGINS?: string;
   /** D1 with the `sessions` and `feedback` tables (migrations/). Absent: /e drops beacons, /feedback answers 503. */
   DB?: D1DatabaseLike;
@@ -74,7 +74,7 @@ export const QUOTA_LIMITS = { storedBytes: 8_000_000_000, uploadsPerMonth: 900_0
 const SITEVERIFY = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const ID_PATTERN = /^\/s\/([0-9a-f]{32})$/;
 const DEV_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
-const DEFAULT_ORIGINS = 'https://canvas.hyperlab.sh';
+const DEFAULT_ORIGINS = 'https://app.openflowkit.com';
 // The browser's envelope (src/services/share/shareCrypto.ts): version byte 1, 12-byte IV, ciphertext + 16-byte tag.
 const ENVELOPE_VERSION = 1;
 const MIN_ENVELOPE_BYTES = 1 + 12 + 16;

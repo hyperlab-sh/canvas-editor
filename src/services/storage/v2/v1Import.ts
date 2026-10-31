@@ -16,9 +16,9 @@ import { createV2Repository, type V2DocumentRepository } from './v2Repository';
 
 // Phase 12.3: v1 diagrams → v2 on boot. v1 rows are only ever read (D3); the copy goes
 // through the v2 repository, and a clean marker makes every later boot a no-op.
-export const V1_IMPORT_MARKER_KEY = 'canvas.v1Import';
-const V1_FALLBACK_KEY = 'canvas-documents-fallback';
-const V1_ZUSTAND_KEY = 'canvas-storage';
+export const V1_IMPORT_MARKER_KEY = 'ofk.v1Import';
+const V1_FALLBACK_KEY = 'openflowkit-documents-fallback';
+const V1_ZUSTAND_KEY = 'openflowkit-storage';
 
 interface V1ImportEntry {
   /** The v1 name, so a failure can be listed by what the user called it. */
@@ -44,9 +44,9 @@ interface V1ImportReport {
   readonly firstRun: boolean;
 }
 
-// v1 room links (`?room=…&secret=…`) and the service-worker cutover reload (`?canvas-reload`, see public/sw.js)
+// v1 room links (`?room=…&secret=…`) and the service-worker cutover reload (`?ofk-reload`, see public/sw.js)
 // leave query params v2 has no use for; the secret must not ride along into a new share link.
-const V1_ONLY_PARAMS = ['room', 'secret', 'canvas-reload'];
+const V1_ONLY_PARAMS = ['room', 'secret', 'ofk-reload'];
 
 /** `search` without v1-only params, or null when it had none (nothing to rewrite). */
 export function withoutV1Params(search: string): string | null {
@@ -188,14 +188,14 @@ export async function readV1AiSettings(factory: IDBFactory, storage: Storage): P
     const row = await requestToPromise(database.transaction(AI_SETTINGS_PERSISTENT_STORE_NAME, 'readonly')
       .objectStore(AI_SETTINGS_PERSISTENT_STORE_NAME).get('default'));
     const stored = isJsonObject(row) && typeof row.value === 'string' ? row.value : null;
-    return { settings: stored ?? storage.getItem('canvas-ai-settings'), secret: storage.getItem('canvas-ai-settings-secret') };
+    return { settings: stored ?? storage.getItem('openflowkit-ai-settings'), secret: storage.getItem('openflowkit-ai-settings-secret') };
   } finally {
     database.close();
   }
 }
 
 /** 12.1's "Export all my diagrams" file; v2 writes it too and opens it as a multi-document import. */
-export const V1_BACKUP_FORMAT = 'canvas-v1-backup';
+export const V1_BACKUP_FORMAT = 'openflowkit-v1-backup';
 
 interface V1Backup {
   readonly format: typeof V1_BACKUP_FORMAT;
@@ -243,7 +243,7 @@ interface V1BackupOpenReport {
 /** Opens every diagram in a backup file as `v1-<id>`, the same id the boot import gives it. */
 export async function openV1Backup(backup: V1Backup, repository: V2DocumentRepository): Promise<V1BackupOpenReport> {
   if (backup.version !== 1) {
-    return { opened: [], existing: 0, failures: [{ v1Id: '', name: 'backup', error: `Backup version ${String(backup.version)} is newer than this Canvas.` }] };
+    return { opened: [], existing: 0, failures: [{ v1Id: '', name: 'backup', error: `Backup version ${String(backup.version)} is newer than this OpenFlowKit.` }] };
   }
   const workspace = await migrateLegacyWorkspace({ documents: backup.documents, fallback: null, tabStates: [] }, {
     resolveNodeSize: defaultLegacyNodeSize,

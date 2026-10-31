@@ -14,7 +14,7 @@ const CARD = { width: 800, height: 520, padding: 32 };
 // The export's own background (SVG_BACKGROUND in canonicalSvg.ts), so the diagram sits on the card seamlessly.
 const GROUND = { light: '#ffffff', dark: '#191b19' };
 const OUT = 'assets/readme/types';
-const scratch = mkdtempSync(join(tmpdir(), 'canvas-gallery-'));
+const scratch = mkdtempSync(join(tmpdir(), 'ofk-gallery-'));
 mkdirSync(OUT, { recursive: true });
 
 const browser = await chromium.launch();
@@ -23,7 +23,7 @@ for (const type of TYPES) {
   const doc = readFileSync(`docs-site/src/content/docs/diagram-${type}.md`, 'utf8');
   const source = /```openflow\n([\s\S]*?)```/.exec(doc)?.[1];
   if (!source) throw new Error(`diagram-${type}.md has no openflow example`);
-  const input = join(scratch, `${type}.canvas`);
+  const input = join(scratch, `${type}.ofk`);
   writeFileSync(input, source);
   for (const theme of ['light', 'dark']) {
     const svgPath = join(scratch, `${type}-${theme}.svg`);

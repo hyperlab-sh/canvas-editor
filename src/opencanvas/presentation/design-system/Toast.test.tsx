@@ -50,7 +50,7 @@ describe('ToastRegion', () => {
   it('hover pauses the timer and leaving resumes it with the time that was left', () => {
     const onDismiss = vi.fn();
     render(<ToastRegion items={[{ id: 'ok', title: 'Saved' }]} onDismiss={onDismiss} />);
-    const toast = screen.getByText('Saved').closest('.canvas-toast')!;
+    const toast = screen.getByText('Saved').closest('.ofk-toast')!;
     act(() => { vi.advanceTimersByTime(DURATION - 1000); });
     fireEvent.pointerEnter(toast);
     act(() => { vi.advanceTimersByTime(DURATION * 2); });
@@ -88,8 +88,8 @@ describe('ToastRegion', () => {
 
   it('marks a tone with its icon and leaves a neutral toast bare', () => {
     const { container } = render(<ToastRegion items={[{ id: 'i', tone: 'info', title: 'Read-only' }, { id: 'n', title: 'Archived' }]} onDismiss={() => undefined} />);
-    const [info, neutral] = [...container.querySelectorAll('.canvas-toast')];
-    expect(info!.querySelector('.canvas-toast-mark svg')).not.toBeNull();
-    expect(neutral!.querySelector('.canvas-toast-mark')).toBeNull();
+    const [info, neutral] = [...container.querySelectorAll('.ofk-toast')];
+    expect(info!.querySelector('.ofk-toast-mark svg')).not.toBeNull();
+    expect(neutral!.querySelector('.ofk-toast-mark')).toBeNull();
   });
 });

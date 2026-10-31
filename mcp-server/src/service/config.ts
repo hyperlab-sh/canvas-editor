@@ -16,7 +16,7 @@ export interface ServiceConfig {
 }
 
 function configPath(): string {
-  return process.env.CANVAS_SERVICE_CONFIG || join(homedir(), '.config', 'canvas', 'service.json');
+  return process.env.OPENFLOWKIT_SERVICE_CONFIG || join(homedir(), '.config', 'openflowkit', 'service.json');
 }
 
 async function isDirectory(path: string): Promise<boolean> {
@@ -25,7 +25,7 @@ async function isDirectory(path: string): Promise<boolean> {
 
 /** Writes the default config only when the file is absent; an existing file is never touched. */
 async function writeDefault(file: string): Promise<void> {
-  const scratch = join(homedir(), '.local', 'share', 'canvas', 'diagrams');
+  const scratch = join(homedir(), '.local', 'share', 'openflowkit', 'diagrams');
   await mkdir(scratch, { recursive: true });
   await mkdir(dirname(file), { recursive: true });
   const body = JSON.stringify({ port: DEFAULT_PORT, projects: [{ name: 'scratch', path: scratch }] }, null, 2) + '\n';

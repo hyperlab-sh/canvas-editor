@@ -14,7 +14,7 @@ import { createTestCapabilities } from './testHost';
 import { lintDsl } from '../lint';
 import { MERMAID_COMPAT_FIXTURES } from '../../../scripts/mermaid-compat-fixtures.mjs';
 
-const FLOW = '%% canvas 1\nflowchart\n\n  Client [blue] -> API [emerald]\n  API -> Store [cylinder, red]';
+const FLOW = '%% ofk 1\nflowchart\n\n  Client [blue] -> API [emerald]\n  API -> Store [cylinder, red]';
 
 function op(name: string) {
   const found = AGENT_OPS.find((candidate) => candidate.name === name);
@@ -180,7 +180,7 @@ views { view context of Shop; view container of Shop }
 
     // Carried into the text, nothing is discarded.
     await run.run('style', { ids: [store.id], fill: '#fde68a' });
-    const kept = await run.run('update_diagram', { frameId: run.frame().id, dsl: '%% canvas 1\nflowchart\n\n  Client [blue] -> API [emerald]\n  API -> Store [cylinder, #fde68a]\n  Store -> Cache' });
+    const kept = await run.run('update_diagram', { frameId: run.frame().id, dsl: '%% ofk 1\nflowchart\n\n  Client [blue] -> API [emerald]\n  API -> Store [cylinder, #fde68a]\n  Store -> Cache' });
     expect((kept.output as { discarded: readonly unknown[] }).discarded).toEqual([]);
   });
 
@@ -280,7 +280,7 @@ views { view context of Shop; view container of Shop }
 
   it('moves an icon card\'s icon with style, and carries it as iconpos', async () => {
     const run = await host();
-    await run.run('create_diagram', { dsl: '%% canvas 1\narchitecture\n\n  API [tabler/server]' });
+    await run.run('create_diagram', { dsl: '%% ofk 1\narchitecture\n\n  API [tabler/server]' });
     const api = run.page().nodes.find((node) => node.content.label === 'API')!;
     await expect(run.run('style', { ids: [api.id], iconPlacement: 'left', opacity: 0.5 })).rejects.toThrow('on its own');
     await run.run('style', { ids: [api.id], iconPlacement: 'left' });
@@ -292,14 +292,14 @@ views { view context of Shop; view container of Shop }
 
   it('refuses an icon placement that changes nothing, naming why', async () => {
     const run = await host();
-    await run.run('create_diagram', { dsl: '%% canvas 1\narchitecture\n\n  API [tabler/server]\n  Plain [rect]' });
+    await run.run('create_diagram', { dsl: '%% ofk 1\narchitecture\n\n  API [tabler/server]\n  Plain [rect]' });
     const plain = run.page().nodes.find((node) => node.content.label === 'Plain')!;
     await expect(run.run('style', { ids: [plain.id], iconPlacement: 'left' })).rejects.toThrow('icon card');
   });
 
   it('carries a card put back to top as iconpos: top, without pinning its size', async () => {
     const run = await host();
-    await run.run('create_diagram', { dsl: '%% canvas 1\narchitecture\n\n  API [tabler/server, iconpos: left]' });
+    await run.run('create_diagram', { dsl: '%% ofk 1\narchitecture\n\n  API [tabler/server, iconpos: left]' });
     const api = run.page().nodes.find((node) => node.content.label === 'API')!;
     await run.run('style', { ids: [api.id], iconPlacement: 'top' });
     const read = await run.run('get_diagram', { frameId: run.frame().id });
@@ -311,12 +311,12 @@ views { view context of Shop; view container of Shop }
   // Review #4: carry appended as a second `[…]` list renamed the node, and the lost edit went unreported.
   it('gives carry as bare attributes, and reports an edit lost to a renamed id', async () => {
     const run = await host();
-    await run.run('create_diagram', { dsl: '%% canvas 1\nflowchart\n\n  Client [blue] -> API' });
+    await run.run('create_diagram', { dsl: '%% ofk 1\nflowchart\n\n  Client [blue] -> API' });
     const client = run.page().nodes.find((node) => node.content.label === 'Client')!;
     await run.run('style', { ids: [client.id], fill: '#fde68a' });
     const read = await run.run('get_diagram', {});
     expect((read.output as { canvasEdits: { carry: string }[] }).canvasEdits[0]!.carry).toBe('#fde68a');
-    const renamed = await run.run('update_diagram', { frameId: run.frame().id, dsl: '%% canvas 1\nflowchart\n\n  c2 = Client [blue] -> API' });
+    const renamed = await run.run('update_diagram', { frameId: run.frame().id, dsl: '%% ofk 1\nflowchart\n\n  c2 = Client [blue] -> API' });
     expect((renamed.output as { discarded: { label: string }[] }).discarded).toEqual([expect.objectContaining({ label: 'Client', changed: { fill: '#fde68a' } })]);
   });
 
@@ -341,7 +341,7 @@ views { view context of Shop; view container of Shop }
     const run = await host();
     const before = run.document();
     await expect(run.run('create_diagram', { dsl: 'flowchart\n' })).rejects.toThrow(/no statements/);
-    await expect(run.run('create_diagram', { dsl: '%% canvas 1\narchitecture\ntitle: Empty\n' })).rejects.toThrow(/no statements/);
+    await expect(run.run('create_diagram', { dsl: '%% ofk 1\narchitecture\ntitle: Empty\n' })).rejects.toThrow(/no statements/);
     expect(run.document()).toBe(before);
   });
 
@@ -368,7 +368,7 @@ views { view context of Shop; view container of Shop }
     const run = await host();
     await run.run('create_diagram', { dsl: FLOW, at: { x: 300, y: 120 } });
     const before = run.frame();
-    const updated = await run.run('update_diagram', { frameId: before.id, dsl: '%% canvas 1\nflowchart\n\n  Client -> API -> Store -> Cache' });
+    const updated = await run.run('update_diagram', { frameId: before.id, dsl: '%% ofk 1\nflowchart\n\n  Client -> API -> Store -> Cache' });
     const after = run.frame();
     expect(after.id).toBe(before.id);
     expect(after.transform.translation).toEqual({ x: 300, y: 120 });

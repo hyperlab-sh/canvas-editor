@@ -17,7 +17,7 @@ export interface V2AiSettings {
   readonly connections: Readonly<Partial<Record<AiProviderId, V2AiConnection>>>;
 }
 
-const KEY = 'canvas-v2-ai';
+const KEY = 'openflowkit-v2-ai';
 const EMPTY: V2AiConnection = { apiKey: '', baseUrl: '', model: '' };
 const DEFAULTS: V2AiSettings = { provider: 'claude', connections: {} };
 
@@ -109,7 +109,7 @@ export function carryOverV1Ai(settings: V2AiSettings, fresh: boolean, v1: V1AiSe
   };
 }
 
-const V1_CARRIED_KEY = 'canvas.v1AiCarried';
+const V1_CARRIED_KEY = 'ofk.v1AiCarried';
 
 export function useV2AiSettings() {
   const [settings, setSettings] = useState(() => {
@@ -129,7 +129,7 @@ export function useV2AiSettings() {
       localStorage.setItem(V1_CARRIED_KEY, new Date().toISOString());
       const raw = localStorage.getItem(KEY);
       const current = parseAiSettings(raw);
-      const carried = carryOverV1Ai(current, raw === null, v1, `${window.location.origin}:${navigator.userAgent}:canvas-ai-settings-secret`);
+      const carried = carryOverV1Ai(current, raw === null, v1, `${window.location.origin}:${navigator.userAgent}:openflowkit-ai-settings-secret`);
       if (carried !== current) save(carried);
     }).catch(() => undefined); // storage full or blocked: v1's key simply stays behind
     return () => { live = false; };

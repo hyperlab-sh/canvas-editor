@@ -3,7 +3,7 @@ import type { ZodType, ZodTypeDef } from 'zod';
 // vite.agent.config.ts) and carries no declarations; this file is its typed
 // surface. Keep in sync with src/agent/index.ts in the app.
 // @ts-expect-error generated bundle has no declaration file
-import * as bundle from '../generated/canvas-agent.js';
+import * as bundle from '../generated/openflowkit-agent.js';
 
 export interface SceneDocumentV1 {
   readonly id: string;

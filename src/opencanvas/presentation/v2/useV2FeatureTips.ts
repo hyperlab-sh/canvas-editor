@@ -28,7 +28,7 @@ export function useV2FeatureTips(options: V2FeatureTipsOptions) {
     // selection's context bar is up (the connect tip is about the selection itself), nor where nothing can be edited
     // (Map, a shared view), nor on a phone, where it would cover the toolbar.
     if (tip || readOnly || window.innerWidth < 600 || !mayShowTip(id) || (selectedCount > 0 && id !== 'connect')
-      || document.querySelector('.canvas-panel, .canvas-popover:not([data-passive]), dialog[open]')) return;
+      || document.querySelector('.ofk-panel, .ofk-popover:not([data-passive]), dialog[open]')) return;
     recordTipShown(id);
     setTip(id);
     announce(`Tip: ${V2_TIPS[id].title}. ${V2_TIPS[id].text}`);

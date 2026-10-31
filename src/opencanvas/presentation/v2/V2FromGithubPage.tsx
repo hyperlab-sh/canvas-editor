@@ -116,23 +116,23 @@ export function V2FromGithubPage(): React.JSX.Element {
               : outcome.privateToken ? { action: <PrivateRepoToken onSubmit={(token) => { if (token) keepToken(token); setAttempt((count) => count + 1); }} />, secondary: home(true) }
                 : { action: home(true) })} />
       ) : outcome?.status === 'notes' ? (
-        <div className="canvas-empty" data-hero="" role="status">
-          <span className="canvas-empty-icon" aria-hidden="true"><V2StateHero kind="no-canvas" /></span>
-          <p className="canvas-empty-title">Your diagram is ready.</p>
-          <ul className="canvas-v2-state-notes">{outcome.notes.map((note) => <li key={note}>{note}</li>)}</ul>
-          <div className="canvas-empty-actions">
+        <div className="ofk-empty" data-hero="" role="status">
+          <span className="ofk-empty-icon" aria-hidden="true"><V2StateHero kind="no-canvas" /></span>
+          <p className="ofk-empty-title">Your diagram is ready.</p>
+          <ul className="ofk-v2-state-notes">{outcome.notes.map((note) => <li key={note}>{note}</li>)}</ul>
+          <div className="ofk-empty-actions">
             <Button variant="primary" autoFocus onClick={() => open(outcome)}>Open diagram</Button>
             {home(false)}
           </div>
         </div>
       ) : (
-        <div className="canvas-empty">
+        <div className="ofk-empty">
           <BrandLoader />
-          <p className="canvas-empty-title" role="status">{name ? `Reading ${name.owner}/${name.repo}…` : 'Reading the repo…'}</p>
+          <p className="ofk-empty-title" role="status">{name ? `Reading ${name.owner}/${name.repo}…` : 'Reading the repo…'}</p>
           {progress.total > 0
             ? <Progress label={`Reading files ${progress.done} of ${progress.total}`} value={progress.done} max={progress.total} />
             : null}
-          <div className="canvas-empty-actions"><Button onClick={() => navigate('/home')}>Cancel</Button></div>
+          <div className="ofk-empty-actions"><Button onClick={() => navigate('/home')}>Cancel</Button></div>
         </div>
       )}
     </V2StateShell>

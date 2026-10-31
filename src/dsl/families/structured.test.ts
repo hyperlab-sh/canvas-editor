@@ -21,7 +21,7 @@ describe('erd family', () => {
 
   // Orchestrator 2026-10-11: `nullable` parsed and printed back, but compile dropped it, so format lost it.
   it('carries `nullable` onto the entity row and keeps it through format', async () => {
-    const text = '%% canvas 1\nerd\n\nusers {\n  bio text nullable\n  email text unique not-null\n}\n';
+    const text = '%% ofk 1\nerd\n\nusers {\n  bio text nullable\n  email text unique not-null\n}\n';
     const result = await compile(text);
     expect(result.nodes[0]!.content.erFields).toEqual([
       { name: 'bio', dataType: 'text', isNullable: true },
@@ -148,7 +148,7 @@ describe('class layout', () => {
 });
 
 describe('groups in class and erd diagrams', () => {
-  const CLASSES = `%% canvas 1
+  const CLASSES = `%% ofk 1
 class
 
 Loose {
@@ -186,7 +186,7 @@ Loose --> Cage
   });
 
   it('nests a group in a group, and closes each with its own brace', async () => {
-    const text = '%% canvas 1\nclass\n\ngroup Outer {\n  group Inner {\n    A {\n    }\n  }\n  B {\n  }\n}\nA --> B\n';
+    const text = '%% ofk 1\nclass\n\ngroup Outer {\n  group Inner {\n    A {\n    }\n  }\n  B {\n  }\n}\nA --> B\n';
     const result = await compile(text);
     expect(result.diagnostics.filter((item) => item.severity !== 'info')).toEqual([]);
     expect(result.groups.map((group) => `${group.id}<${group.parentId === result.frame.id ? 'frame' : group.parentId}`)).toEqual(['outer<frame', 'inner<outer']);

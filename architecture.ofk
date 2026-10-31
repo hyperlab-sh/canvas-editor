@@ -1,0 +1,40 @@
+%% ofk 1
+architecture
+title: OpenFlowKit
+
+// This repo's own C4 model. `openflowkit drift .` checks it against the code, and the PR diagrams
+// check (action/) renders it on every pull request that changes it.
+model {
+  developer = person "Developer" [icon: tabler/user, desc: "Draws, writes diagrams as code, reviews"]
+  agent = person "Coding agent" [icon: tabler/robot, desc: "Claude Code, Cursor, VS Code, Codex"]
+
+  openflowkit = system "OpenFlowKit" {
+    app = container "openflowkit-app" [tech: React, desc: "The editor: canvas, code panel, Map mode. Diagrams stay in the browser"]
+    mcp = container "openflowkit-mcp" [icon: tabler/plug-connected, tech: Node CLI, desc: "MCP server, live bridge on 127.0.0.1, file mode"]
+    cli = container "openflowkit" [icon: tabler/terminal-2, tech: Node CLI, desc: "npx openflowkit: render, validate, map, mcp"]
+    docs = container "openflowkit-docs" [tech: Astro, desc: "docs.openflowkit.com"]
+    share = container "openflowkit-share" [tech: Cloudflare Workers, desc: "Encrypted share links at share.openflowkit.com"]
+    shares = store "openflowkit-shares" [tech: R2, desc: "Ciphertext only; the key stays in the link"]
+    stats = container "openflowkit-stats" [tech: Cloudflare Workers, desc: "Private usage dashboard"]
+    data = store "openflowkit-data" [tech: D1, desc: "Anonymous usage counts and feedback"]
+  }
+  github = external "GitHub" [icon: tabler/brand-github, desc: "Public repos, read for Map mode"]
+  ai = external "AI providers" [icon: tabler/sparkles, desc: "Anthropic, OpenAI, Google or Ollama, with your own key"]
+
+  developer -> openflowkit.app : draws and writes
+  developer -> openflowkit.docs : reads
+  agent -> openflowkit.mcp : MCP over stdio
+  agent -> openflowkit.cli : runs
+  openflowkit.cli -> openflowkit.mcp : imports
+  openflowkit.app -> openflowkit.mcp : long-polls the bridge [tech: "HTTP on localhost"]
+  openflowkit.app -> openflowkit.share : uploads an encrypted diagram [tech: HTTPS]
+  openflowkit.share -> openflowkit.shares : stores ciphertext
+  openflowkit.share -> openflowkit.data : counts usage
+  openflowkit.stats -> openflowkit.data : reads
+  openflowkit.app -> github : reads repo files [tech: REST]
+  openflowkit.app -> ai : prompts [tech: HTTPS]
+}
+views {
+  view container of openflowkit
+  view context of openflowkit
+}

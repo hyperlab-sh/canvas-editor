@@ -1,4 +1,4 @@
-// Smoke-checks a running remote endpoint with the SDK's own client: `npm run smoke:remote -- https://mcp.canvas.hyperlab.sh`
+// Smoke-checks a running remote endpoint with the SDK's own client: `npm run smoke:remote -- https://mcp.openflowkit.com`
 // (or http://127.0.0.1:8787 against `npm run dev:remote`). Exit 1 when any check fails.
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
@@ -11,21 +11,21 @@ const check = (name, ok, detail = '') => {
 };
 const timed = async (work) => { const started = Date.now(); const value = await work(); return [value, Date.now() - started]; };
 
-const client = new Client({ name: 'canvas-smoke', version: '1' });
+const client = new Client({ name: 'openflowkit-smoke', version: '1' });
 await client.connect(new StreamableHTTPClientTransport(new URL(`${base}/mcp`)));
 
 const { tools } = await client.listTools();
 check('tools/list has render_diagram, get_syntax and preview_diagram', tools.map((t) => t.name).sort().join() === 'get_syntax,preview_diagram,render_diagram');
 check('preview_diagram is app-only', JSON.stringify(tools.find((t) => t.name === 'preview_diagram')?._meta?.ui?.visibility) === '["app"]');
-check('render_diagram points at the viewer', tools.find((t) => t.name === 'render_diagram')?._meta?.ui?.resourceUri === 'ui://canvas/viewer.html');
+check('render_diagram points at the viewer', tools.find((t) => t.name === 'render_diagram')?._meta?.ui?.resourceUri === 'ui://openflowkit/viewer.html');
 
-const { contents } = await client.readResource({ uri: 'ui://canvas/viewer.html' });
+const { contents } = await client.readResource({ uri: 'ui://openflowkit/viewer.html' });
 check('viewer resource is the real viewer', contents[0]?.mimeType === 'text/html;profile=mcp-app' && contents[0]?.text.includes('ui/initialize'));
 
 const [flow, flowMs] = await timed(() => client.callTool({ name: 'render_diagram', arguments: { source: 'flowchart\nCart -> Shipping\nShipping -> Payment\nPayment -> Done', title: 'Checkout' } }));
 const card = flow.structuredContent ?? {};
 check('flowchart renders', !flow.isError && String(card.svg).startsWith('<svg') && card.nodes === 4, `${flowMs} ms`);
-check('flowchart has an editor link', /^https:\/\/canvas\.hyperlab\.sh\/#\/from\/dsl\?d=/.test(String(card.openUrl)), String(card.openUrl).slice(0, 48));
+check('flowchart has an editor link', /^https:\/\/app\.openflowkit\.com\/#\/from\/dsl\?d=/.test(String(card.openUrl)), String(card.openUrl).slice(0, 48));
 
 const [mermaid, mermaidMs] = await timed(() => client.callTool({ name: 'render_diagram', arguments: { source: 'graph TD\n  A[User] --> B{Logged in?}\n  B -->|yes| C[Dashboard]\n  B -->|no| D[Login]' } }));
 check('Mermaid converts and renders', !mermaid.isError && String(mermaid.structuredContent?.svg).startsWith('<svg'), `${mermaidMs} ms`);

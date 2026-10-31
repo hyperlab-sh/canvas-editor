@@ -40,7 +40,7 @@ test('the GCP tab finds Google Cloud products by name and draws the official ico
   const search = page.getByRole('searchbox', { name: 'Search icons' });
   await search.fill('');
   // Every tile of the pack resolves its art (tiles load lazily, so only the URL is checked here).
-  const tiles = page.locator('.canvas-icon-picker-cell[data-provider="gcp"] img');
+  const tiles = page.locator('.ofk-icon-picker-cell[data-provider="gcp"] img');
   await expect.poll(() => tiles.evaluateAll((imgs) => imgs.length > 50 && imgs.every((img) => (img as HTMLImageElement).src !== ''))).toBe(true);
   await search.fill('cloud functions');
   await expect(page.getByRole('option').first()).toHaveAttribute('title', 'Serverless Computing');

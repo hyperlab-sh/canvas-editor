@@ -1,8 +1,8 @@
 # Share-link Worker
 
-Stores encrypted Canvas documents for `Copy share link`. The app encrypts in the browser
+Stores encrypted OpenFlowKit documents for `Copy share link`. The app encrypts in the browser
 (AES-GCM, key in the link's `#fragment`); this Worker only ever holds ciphertext.
-It also takes the app's anonymous usage beacons and in-app feedback (D1 `canvas-data`, schema in `migrations/`).
+It also takes the app's anonymous usage beacons and in-app feedback (D1 `openflowkit-data`, schema in `migrations/`).
 
 | Route | Does |
 |---|---|
@@ -24,13 +24,13 @@ Workers Free's 100k requests/day is account-wide, so usage beacons and share lin
 (Pages, static) is never affected. `npm run stats` warns at 60%.
 
 Config: `ALLOWED_ORIGINS` (optional var, comma-separated) lists the app origins CORS allows; default
-`https://canvas.hyperlab.sh`. `http://localhost:*` and `http://127.0.0.1:*` are always allowed for dev.
-Example for a staging app: `ALLOWED_ORIGINS = "https://canvas.hyperlab.sh,https://staging.example.com"` under `[vars]`.
+`https://app.openflowkit.com`. `http://localhost:*` and `http://127.0.0.1:*` are always allowed for dev.
+Example for a staging app: `ALLOWED_ORIGINS = "https://app.openflowkit.com,https://staging.example.com"` under `[vars]`.
 
 ## Takedown
 
-Remove a link by id: `npx wrangler r2 object delete canvas-shares/<id>`. The Worker can't read content,
-so reports go by link: hello@canvas.hyperlab.sh with "Report a link" in the subject (listed on the docs' share-links page).
+Remove a link by id: `npx wrangler r2 object delete openflowkit-shares/<id>`. The Worker can't read content,
+so reports go by link: hello@openflowkit.com with "Report a link" in the subject (listed on the docs' share-links page).
 
 ## Reading the numbers
 
@@ -39,14 +39,14 @@ adoption, sources, countries, share loop, errors, PMF, pay votes, latest comment
 
 ## Owner setup (one time)
 
-1. Cloudflare dashboard: enable R2, then `npx wrangler r2 bucket create canvas-shares`.
-2. Turnstile: a Managed widget for `canvas.hyperlab.sh` and `canvas-app.pages.dev` (subdomains included). Note both keys.
+1. Cloudflare dashboard: enable R2, then `npx wrangler r2 bucket create openflowkit-shares`.
+2. Turnstile: a Managed widget for `openflowkit.com` and `openflowkit-app.pages.dev` (subdomains included). Note both keys.
 3. From this folder: `npx wrangler secret put TURNSTILE_SECRET` and paste the secret key.
-4. Usage + feedback store: `npx wrangler d1 create canvas-data`, put the printed id in `wrangler.toml`'s
-   `database_id`, then `npx wrangler d1 migrations apply canvas-data --remote` and
+4. Usage + feedback store: `npx wrangler d1 create openflowkit-data`, put the printed id in `wrangler.toml`'s
+   `database_id`, then `npx wrangler d1 migrations apply openflowkit-data --remote` and
    `npx wrangler secret put USAGE_SALT` (any long random string; changing it splits every user in two).
-5. `npx wrangler deploy` — it attaches the `share.canvas.hyperlab.sh` custom domain from `wrangler.toml`.
-6. The app is Cloudflare Pages (`canvas-app`, builds `main` to production, other branches to previews): set
+5. `npx wrangler deploy` — it attaches the `share.openflowkit.com` custom domain from `wrangler.toml`.
+6. The app is Cloudflare Pages (`openflowkit-app`, builds `main` to production, other branches to previews): set
    `VITE_TURNSTILE_SITE_KEY=<site key>` under Settings → Variables for Production and Preview. Optional: `VITE_SHARE_ORIGIN`.
 7. Optional: an R2 lifecycle rule to expire objects. The app has no expiry (`ponytail`: add when users ask).
 

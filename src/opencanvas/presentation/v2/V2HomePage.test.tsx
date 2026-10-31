@@ -155,7 +155,7 @@ describe('V2HomePage', () => {
     fireEvent.click(screen.getByRole('link', { name: /^Starred/ }));
     const list = await screen.findByRole('list', { name: 'Diagrams' });
     await waitFor(() => expect(within(list).getAllByRole('listitem')).toHaveLength(1));
-    expect(JSON.parse(localStorage.getItem('canvas-v2-home')!).starred).toEqual(['doc-b']);
+    expect(JSON.parse(localStorage.getItem('openflowkit-v2-home')!).starred).toEqual(['doc-b']);
 
     await openMenu('Made here', 'Duplicate');
     fireEvent.click(screen.getByRole('link', { name: /^Recents/ }));

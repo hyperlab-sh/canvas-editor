@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { compile } from '../compile';
 import { serialize } from '../serialize';
 
-const QUADRANT = `%% canvas 1
+const QUADRANT = `%% ofk 1
 chart quadrant
 x: Cheap, Costly
 y: Minor, Major

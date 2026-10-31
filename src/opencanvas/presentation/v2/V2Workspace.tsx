@@ -42,7 +42,7 @@ export function V2ShareBar({ canShare, shareOpen, exportOpen, onShare, onExport 
   onExport: (anchor: HTMLElement) => void;
 }) {
   return (
-    <FloatingRegion slot="top-end" className="canvas-v2-share-bar">
+    <FloatingRegion slot="top-end" className="ofk-v2-share-bar">
       <Toolbar label="Share and export">
         {canShare ? (
           <Button variant="quiet" aria-haspopup="dialog" aria-expanded={shareOpen}
@@ -75,7 +75,7 @@ export function V2WorkspaceRail({
 }) {
   return (
     <>
-      <FloatingRegion slot="top-end" className="canvas-v2-workspace-rail">
+      <FloatingRegion slot="top-end" className="ofk-v2-workspace-rail">
         <Toolbar label="Workspace" orientation="vertical">
           {MODES.map(({ id, label, icon }) => (
             <Tooltip key={id} content={label} shortcut={shortcutFor(label)}>
@@ -95,7 +95,7 @@ export function V2WorkspaceRail({
           ))}
         </Toolbar>
       </FloatingRegion>
-      <FloatingRegion slot="bottom-end" className="canvas-v2-help">
+      <FloatingRegion slot="bottom-end" className="ofk-v2-help">
         <Toolbar label="Help">
           <Tooltip content="Keyboard shortcuts" shortcut="?">
             <IconButton
@@ -123,11 +123,11 @@ export function V2Welcome({ testId, title, body, actions, below }: {
   // An arrow whose label would run into the centre (a short window, an open side panel) steps aside.
   useLayoutEffect(() => {
     const welcome = root.current;
-    const centre = welcome?.querySelector('.canvas-v2-welcome-center');
+    const centre = welcome?.querySelector('.ofk-v2-welcome-center');
     if (!welcome || !centre) return;
     const place = () => {
       const middle = centre.getBoundingClientRect();
-      for (const guide of welcome.querySelectorAll<HTMLElement>('.canvas-v2-guide')) {
+      for (const guide of welcome.querySelectorAll<HTMLElement>('.ofk-v2-guide')) {
         const box = guide.getBoundingClientRect();
         const clash = box.width > 0 && box.left < middle.right + 12 && box.right > middle.left - 12
           && box.top < middle.bottom + 12 && box.bottom > middle.top - 12;
@@ -140,28 +140,28 @@ export function V2Welcome({ testId, title, body, actions, below }: {
     return () => observer.disconnect();
   }, []);
   return (
-    <div className="canvas-v2-welcome" data-testid={testId} ref={root}>
-      <div className="canvas-v2-guide canvas-v2-guide-tools" aria-hidden="true">
+    <div className="ofk-v2-welcome" data-testid={testId} ref={root}>
+      <div className="ofk-v2-guide ofk-v2-guide-tools" aria-hidden="true">
         <svg viewBox="0 0 110 70"><path d="M103 9 C76 11 47 29 9 59 M11 44 Q7 54 9 60 Q20 60 29 55" /></svg><span>Start with a shape</span>
       </div>
-      <div className="canvas-v2-guide canvas-v2-guide-workspace" aria-hidden="true">
+      <div className="ofk-v2-guide ofk-v2-guide-workspace" aria-hidden="true">
         <span>Another way to create</span><svg viewBox="0 0 120 80"><path d="M8 72 C30 43 67 13 111 13 M99 5 Q108 8 112 13 Q108 20 100 23" /></svg>
       </div>
-      <div className="canvas-v2-welcome-center">
-        <img src="/logo-canvas.svg" alt="Canvas" width="48" height="48" />
+      <div className="ofk-v2-welcome-center">
+        <img src="/Logo_openflowkit.svg" alt="OpenFlowKit" width="48" height="48" />
         <h1>{title}</h1>
         <p>{body}</p>
         {/* One column: the button row sets its width, everything below matches it edge to edge. */}
-        <div className="canvas-v2-welcome-stack">
-          <div className="canvas-v2-welcome-actions">{actions}</div>
+        <div className="ofk-v2-welcome-stack">
+          <div className="ofk-v2-welcome-actions">{actions}</div>
           {below}
         </div>
       </div>
-      <div className="canvas-v2-guide canvas-v2-guide-view" aria-hidden="true">
+      <div className="ofk-v2-guide ofk-v2-guide-view" aria-hidden="true">
         <svg viewBox="0 0 110 100"><path d="M102 9 C58 12 25 43 17 89 M8 74 Q12 86 17 91 Q25 85 31 76" /></svg>
         <span>Canvas, layers &amp; view</span>
       </div>
-      <div className="canvas-v2-guide canvas-v2-guide-help" aria-hidden="true"><span>Keyboard shortcuts</span><svg viewBox="0 0 110 100"><path d="M8 9 C53 8 84 42 94 89 M82 78 Q90 87 95 91 Q101 82 102 73" /></svg></div>
+      <div className="ofk-v2-guide ofk-v2-guide-help" aria-hidden="true"><span>Keyboard shortcuts</span><svg viewBox="0 0 110 100"><path d="M8 9 C53 8 84 42 94 89 M82 78 Q90 87 95 91 Q101 82 102 73" /></svg></div>
     </div>
   );
 }
@@ -190,8 +190,8 @@ export function V2CanvasWelcome({ onOpen, blankDocument = false }: { onOpen: (mo
       ))}
       // A repo is one more way to start: its map opens as its own document (the same field Map's start screen has).
       below={<>
-        <Link className="canvas-v2-welcome-templates" to={{ pathname: '/home', search: '?view=templates' }}>or start from a template →</Link>
-        <p className="canvas-v2-welcome-or" aria-hidden="true">or</p>
+        <Link className="ofk-v2-welcome-templates" to={{ pathname: '/home', search: '?view=templates' }}>or start from a template →</Link>
+        <p className="ofk-v2-welcome-or" aria-hidden="true">or</p>
         {/* A blank document is not a stop on the way: Back from the map goes to where the reader came from. */}
         <MapRepoForm onMapRepo={(repo) => navigate(mapRepoPath(repo), { replace: blankDocument })} />
       </>}
@@ -200,14 +200,14 @@ export function V2CanvasWelcome({ onOpen, blankDocument = false }: { onOpen: (mo
 }
 
 export const INITIAL_CODE =
-  '%% canvas 1\narchitecture\ntitle: My first diagram\n\nClient\nAPI\nDatabase [cylinder]\n\nClient -> API : request\nAPI -> Database : query';
+  '%% ofk 1\narchitecture\ntitle: My first diagram\n\nClient\nAPI\nDatabase [cylinder]\n\nClient -> API : request\nAPI -> Database : query';
 
 export function V2Shortcuts({ onClose }: { onClose: () => void }) {
   return (
-    <Panel title="Keyboard shortcuts" onClose={onClose} className="canvas-v2-workspace-panel" modal>
-      <p className="canvas-v2-muted">Less reaching. More creating.</p>
+    <Panel title="Keyboard shortcuts" onClose={onClose} className="ofk-v2-workspace-panel" modal>
+      <p className="ofk-v2-muted">Less reaching. More creating.</p>
       {shortcutGroups().map(({ title, rows }) => (
-        <section className="canvas-v2-shortcut-group" key={title}>
+        <section className="ofk-v2-shortcut-group" key={title}>
           <h3>{title}</h3>
           {rows.map(({ label, keys }) => (
             <div key={label}>
@@ -217,7 +217,7 @@ export function V2Shortcuts({ onClose }: { onClose: () => void }) {
           ))}
         </section>
       ))}
-      <p className="canvas-v2-shortcut-footer">
+      <p className="ofk-v2-shortcut-footer">
         <a href={DOCS_URL} target="_blank" rel="noreferrer">Docs <Icon icon={IconArrowUpRight} /></a>
       </p>
     </Panel>

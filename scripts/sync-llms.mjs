@@ -4,14 +4,14 @@
 // src/agent/skill.test.ts fails when they drift; run `npm run skill:sync` after editing the skill.
 import { readFileSync, writeFileSync } from 'node:fs';
 
-export const LLMS_HEADER = '# Canvas\n\n> Diagrams agents write, kept valid, editable and saved next to the code.\n> Install as a skill: skills/canvas/SKILL.md in https://github.com/hyperlab-sh/canvas-editor\n';
+export const LLMS_HEADER = '# OpenFlowKit\n\n> Diagrams agents write, kept valid, editable and saved next to the code.\n> Install as a skill: skills/openflowkit/SKILL.md in https://github.com/openflowkit/openflowkit\n';
 
 export function llmsText(skill) {
   return `${LLMS_HEADER}${skill.replace(/^---\n[\s\S]*?\n---\n/, '').replace(/^\n*# [^\n]*\n/, '')}`;
 }
 
 if (process.argv[1]?.endsWith('sync-llms.mjs')) {
-  const skill = readFileSync('skills/canvas/SKILL.md', 'utf8');
+  const skill = readFileSync('skills/openflowkit/SKILL.md', 'utf8');
   writeFileSync('public/llms.txt', llmsText(skill));
-  writeFileSync('plugin/skills/canvas/SKILL.md', skill);
+  writeFileSync('plugin/skills/openflowkit/SKILL.md', skill);
 }

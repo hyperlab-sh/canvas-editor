@@ -92,11 +92,11 @@ export function registerDiscoveryTools(server: McpServer, bridge: Pick<LiveBridg
                 modes: [`live-editor (the user pairs a tab at ${CONNECT_URL})`, 'file (.openflow.json)', ...(service ? ['service (diagrams in the projects of the local service)'] : [])],
                 tools: [...STATIC_TOOLS, ...(service ? SERVICE_TOOLS : []), ...AGENT_OPS.map(({ name }) => name)].sort(),
                 resources: [
-                  'canvas://docs/grammar',
-                  'canvas://templates',
-                  'canvas://templates/{name}',
-                  'canvas://icons',
-                  'canvas://icons/{provider}',
+                  'openflowkit://docs/grammar',
+                  'openflowkit://templates',
+                  'openflowkit://templates/{name}',
+                  'openflowkit://icons',
+                  'openflowkit://icons/{provider}',
                 ],
                 prompts: [
                   'flowchart_from_description',

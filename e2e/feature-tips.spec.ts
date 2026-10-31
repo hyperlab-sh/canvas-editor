@@ -4,7 +4,7 @@ import { centreOf, drawShape, emptyPoint, openCanvas, state } from './helpers';
 // Feature tips: one hint when it pays off, at most one a session, never the same one twice.
 // npm run e2e:headed -- e2e/feature-tips.spec.ts
 
-const tip = (page: Page) => page.locator('.canvas-v2-tip');
+const tip = (page: Page) => page.locator('.ofk-v2-tip');
 
 async function drawThree(page: Page) {
   await drawShape(page, 'r', 360, 300);

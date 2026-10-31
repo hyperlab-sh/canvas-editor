@@ -98,7 +98,7 @@ const publicJwk = { ...await crypto.subtle.exportKey('jwk', signingPair.publicKe
 
 async function jwt(claims: Record<string, unknown> = {}, key = signingPair.privateKey, header: Record<string, unknown> = { alg: 'RS256', kid: 'k1' }) {
   const body = `${b64url(JSON.stringify(header))}.${b64url(JSON.stringify({
-    aud: [AUD], iss: `https://${TEAM}`, exp: SECONDS + 600, iat: SECONDS - 10, email: 'varun@canvas.hyperlab.sh', ...claims,
+    aud: [AUD], iss: `https://${TEAM}`, exp: SECONDS + 600, iat: SECONDS - 10, email: 'varun@openflowkit.com', ...claims,
   }))}`;
   return `${body}.${b64url(new Uint8Array(await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(body))))}`;
 }
@@ -113,8 +113,8 @@ const fetcher: typeof fetch = async (input) => {
   if (!answer) throw new TypeError('fetch failed');
   return answer();
 };
-const STARS = 'https://api.github.com/repos/hyperlab-sh/canvas-editor';
-const NPM = 'https://api.npmjs.org/downloads/point/last-week/canvas';
+const STARS = 'https://api.github.com/repos/openflowkit/openflowkit';
+const NPM = 'https://api.npmjs.org/downloads/point/last-week/openflowkit';
 beforeEach(() => {
   fetched = [];
   growthAnswers = { [STARS]: () => Response.json({ stargazers_count: 1234 }), [NPM]: () => Response.json({ downloads: 54 }) };
@@ -168,9 +168,9 @@ describe('Access JWT', () => {
   });
 
   it('reads the token from the header, else the CF_Authorization cookie', () => {
-    expect(accessToken(new Request('https://stats.canvas.hyperlab.sh/', { headers: { 'Cf-Access-Jwt-Assertion': 'h.p.s' } }))).toBe('h.p.s');
-    expect(accessToken(new Request('https://stats.canvas.hyperlab.sh/', { headers: { Cookie: 'a=1; CF_Authorization=c.p.s; b=2' } }))).toBe('c.p.s');
-    expect(accessToken(new Request('https://stats.canvas.hyperlab.sh/'))).toBeNull();
+    expect(accessToken(new Request('https://stats.openflowkit.com/', { headers: { 'Cf-Access-Jwt-Assertion': 'h.p.s' } }))).toBe('h.p.s');
+    expect(accessToken(new Request('https://stats.openflowkit.com/', { headers: { Cookie: 'a=1; CF_Authorization=c.p.s; b=2' } }))).toBe('c.p.s');
+    expect(accessToken(new Request('https://stats.openflowkit.com/'))).toBeNull();
   });
 });
 
@@ -345,10 +345,10 @@ describe('stats worker', () => {
     env = { DB: new SqliteD1(db), TEAM_DOMAIN: TEAM, POLICY_AUD: AUD };
   });
   const get = async (path = '/', headers: Record<string, string> = {}) =>
-    handle(new Request(`https://stats.canvas.hyperlab.sh${path}`, { headers }), env, { fetcher, now: () => NOW, jwks: new Map() });
+    handle(new Request(`https://stats.openflowkit.com${path}`, { headers }), env, { fetcher, now: () => NOW, jwks: new Map() });
   const signedIn = async () => ({ 'Cf-Access-Jwt-Assertion': await jwt() });
   const markRead = async (headers: Record<string, string>, before = '2026-10-10T10:00:00.000Z') =>
-    handle(new Request('https://stats.canvas.hyperlab.sh/read', {
+    handle(new Request('https://stats.openflowkit.com/read', {
       method: 'POST', body: new URLSearchParams({ before, range: '7' }),
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...headers },
     }), env, { fetcher, now: () => NOW, jwks: new Map() });
@@ -410,12 +410,12 @@ describe('stats worker', () => {
   });
 
   it('mark all read needs the token and our own Origin, and marks only what the page showed', async () => {
-    expect((await markRead({ Origin: 'https://stats.canvas.hyperlab.sh' })).status).toBe(403);
+    expect((await markRead({ Origin: 'https://stats.openflowkit.com' })).status).toBe(403);
     expect((await markRead({ ...await signedIn(), Origin: 'https://evil.example' })).status).toBe(403);
     expect((await markRead(await signedIn())).status).toBe(403);
-    expect((await markRead({ ...await signedIn(), Origin: 'https://stats.canvas.hyperlab.sh' }, 'yesterday')).status).toBe(400);
+    expect((await markRead({ ...await signedIn(), Origin: 'https://stats.openflowkit.com' }, 'yesterday')).status).toBe(400);
     expect(unreadDays()).toEqual(['2026-08-01', '2026-10-01', '2026-10-10', '2026-10-14']);
-    const response = await markRead({ ...await signedIn(), Origin: 'https://stats.canvas.hyperlab.sh' });
+    const response = await markRead({ ...await signedIn(), Origin: 'https://stats.openflowkit.com' });
     expect(response.status).toBe(303);
     expect(response.headers.get('Location')).toBe('/?range=7');
     // The 10-14 row arrived after the page's newest (10-10): it stays unread.

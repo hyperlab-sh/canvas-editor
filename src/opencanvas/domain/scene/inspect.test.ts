@@ -3,7 +3,7 @@ import { inspectCode, inspectSelection } from './inspect';
 import { createProductionSceneNode } from '../../application/active-document/productionNodeCatalog';
 import type { SceneConnector, ScenePage } from '../document/types';
 
-const SOURCE = '%% canvas 1\nflowchart down\ntitle: Auth\n\n  Start -> Login : credentials\n';
+const SOURCE = '%% ofk 1\nflowchart down\ntitle: Auth\n\n  Start -> Login : credentials\n';
 
 function page(): ScenePage {
   const frame = { ...createProductionSceneNode('section', 'f', { x: 100, y: 50 }, 'default'), kind: 'frame' };

@@ -1,4 +1,4 @@
-%% canvas 1
+%% ofk 1
 erd
 ghost ||--o{ a : missing entity
 a {

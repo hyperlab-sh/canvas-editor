@@ -14,7 +14,7 @@ const tempDirs: string[] = [];
 afterAll(async () => { await Promise.all(tempDirs.map((dir) => rm(dir, { recursive: true, force: true }))); });
 
 async function repo(files: Record<string, string>): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), 'canvas-discovery-'));
+  const root = await mkdtemp(join(tmpdir(), 'openflowkit-discovery-'));
   tempDirs.push(root);
   for (const [relative, content] of Object.entries(files)) {
     const full = join(root, relative);
@@ -242,11 +242,11 @@ describe('discovery invents nothing', () => {
 describe('discovery on this repository', () => {
   // On 2026-10-07 it reported 12 invented services (Stripe, BigQuery…) from tests, evals,
   // icon data and its own rule source. A real new dependency belongs in this list.
-  // The app (root package.json, `canvas-app`) and the npm CLI alias in cli/ (`canvas`) are distinct names,
-  // so `canvas drift .` can tell them apart in architecture.canvas.
+  // The app (root package.json, `openflowkit-app`) and the npm CLI alias in cli/ (`openflowkit`) are distinct names,
+  // so `openflowkit drift .` can tell them apart in architecture.ofk.
   it('reports the app, the docs site, the MCP server and the Workers, and nothing it made up', async () => {
     const discovery = await runArchitectureDiscovery(fileURLToPath(new URL('../..', import.meta.url)));
-    expect(discovery.units.map((unit) => unit.name).sort()).toEqual(['canvas', 'canvas-app', 'canvas-data', 'canvas-docs', 'canvas-mcp', 'canvas-share', 'canvas-shares', 'canvas-stats']);
+    expect(discovery.units.map((unit) => unit.name).sort()).toEqual(['openflowkit', 'openflowkit-app', 'openflowkit-data', 'openflowkit-docs', 'openflowkit-mcp', 'openflowkit-share', 'openflowkit-shares', 'openflowkit-stats']);
   });
 });
 

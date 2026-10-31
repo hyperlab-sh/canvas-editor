@@ -30,7 +30,7 @@ test('a map laid out before the renderer is ready lands on screen once it is @ga
   await page.waitForFunction(() => '__V2__' in window, undefined, { timeout: 30_000 });
   const ids = () => page.evaluate(() => (window as unknown as { __V2__: { getMapState(): { nodes: string[] } } }).__V2__.getMapState().nodes);
   await expect.poll(async () => (await ids()).length, { timeout: 30_000 }).toBeGreaterThan(0);
-  await expect(page.locator('.canvas-loader[data-cover]')).toHaveCount(0, { timeout: 10_000 });
+  await expect(page.locator('.ofk-loader[data-cover]')).toHaveCount(0, { timeout: 10_000 });
   // Some top-level box is on the canvas where the reader can see it.
   const canvas = (await page.locator('[data-testid="v2-canvas"]').boundingBox())!;
   await expect.poll(async () => {

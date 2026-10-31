@@ -14,7 +14,7 @@ export function V2LiveCommentsToggle(props: {
 }): React.JSX.Element {
   const why = props.available ? null : props.why ?? 'Connect an agent first: live comments are sent through the agent connection.';
   return (
-    <div className="canvas-comment-live" data-compact={props.compact || undefined} title={why ?? undefined}>
+    <div className="ofk-comment-live" data-compact={props.compact || undefined} title={why ?? undefined}>
       <Switch label="Live comments" checked={props.on && props.available} disabled={!props.available}
         onChange={(event) => props.onChange(event.target.checked)} />
       {props.compact ? null : (

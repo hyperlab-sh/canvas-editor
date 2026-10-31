@@ -209,7 +209,7 @@ const isDropped = ({ code, severity, message }: Diagnostic): boolean => severity
 const droppedHint = (form: string) => `Rewrite the line (${form} shows the form) or delete it; until then it is left out of the diagram.`;
 
 /**
- * `check` for a validator (`canvas validate`, validate_openflow_dsl): every dropped line is an error with
+ * `check` for a validator (`openflowkit validate`, validate_openflow_dsl): every dropped line is an error with
  * a fix, so a draft that silently loses an edge does not pass. Unknown words and other guesses stay warnings.
  */
 export async function checkForValidation(source: string, terminal = false): Promise<Checked> {

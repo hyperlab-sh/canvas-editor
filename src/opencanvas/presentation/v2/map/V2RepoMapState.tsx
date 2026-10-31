@@ -66,11 +66,11 @@ export function V2RepoMapState({ source, map, onOpenDrawing }: { readonly source
     const { read, total } = map.progress;
     return (
       <V2StateShell testId="v2-map">
-        <div className="canvas-empty" role="status">
+        <div className="ofk-empty" role="status">
           <BrandLoader />
-          <p className="canvas-empty-title">{`Reading ${name}…`}</p>
+          <p className="ofk-empty-title">{`Reading ${name}…`}</p>
           {total > 0 ? <Progress label={`Reading ${fmt(read)} of ${fmt(total)} files…`} value={read} max={total} /> : null}
-          <div className="canvas-empty-actions">{home(false)}</div>
+          <div className="ofk-empty-actions">{home(false)}</div>
         </div>
       </V2StateShell>
     );
@@ -106,7 +106,7 @@ export function V2RepoMapChips({ map, links }: { readonly map: RepoMapState; rea
 export function V2RepoMapOverlay({ source, map, links, onOpenDrawing }: { readonly source: RepoMapSource; readonly map: RepoMapState; readonly links?: RepoLinks | null; readonly onOpenDrawing?: (() => void) | undefined }): React.JSX.Element {
   return (
     <>
-      <div className="canvas-v2-map-state"><V2RepoMapState source={source} map={map} onOpenDrawing={onOpenDrawing} /></div>
+      <div className="ofk-v2-map-state"><V2RepoMapState source={source} map={map} onOpenDrawing={onOpenDrawing} /></div>
       <V2RepoMapChips map={map} links={links} />
     </>
   );

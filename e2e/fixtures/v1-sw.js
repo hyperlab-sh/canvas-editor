@@ -1,9 +1,9 @@
-const APP_SHELL_CACHE = 'canvas-app-shell-v1';
+const APP_SHELL_CACHE = 'openflowkit-app-shell-v1';
 const APP_SHELL_ASSETS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
-  '/logo-canvas.svg',
+  '/Logo_openflowkit.svg',
   '/favicon.svg',
 ];
 

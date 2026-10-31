@@ -13,11 +13,11 @@ const context = (overrides: Partial<FailureContext> = {}): FailureContext => ({
 describe('the self-hosted AI proxy (/ai-proxy)', () => {
   const proxied = (overrides: Partial<FailureContext>) => context({ definition: providerById('custom'), endpoint: '/ai-proxy/chat/completions', ...overrides });
   it('names the proxy, not the browser or the provider, when it cannot answer', () => {
-    expect(describeCause('provider-down', proxied({ status: 502 }))).toMatch(/AI proxy got no answer from the model server \(502\).*CANVAS_AI_UPSTREAM/);
+    expect(describeCause('provider-down', proxied({ status: 502 }))).toMatch(/AI proxy got no answer from the model server \(502\).*OPENFLOWKIT_AI_UPSTREAM/);
     expect(describeCause('provider-down', proxied({ status: null, timedOut: true }))).toMatch(/AI proxy got no answer/);
     expect(describeCause('provider-down', proxied({ status: 503 }))).toMatch(/AI proxy answered 503: it is off, or the model server is busy/);
     // A host without the proxy answers with the app's own page.
-    expect(describeCause('bad-response', proxied({ status: 200 }))).toMatch(/no AI proxy at \/ai-proxy\/chat\/completions.*CANVAS_AI_UPSTREAM/);
+    expect(describeCause('bad-response', proxied({ status: 200 }))).toMatch(/no AI proxy at \/ai-proxy\/chat\/completions.*OPENFLOWKIT_AI_UPSTREAM/);
   });
   it('leaves the model server\'s own errors as they are', () => {
     expect(describeCause('bad-key', proxied({ status: 401 }))).toMatch(/rejected the key/);

@@ -1,4 +1,4 @@
-# Canvas UI foundation
+# OpenFlowKit UI foundation
 
 Internal React + TypeScript foundation for the editor. No document storage or authoring ownership lives here.
 
@@ -87,7 +87,7 @@ surfaces. Collisions are prevented by contract, not by docking:
 - ToastRegion: hosts push through `withToast` (at most 3, newest nearest the edge; a twin by id, or by title when
   neither has an action, replaces the old one and restarts its timer; an action is never dropped). Titles are short sentence case with no closing period; detail
   goes in `description`. Tone is a 16px icon (none for neutral); hover or focus pauses auto-dismiss; danger,
-  warning and `persistent` stay until dismissed. Popover exposes `data-side` and `--canvas-arrow` for a caret.
+  warning and `persistent` stay until dismissed. Popover exposes `data-side` and `--ofk-arrow` for a caret.
 - Status pairs a symbol with text. Use `live` for meaningful state changes, not
   pointer movement or streaming tokens. Avoid repeated announcements per frame.
 - ProposalBar guards stale/pending acceptance for UX. `onAccept(id, revision)` must

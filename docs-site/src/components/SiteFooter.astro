@@ -13,7 +13,7 @@ const columns = FOOTER_COLUMNS.map((column) => ({ ...column, links: column.links
   <div class="brand">
     <a class="wordmark" href="/">
       <img src="/favicon.svg" alt="" width="20" height="20" />
-      Canvas
+      OpenFlowKit
     </a>
     <p>Architecture diagrams you draw, write as code, or hand to your agent.</p>
   </div>
@@ -38,7 +38,7 @@ const columns = FOOTER_COLUMNS.map((column) => ({ ...column, links: column.links
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 2rem 1.5rem;
     padding-top: 2rem;
-    border-top: 1px solid var(--canvas-border);
+    border-top: 1px solid var(--ofk-border);
     font-size: 0.875rem;
     line-height: 1.5;
   }
@@ -49,14 +49,14 @@ const columns = FOOTER_COLUMNS.map((column) => ({ ...column, links: column.links
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--canvas-text);
+    color: var(--ofk-text);
     font-weight: 600;
     text-decoration: none;
   }
   .brand p {
     max-width: 20rem;
     margin: 0.5rem 0 0;
-    color: var(--canvas-muted);
+    color: var(--ofk-muted);
   }
   h2 {
     margin: 0 0 0.75rem;
@@ -64,7 +64,7 @@ const columns = FOOTER_COLUMNS.map((column) => ({ ...column, links: column.links
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--canvas-muted);
+    color: var(--ofk-muted);
   }
   ul {
     display: grid;
@@ -83,16 +83,16 @@ const columns = FOOTER_COLUMNS.map((column) => ({ ...column, links: column.links
   }
   @media (hover: hover) {
     nav a:hover {
-      color: var(--canvas-text);
+      color: var(--ofk-text);
     }
   }
   .legal {
     grid-column: 1 / -1;
     margin: 0;
     padding-top: 1.25rem;
-    border-top: 1px solid var(--canvas-border);
+    border-top: 1px solid var(--ofk-border);
     font-size: 0.8125rem;
-    color: var(--canvas-muted);
+    color: var(--ofk-muted);
   }
   .legal a {
     color: inherit;

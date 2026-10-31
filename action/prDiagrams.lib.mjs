@@ -1,11 +1,11 @@
 // Pure helpers for pr-diagrams.mjs: no I/O, so each one is a unit test.
 
-export const MARKER = '<!-- canvas-pr-diagrams -->';
+export const MARKER = '<!-- openflowkit-pr-diagrams -->';
 export const DIFF_LINE_CAP = 300;
 // GitHub rejects comments over 65536 characters.
 const BODY_CAP = 60000;
 
-/** `.openflow.json,.canvas` -> matcher. A token starting with `.` is an extension; anything else is a glob (`**`, `*`). */
+/** `.openflow.json,.ofk` -> matcher. A token starting with `.` is an extension; anything else is a glob (`**`, `*`). */
 export function pathMatcher(spec) {
   const tokens = String(spec || '').split(',').map((token) => token.trim()).filter(Boolean);
   const tests = tokens.map((token) => {
@@ -32,7 +32,7 @@ export function parseNameStatus(raw) {
 
 /** Mirrors mcp-server/src/lib/svgBeside.ts `svgBeside`: keep the two rules identical. */
 export function svgBeside(file) {
-  const suffix = /\.(openflow\.json|canvas|json)$/i;
+  const suffix = /\.(openflow\.json|ofk|json)$/i;
   return suffix.test(file) ? file.replace(suffix, '.svg') : `${file}.svg`;
 }
 

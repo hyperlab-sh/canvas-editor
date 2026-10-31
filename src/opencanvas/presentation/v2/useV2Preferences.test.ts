@@ -9,12 +9,12 @@ describe('bridge token', () => {
     const first = readPreferences().bridgeToken;
     expect(first).toMatch(/^[0-9a-f]{32}$/);
     expect(readPreferences().bridgeToken).toBe(first);
-    localStorage.setItem('canvas-v2-preferences', JSON.stringify({ bridgeToken: 'mine' }));
+    localStorage.setItem('openflowkit-v2-preferences', JSON.stringify({ bridgeToken: 'mine' }));
     expect(readPreferences().bridgeToken).toBe('mine');
   });
 
   it('keeps the stored preferences when saving the new token fails', () => {
-    localStorage.setItem('canvas-v2-preferences', JSON.stringify({ theme: 'dark' }));
+    localStorage.setItem('openflowkit-v2-preferences', JSON.stringify({ theme: 'dark' }));
     const setItem = vi.spyOn(localStorage, 'setItem').mockImplementation(() => { throw new DOMException('full', 'QuotaExceededError'); });
     const preferences = readPreferences();
     setItem.mockRestore();
@@ -23,15 +23,15 @@ describe('bridge token', () => {
   });
 
   it('goes into the MCP config next to a custom port', () => {
-    expect(JSON.parse(mcpConfig(43119, 'abc')).mcpServers.canvas.env).toEqual({ CANVAS_BRIDGE_TOKEN: 'abc' });
-    expect(JSON.parse(mcpConfig(5000, 'abc')).mcpServers.canvas.env).toEqual({ CANVAS_BRIDGE_PORT: '5000', CANVAS_BRIDGE_TOKEN: 'abc' });
-    expect(JSON.parse(mcpConfig(43119, '')).mcpServers.canvas.env).toBeUndefined();
+    expect(JSON.parse(mcpConfig(43119, 'abc')).mcpServers.openflowkit.env).toEqual({ OPENFLOWKIT_BRIDGE_TOKEN: 'abc' });
+    expect(JSON.parse(mcpConfig(5000, 'abc')).mcpServers.openflowkit.env).toEqual({ OPENFLOWKIT_BRIDGE_PORT: '5000', OPENFLOWKIT_BRIDGE_TOKEN: 'abc' });
+    expect(JSON.parse(mcpConfig(43119, '')).mcpServers.openflowkit.env).toBeUndefined();
   });
 });
 
 describe('comment preferences', () => {
   beforeEach(() => localStorage.clear());
-  const store = (value: unknown) => localStorage.setItem('canvas-v2-preferences', JSON.stringify(value));
+  const store = (value: unknown) => localStorage.setItem('openflowkit-v2-preferences', JSON.stringify(value));
 
   it('default to live comments off', () => {
     expect(readPreferences()).toMatchObject({ liveComments: false });
@@ -54,7 +54,7 @@ describe('comment preferences', () => {
 
 describe('threads panel preferences', () => {
   beforeEach(() => localStorage.clear());
-  const store = (value: unknown) => localStorage.setItem('canvas-v2-preferences', JSON.stringify(value));
+  const store = (value: unknown) => localStorage.setItem('openflowkit-v2-preferences', JSON.stringify(value));
 
   it('default to resolved hidden, unanswered-only off and nothing read', () => {
     expect(readPreferences()).toMatchObject({ threadsShowResolved: false, threadsUnansweredOnly: false, threadReads: {}, threadSent: [] });

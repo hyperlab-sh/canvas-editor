@@ -23,7 +23,7 @@ describe('share envelope', () => {
   it('stores no plaintext: the label is absent from the body', async () => {
     const { body } = await encryptDocument(document());
     expect(new TextDecoder('latin1').decode(body)).not.toContain(LABEL);
-    expect(new TextDecoder('latin1').decode(body)).not.toContain('Canvas');
+    expect(new TextDecoder('latin1').decode(body)).not.toContain('OpenFlowKit');
   });
 
   it('encrypts afresh each time', async () => {

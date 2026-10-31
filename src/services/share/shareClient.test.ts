@@ -44,13 +44,13 @@ beforeAll(async () => {
 afterEach(() => bucket.objects.clear());
 
 const doc = () => createTestDocument({ nodes: [createTestNode('a', { content: { label: 'Auth service' } })] });
-const share = () => createShareLink(doc(), { appUrl: 'https://canvas.hyperlab.sh/#/d/xyz', getTurnstileToken: async () => 't', origin });
+const share = () => createShareLink(doc(), { appUrl: 'https://app.openflowkit.com/#/d/xyz', getTurnstileToken: async () => 't', origin });
 const idKey = (url: string) => { const [, id, key] = /#\/s\/([0-9a-f]{32})\/([\w-]{43})$/.exec(url)!; return { id: id!, key: key! }; };
 
 describe('share client against a real server', () => {
   it('create → open round-trips; the key is only in the fragment', async () => {
     const { url } = await share();
-    expect(url).toMatch(/^https:\/\/canvas\.hyperlab\.sh\/#\/s\/[0-9a-f]{32}\/[\w-]{43}$/);
+    expect(url).toMatch(/^https:\/\/app\.openflowkit\.com\/#\/s\/[0-9a-f]{32}\/[\w-]{43}$/);
     const { id, key } = idKey(url);
     expect(await loadSharedDocument(id, key, origin)).toEqual({ document: doc() });
   });
@@ -171,7 +171,7 @@ describe('delete tokens kept in the browser', () => {
   });
   it.each(['{not json', 'null', '[]', '"text"', '{"a":1}', '{"a":{"docId":1}}'])('survives corrupt storage %s', (value) => {
     const s = storage();
-    s.setItem('canvas-shares', value);
+    s.setItem('ofk-shares', value);
     expect(latestShareFor(s, 'doc-1')).toBeNull();
     rememberShare(s, 'doc-1', 'id', 'tok');
     expect(latestShareFor(s, 'doc-1')).toEqual({ id: 'id', deleteToken: 'tok' });
@@ -191,7 +191,7 @@ describe('delete tokens kept in the browser', () => {
 
 describe('appBaseUrl', () => {
   it('drops the query and hash, so a v1 room secret never rides into a new link', () => {
-    expect(appBaseUrl('https://canvas.hyperlab.sh/?room=r1&secret=s3#/flow/x')).toBe('https://canvas.hyperlab.sh/');
-    expect(shareLink(appBaseUrl('https://canvas.hyperlab.sh/app/?secret=s3#/d/x'), 'id', 'key')).toBe('https://canvas.hyperlab.sh/app/#/s/id/key');
+    expect(appBaseUrl('https://app.openflowkit.com/?room=r1&secret=s3#/flow/x')).toBe('https://app.openflowkit.com/');
+    expect(shareLink(appBaseUrl('https://app.openflowkit.com/app/?secret=s3#/d/x'), 'id', 'key')).toBe('https://app.openflowkit.com/app/#/s/id/key');
   });
 });

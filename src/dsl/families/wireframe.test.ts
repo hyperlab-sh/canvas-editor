@@ -113,7 +113,7 @@ screen S [browser] {
   it('serializes to canonical text that compiles back to the same screens', async () => {
     const first = await compile(LOGIN);
     const text = serialize(first);
-    expect(text).toBe(`%% canvas 1
+    expect(text).toBe(`%% ofk 1
 wireframe
 title: Onboarding
 

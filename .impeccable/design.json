@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-08-07T11:05:48Z",
-  "title": "Design System: Canvas",
+  "title": "Design System: OpenFlowKit",
   "extensions": {
     "colorMeta": {
       "primary": {
@@ -142,7 +142,7 @@
   ],
   "narrative": {
     "northStar": "The Builder's Instrument",
-    "overview": "Canvas is a precise workspace, not a decorative canvas. Quiet neutral surfaces establish orientation, a single warm orange marks consequential action, and compact controls stay close to the object being edited. The interface is calm at rest and immediate in motion.",
+    "overview": "OpenFlowKit is a precise workspace, not a decorative canvas. Quiet neutral surfaces establish orientation, a single warm orange marks consequential action, and compact controls stay close to the object being edited. The interface is calm at rest and immediate in motion.",
     "keyCharacteristics": [
       "Local-first and trustworthy.",
       "Technical, legible, and compact without becoming cramped.",

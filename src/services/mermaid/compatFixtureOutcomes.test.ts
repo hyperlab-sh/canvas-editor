@@ -4,7 +4,7 @@ import type { MermaidImportStatus } from './importContracts';
 import { MERMAID_COMPAT_FIXTURES } from '../../../scripts/mermaid-compat-fixtures.mjs';
 
 describe('mermaid compat fixture corpus', () => {
-  it('measures actual Canvas import outcomes for the fixture corpus', () => {
+  it('measures actual OpenFlowKit import outcomes for the fixture corpus', () => {
     const fixtures = MERMAID_COMPAT_FIXTURES as Array<{
       name: string;
       family: string;

@@ -15,7 +15,7 @@ const FIXTURE = '01-tiny-connection.dsl';
 async function fixtureDocument(): Promise<SceneDocumentV1> {
   const compiled = await compile(readFileSync(join(process.cwd(), 'src/dsl/fixtures', FIXTURE), 'utf8'));
   return {
-    format: 'canvas.scene', schemaVersion: 1, id: 'golden', name: 'animated',
+    format: 'openflowkit.scene', schemaVersion: 1, id: 'golden', name: 'animated',
     createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z',
     pages: [{
       id: 'page-1', name: 'Page 1', diagramKind: compiled.meta.family,
@@ -39,14 +39,14 @@ describe('animated SVG', () => {
   it('keeps the finished diagram as the base and honours reduced motion', async () => {
     const document = await fixtureDocument();
     const svg = exportAnimatedSvg(document, autoSequence(document.pages[0]!, 'build'));
-    expect(svg).toContain('@media (prefers-reduced-motion: reduce){.canvas-anim{animation:none!important}}');
-    expect(svg).toContain('@keyframes canvas-node-');
-    expect(svg).toContain('class="canvas-anim"');
+    expect(svg).toContain('@media (prefers-reduced-motion: reduce){.ofk-anim{animation:none!important}}');
+    expect(svg).toContain('@keyframes ofk-node-');
+    expect(svg).toContain('class="ofk-anim"');
     expect(svg).toContain('<style>');
     // The static base markup (no animation running) is the final frame.
     const frame = exportMotionFrameSvg(document, autoSequence(document.pages[0]!, 'build'), 10 ** 9);
     expect(frame).not.toContain('@keyframes');
-    expect(frame).not.toContain('canvas-anim');
+    expect(frame).not.toContain('ofk-anim');
   });
 
   // 2026-10-11: a connector's draw-on ran on a path without the class, so reduced motion kept it drawing.
@@ -56,22 +56,22 @@ describe('animated SVG', () => {
       const svg = exportAnimatedSvg(document, autoSequence(document.pages[0]!, preset));
       const animated = [...svg.matchAll(/<[a-z]+\b[^>]*style="[^"]*animation:[^>]*>/g)].map(([tag]) => tag);
       expect(animated.length).toBeGreaterThan(0);
-      expect(animated.filter((tag) => !tag.includes('class="canvas-anim"'))).toEqual([]);
+      expect(animated.filter((tag) => !tag.includes('class="ofk-anim"'))).toEqual([]);
     }
   });
 
   it('only walkthrough animates the camera', async () => {
     const document = await fixtureDocument();
     const page = document.pages[0]!;
-    expect(exportAnimatedSvg(document, autoSequence(page, 'walkthrough'))).toContain('@keyframes canvas-camera');
-    expect(exportAnimatedSvg(document, autoSequence(page, 'build'))).not.toContain('canvas-camera');
-    expect(exportAnimatedSvg(document, autoSequence(page, 'pulse'))).not.toContain('canvas-camera');
+    expect(exportAnimatedSvg(document, autoSequence(page, 'walkthrough'))).toContain('@keyframes ofk-camera');
+    expect(exportAnimatedSvg(document, autoSequence(page, 'build'))).not.toContain('ofk-camera');
+    expect(exportAnimatedSvg(document, autoSequence(page, 'pulse'))).not.toContain('ofk-camera');
   });
 
   it('rides an infinite travelling dash in pulse', async () => {
     const document = await fixtureDocument();
     const svg = exportAnimatedSvg(document, autoSequence(document.pages[0]!, 'pulse'));
-    expect(svg).toContain('animation:canvas-pulse 1200ms linear');
+    expect(svg).toContain('animation:ofk-pulse 1200ms linear');
     expect(svg).toContain('infinite none');
     expect(svg).toContain('stroke-dasharray="8 6"');
   });
@@ -80,7 +80,7 @@ describe('animated SVG', () => {
   it('rides the same pixel dash at the same speed on every connector in pulse', async () => {
     const document = await fixtureDocument();
     const svg = exportAnimatedSvg(document, autoSequence(document.pages[0]!, 'pulse'));
-    const pulsed = [...svg.matchAll(/<path\b[^>]*animation:canvas-pulse[^>]*>/g)].map(([tag]) => tag);
+    const pulsed = [...svg.matchAll(/<path\b[^>]*animation:ofk-pulse[^>]*>/g)].map(([tag]) => tag);
     expect(pulsed.length).toBeGreaterThan(0);
     for (const tag of pulsed) {
       expect(tag).toContain('stroke-dasharray="8 6"');
@@ -93,7 +93,7 @@ describe('animated SVG', () => {
     const document = await fixtureDocument();
     const timeline = autoSequence(document.pages[0]!, 'build');
     const seeked = exportAnimatedSvg(document, timeline, { seekMs: 1000, loop: true });
-    expect(seeked).toContain('animation:canvas-node-idea');
+    expect(seeked).toContain('animation:ofk-node-idea');
     expect(seeked).toContain('-1000ms');
     expect(seeked).toContain('infinite');
     expect(exportAnimatedSvg(document, timeline)).not.toContain('-1000ms');

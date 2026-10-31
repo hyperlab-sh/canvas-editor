@@ -14,7 +14,7 @@ const tempDirs: string[] = [];
 afterAll(async () => { await Promise.all(tempDirs.map((dir) => rm(dir, { recursive: true, force: true }))); });
 
 async function tempDir(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), 'canvas-cli-ops-'));
+  const dir = await mkdtemp(join(tmpdir(), 'openflowkit-cli-ops-'));
   tempDirs.push(dir);
   return dir;
 }
@@ -36,7 +36,7 @@ const MERMAID: Record<string, string> = {
   erd: 'erDiagram\n  CUSTOMER ||--o{ ORDER : places\n  ORDER ||--|{ LINE_ITEM : contains\n',
 };
 
-describe('canvas op', () => {
+describe('openflowkit op', () => {
   it('has a subcommand, with help, for every op in the manifest', async () => {
     const missing: string[] = [];
     for (const row of CAPABILITY_MANIFEST) {
@@ -68,7 +68,7 @@ describe('canvas op', () => {
   it('reports bad op input field by field, with exit 1', async () => {
     const run = capture();
     expect(await main(['op', 'move', '--args', '{"ids":[]}'], run.io)).toBe(1);
-    expect(run.err.join('\n')).toMatch(/canvas op: /);
+    expect(run.err.join('\n')).toMatch(/openflowkit op: /);
     const notJson = capture();
     expect(await main(['op', 'move', '--args', '{ids'], notJson.io)).toBe(2);
   });
@@ -90,7 +90,7 @@ describe('canvas op', () => {
   it('prints op usage for op --help with no name', async () => {
     const run = capture();
     expect(await main(['op', '--help'], run.io)).toBe(0);
-    expect(run.out[0]).toContain('canvas op <name>');
+    expect(run.out[0]).toContain('openflowkit op <name>');
   });
 
   it('lists every op', async () => {
@@ -100,7 +100,7 @@ describe('canvas op', () => {
   });
 });
 
-describe('canvas render / convert / validate', () => {
+describe('openflowkit render / convert / validate', () => {
   it.each(Object.entries(MERMAID))('renders Mermaid %s to SVG from stdin', async (_, source) => {
     const run = capture(source);
     expect(await main(['render', '-'], run.io)).toBe(0);
@@ -213,7 +213,7 @@ describe('canvas render / convert / validate', () => {
     expect(await main(['validate', '-'], dropped.io)).toBe(1);
     expect(dropped.err.join('\n')).toMatch(/line 3:\d+ error W101 .*dropped — Rewrite the line/);
     // A terminal has no get_syntax tool: the hint names the command.
-    expect(dropped.err.join('\n')).toMatch(/`canvas op get_syntax` shows the form/);
+    expect(dropped.err.join('\n')).toMatch(/`openflowkit op get_syntax` shows the form/);
     expect(await main(['render', '-'], capture('Flowchart\nGood\nBad [oops\nGood -> Fine').io)).toBe(0);
     const mermaid = capture('flowchart LR\n  A --> B\n  B --> \n  C -> -> D');
     expect(await main(['validate', '-'], mermaid.io)).toBe(1);
@@ -283,7 +283,7 @@ describe('canvas render / convert / validate', () => {
   });
 
   it('runs when invoked through a symlink, the way npm and npx install bins', async () => {
-    const bin = join(await tempDir(), 'canvas');
+    const bin = join(await tempDir(), 'openflowkit');
     symlinkSync(new URL('../src/cli.ts', import.meta.url).pathname, bin);
     const result = spawnSync(process.execPath, ['--import', 'tsx', bin, 'validate', '-'], {
       cwd: new URL('..', import.meta.url).pathname, input: 'flowchart\nA -> B\n', encoding: 'utf8',

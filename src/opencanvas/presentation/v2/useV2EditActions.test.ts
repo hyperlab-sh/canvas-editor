@@ -40,7 +40,7 @@ describe('useV2EditActions paste', () => {
     // The system clipboard write is still in flight when ⌘V's paste event reads the previous contents.
     Object.assign(navigator, { clipboard: { writeText: vi.fn(() => new Promise(() => undefined)) } });
     t.actions.copySelection();
-    const stale = JSON.stringify({ format: 'canvas.selection', version: 1, connectors: [],
+    const stale = JSON.stringify({ format: 'openflowkit.selection', version: 1, connectors: [],
       nodes: [createTestNode('old-1'), createTestNode('old-2')] });
     expect(t.actions.pasteShapes(stale)).toBe(true);
     const command = t.commit.mock.calls[0]![0];

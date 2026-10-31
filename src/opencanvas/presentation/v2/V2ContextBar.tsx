@@ -135,10 +135,10 @@ export function V2ContextBar(props: V2ContextBarProps): React.JSX.Element {
         </ContextGroup>
         {source ? (
           <ContextGroup label="Source">
-            <span className="canvas-v2-connector-source" title={`${source.from} → ${source.to} · ${text}`}>
+            <span className="ofk-v2-connector-source" title={`${source.from} → ${source.to} · ${text}`}>
               {source.from} → {source.to} · {href
-                ? <a href={href} target="_blank" rel="noopener noreferrer" aria-label={text}><span className="canvas-v2-connector-source-text">{tail(text)}</span><Icon icon={IconExternalLink} /></a>
-                : <span className="canvas-v2-connector-source-text">{tail(text)}</span>}
+                ? <a href={href} target="_blank" rel="noopener noreferrer" aria-label={text}><span className="ofk-v2-connector-source-text">{tail(text)}</span><Icon icon={IconExternalLink} /></a>
+                : <span className="ofk-v2-connector-source-text">{tail(text)}</span>}
             </span>
           </ContextGroup>
         ) : null}

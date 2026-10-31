@@ -6,7 +6,7 @@ import type { V2StateHeroKind } from './V2StateHero';
 // What the two GitHub pages (repo -> diagram, repo -> map) say when a read fails, and the token form they share.
 
 // The token lives in this tab's sessionStorage only: never logged, never in a URL.
-const TOKEN_KEY = 'canvas.github-token';
+const TOKEN_KEY = 'ofk.github-token';
 export const storedToken = (): string | undefined => { try { return sessionStorage.getItem(TOKEN_KEY) ?? undefined; } catch { return undefined; } };
 export const keepToken = (token: string | null): void => { try { if (token) sessionStorage.setItem(TOKEN_KEY, token); else sessionStorage.removeItem(TOKEN_KEY); } catch { /* storage blocked: the token is used for this try only */ } };
 
@@ -25,11 +25,11 @@ export interface RepoProblemView {
 }
 
 /** The CLI command a page names in its error screens: exactly once, with its own subcommand. `map` writes a page to open (alone it prints text). */
-export const cliCommand = (sub: 'discover' | 'map'): string => (sub === 'map' ? 'npx @hyperlab.sh/canvas map . --html map.html' : `npx @hyperlab.sh/canvas ${sub} .`);
+export const cliCommand = (sub: 'discover' | 'map'): string => (sub === 'map' ? 'npx openflowkit map . --html map.html' : `npx openflowkit ${sub} .`);
 
-/** A screen's text with its CLI command kept on one line (as code), so `npx @hyperlab.sh/canvas` never breaks from what follows. */
+/** A screen's text with its CLI command kept on one line (as code), so `npx openflowkit` never breaks from what follows. */
 export function CliText({ text }: { readonly text: string }): React.JSX.Element {
-  const parts = text.split(/(npx @hyperlab\.sh\/canvas (?:discover \.|map \. --html map\.html))/);
+  const parts = text.split(/(npx openflowkit (?:discover \.|map \. --html map\.html))/);
   return <>{parts.map((part, i) => (i % 2 ? <code key={i} style={{ whiteSpace: 'nowrap' }}>{part}</code> : part))}</>;
 }
 
@@ -56,12 +56,12 @@ export function describeRepoError(error: unknown, sub: 'discover' | 'map'): Repo
 export function RepoTokenForm({ onSubmit, home, required = false }: { readonly onSubmit: (token: string) => void; readonly home: React.ReactNode; readonly required?: boolean }): React.JSX.Element {
   const [token, setToken] = useState('');
   return (
-    <form className="canvas-v2-state-token" onSubmit={(event) => { event.preventDefault(); onSubmit(token.trim()); }}>
+    <form className="ofk-v2-state-token" onSubmit={(event) => { event.preventDefault(); onSubmit(token.trim()); }}>
       <Field label={required ? 'GitHub token' : 'GitHub token (optional)'} type="password" autoComplete="new-password" spellCheck={false} value={token} onChange={(event) => setToken(event.target.value)}
         autoFocus={required}
         hint="A token raises the limit to 5,000/hour and reads the private repos it can access. Use a fine-grained token with Contents read-only. It stays in this browser tab and goes only to api.github.com." />
-      <a className="canvas-caption" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noreferrer">Create a fine-grained token on GitHub</a>
-      <div className="canvas-empty-actions">
+      <a className="ofk-caption" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noreferrer">Create a fine-grained token on GitHub</a>
+      <div className="ofk-empty-actions">
         <Button variant="primary" type="submit" disabled={required && token.trim() === ''}>Try with token</Button>
         {home}
       </div>

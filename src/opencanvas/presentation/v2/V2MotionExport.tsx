@@ -216,7 +216,7 @@ export function V2MotionExport({ document, pageId, onToast, onAnimateBlock, code
   }));
   return (
     <div
-      className="canvas-v2-properties canvas-motion"
+      className="ofk-v2-properties ofk-motion"
       onKeyDown={(event) => {
         if ((event.target as HTMLElement).closest('button, input, textarea, select, [role="slider"]')) return;
         if (event.key === ' ') { event.preventDefault(); toggle(); }
@@ -224,13 +224,13 @@ export function V2MotionExport({ document, pageId, onToast, onAnimateBlock, code
         else if (event.key === 'ArrowRight') { event.preventDefault(); stepBy(1); }
       }}
     >
-      <div className="canvas-motion-stage">
+      <div className="ofk-motion-stage">
       <Segmented<AnimationPreset> label="Preset" value={preset} onChange={setPreset} options={PRESETS} />
-      <div className="canvas-motion-preview" data-empty={empty || undefined} data-busy={busy || undefined}>
+      <div className="ofk-motion-preview" data-empty={empty || undefined} data-busy={busy || undefined}>
         {empty ? (
-          <div className="canvas-motion-empty">
-            <span className="canvas-motion-hero" aria-hidden="true"><i /><i /><i /></span>
-            <p className="canvas-caption">Nothing to animate yet. Add shapes and each one becomes a step.</p>
+          <div className="ofk-motion-empty">
+            <span className="ofk-motion-hero" aria-hidden="true"><i /><i /><i /></span>
+            <p className="ofk-caption">Nothing to animate yet. Add shapes and each one becomes a step.</p>
           </div>
         ) : (
           <img
@@ -241,7 +241,7 @@ export function V2MotionExport({ document, pageId, onToast, onAnimateBlock, code
           />
         )}
       </div>
-      <div className="canvas-motion-transport">
+      <div className="ofk-motion-transport">
         <IconButton
           label={playing ? 'Pause (space)' : 'Play (space)'}
           selected={playing}
@@ -278,11 +278,11 @@ export function V2MotionExport({ document, pageId, onToast, onAnimateBlock, code
           onChange={(value) => { setOrder(value); setEdited(value === 'code' ? (codeBlock ?? null) : null); }}
           options={orderOptions} />
       ) : null}
-      <div className="canvas-motion-format">
+      <div className="ofk-motion-format">
         <Segmented<MotionOutput> label="Format" value={output} onChange={setOutput}
           options={FORMAT_OPTIONS.filter((option) => option.value !== 'mp4' || webCodecsAvailable())} />
         {/* Where the pick actually plays, in one line — no promo, no icon. */}
-        <p className="canvas-caption">{FORMAT_OPTIONS.find((option) => option.value === output)?.title}</p>
+        <p className="ofk-caption">{FORMAT_OPTIONS.find((option) => option.value === output)?.title}</p>
       </div>
       {output !== 'svg' ? (
         <>
@@ -294,7 +294,7 @@ export function V2MotionExport({ document, pageId, onToast, onAnimateBlock, code
             options={MOTION_SIZES.map((value) => ({ value: String(value) as '720' | '1080' | '1440', label: `${value} px`, title: `${value} pixels wide, or more for a wide diagram so its labels stay readable` }))} />
         </>
       ) : null}
-      <div className="canvas-motion-fields">
+      <div className="ofk-motion-fields">
         <NumberField
           label="Duration"
           value={Number(((targetMs ?? durationMs) / 1000).toFixed(1))}
@@ -314,23 +314,23 @@ export function V2MotionExport({ document, pageId, onToast, onAnimateBlock, code
         <V2MotionSteps steps={timeline.steps} page={page} onReorder={move} onMerge={merge} onHold={setHold} {...(onShowCode ? { onShowCode } : {})} />
       ) : null}
       {progress ? (
-        <div className="canvas-motion-progress" role="status">
+        <div className="ofk-motion-progress" role="status">
           <progress value={progress.done} max={Math.max(1, progress.total)} aria-label="Encoding progress" />
-          <span className="canvas-caption">Frame {progress.done} of {progress.total}</span>
+          <span className="ofk-caption">Frame {progress.done} of {progress.total}</span>
           <Button variant="quiet" onClick={() => abortRef.current?.abort()}>
             <Icon icon={IconX} /> Cancel
           </Button>
         </div>
       ) : null}
-      {failure ? <p className="canvas-motion-failure" role="alert">{failure}</p> : null}
-      <div className="canvas-v2-export-actions">
+      {failure ? <p className="ofk-motion-failure" role="alert">{failure}</p> : null}
+      <div className="ofk-v2-export-actions">
         <Button variant="primary" disabled={empty || busy}
           onClick={() => { if (output === 'svg') void download(); else void encode(); }}>
           <Icon icon={IconDownload} /> Download {FORMAT_OPTIONS.find((option) => option.value === output)?.label ?? output}
         </Button>
       </div>
       {/* Where the file plays lives under the format pick; this line is the math. */}
-      <p className="canvas-caption">
+      <p className="ofk-caption">
         {empty
           ? 'Pick a preset now and it is ready the moment the page has shapes.'
           : `${timeline?.steps.length ?? 0} steps, ${(durationMs / 1000).toFixed(1)}s${output === 'svg' ? '' : ` at ${fps} fps`}${loop ? ', loops' : ''}.`}

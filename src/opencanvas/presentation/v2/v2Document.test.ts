@@ -17,7 +17,7 @@ describe('the page a document was left on', () => {
   it('stores nothing for the first page, and nothing survives a delete', () => {
     savePageId('doc-a', 'page-2');
     savePageId('doc-a', null);
-    expect(localStorage.getItem('canvas.page:doc-a')).toBeNull();
+    expect(localStorage.getItem('ofk.page:doc-a')).toBeNull();
     savePageId('doc-b', 'page-9');
     forgetPageId('doc-b');
     expect(savedPageId('doc-b')).toBeNull();

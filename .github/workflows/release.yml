@@ -30,13 +30,13 @@ jobs:
         run: |
           case "$GITHUB_REF_NAME" in
             mcp-v*) title="MCP server ${GITHUB_REF_NAME#mcp-v}"; latest=false ;;
-            *)      title="Canvas ${GITHUB_REF_NAME#v}";     latest=true ;;
+            *)      title="OpenFlowKit ${GITHUB_REF_NAME#v}";     latest=true ;;
           esac
           gh release create "$GITHUB_REF_NAME" --title "$title" --notes-file release-notes.md --latest="$latest"
 
-  # An mcp-v tag also lists the server in the official MCP registry (io.github.hyperlab-sh/*).
+  # An mcp-v tag also lists the server in the official MCP registry (io.github.openflowkit/*).
   # GitHub's OIDC token proves the org owns this repo, so there is no secret to keep. Push the tag
-  # after both npm packages are live: the registry checks the published `@hyperlab.sh/canvas` package.
+  # after both npm packages are live: the registry checks the published `openflowkit` package.
   registry:
     if: startsWith(github.ref_name, 'mcp-v')
     runs-on: ubuntu-latest

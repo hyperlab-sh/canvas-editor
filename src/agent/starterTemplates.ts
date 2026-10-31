@@ -14,7 +14,7 @@ export interface StarterTemplate {
   dsl: string;
 }
 
-export const C4_STARTER = `%% canvas 1
+export const C4_STARTER = `%% ofk 1
 architecture
 title: Shop architecture
 model {
@@ -53,7 +53,7 @@ export const STARTER_TEMPLATES: readonly StarterTemplate[] = [
     title: 'Three-tier web app on AWS',
     family: 'architecture',
     summary: 'Route 53 and CloudFront at the edge, Fargate services behind a load balancer, RDS, ElastiCache and S3 in the data tier.',
-    dsl: `%% canvas 1
+    dsl: `%% ofk 1
 architecture right
 title: Three-tier web app on AWS
 
@@ -88,7 +88,7 @@ title: Three-tier web app on AWS
     title: 'RAG chatbot',
     family: 'architecture',
     summary: 'A chat UI and RAG API answering from a pgvector store with Claude, fed by a nightly ingest of docs.',
-    dsl: `%% canvas 1
+    dsl: `%% ofk 1
 architecture right
 title: RAG chatbot
 
@@ -117,7 +117,7 @@ title: RAG chatbot
     title: 'Microservices on Kubernetes',
     family: 'architecture',
     summary: 'NGINX ingress, Go, Node and Python services, Kafka events, Postgres and Redis, and Stripe.',
-    dsl: `%% canvas 1
+    dsl: `%% ofk 1
 architecture right
 title: Microservices on Kubernetes
 
@@ -153,7 +153,7 @@ title: Microservices on Kubernetes
     title: 'Event pipeline',
     family: 'architecture',
     summary: 'App events and Postgres CDC into Kafka, enriched by Flink into Snowflake, ClickHouse and an S3 archive, with a dead-letter queue.',
-    dsl: `%% canvas 1
+    dsl: `%% ofk 1
 architecture right
 title: Event pipeline
 
@@ -186,7 +186,7 @@ title: Event pipeline
     title: 'CI/CD pipeline',
     family: 'flowchart',
     summary: 'Pull request to production: checks, staging, end-to-end tests, a health gate and automatic rollback.',
-    dsl: `%% canvas 1
+    dsl: `%% ofk 1
 flowchart right
 title: CI/CD pipeline
 
@@ -219,7 +219,7 @@ title: CI/CD pipeline
     title: 'Sign in with Google',
     family: 'sequence',
     summary: 'The OAuth 2.0 authorization-code flow with PKCE, between the browser, your app and Google.',
-    dsl: `%% canvas 1
+    dsl: `%% ofk 1
 sequence
 title: Sign in with Google
 
@@ -248,7 +248,7 @@ title: Sign in with Google
     title: 'Request lifecycle',
     family: 'sequence',
     summary: 'An API request through the gateway, token check and order service, with in-stock and out-of-stock replies.',
-    dsl: `%% canvas 1
+    dsl: `%% ofk 1
 sequence
 title: Request lifecycle
 
@@ -281,7 +281,7 @@ title: Request lifecycle
     title: 'SaaS data model',
     family: 'erd',
     summary: 'Organizations, users and memberships, projects, and Stripe subscriptions with invoices.',
-    dsl: `%% canvas 1
+    dsl: `%% ofk 1
 erd right
 title: SaaS data model
 
@@ -332,7 +332,7 @@ title: SaaS data model
     title: 'Order state machine',
     family: 'state',
     summary: 'Cart to delivery, with declined payments, cancellations and refunds.',
-    dsl: `%% canvas 1
+    dsl: `%% ofk 1
 state right
 title: Order state machine
 
@@ -357,7 +357,7 @@ title: Order state machine
     title: 'User authentication',
     family: 'flowchart',
     summary: 'SSO or password, a lockout after failed tries, and an optional two-factor step.',
-    dsl: `%% canvas 1
+    dsl: `%% ofk 1
 flowchart down
 title: User authentication
 
@@ -391,7 +391,7 @@ title: User authentication
     title: 'Purchase approval',
     family: 'flowchart',
     summary: 'A purchase request routed to a manager or finance by amount, with a revise loop.',
-    dsl: `%% canvas 1
+    dsl: `%% ofk 1
 flowchart right
 title: Purchase approval
 

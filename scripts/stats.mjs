@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// `npm run stats [-- 7|30|90]`: usage and feedback from the share Worker's D1 (`canvas-data`), plus public growth
-// numbers. The same loadStats as stats.canvas.hyperlab.sh (stats/queries.ts), so the two never disagree. Read-only.
+// `npm run stats [-- 7|30|90]`: usage and feedback from the share Worker's D1 (`openflowkit-data`), plus public growth
+// numbers. The same loadStats as stats.openflowkit.com (stats/queries.ts), so the two never disagree. Read-only.
 // D1 is reached through wrangler's own login (`npx wrangler login`), from worker/ so its config resolves.
 // Imports .ts: Node 22.18+ strips types.
 import { execFileSync } from 'node:child_process';
@@ -11,7 +11,7 @@ import {
 } from '../stats/queries.ts';
 
 const WORKER_DIR = fileURLToPath(new URL('../worker/', import.meta.url));
-const DATABASE = 'canvas-data';
+const DATABASE = 'openflowkit-data';
 const days = Number(process.argv[2] ?? 30);
 if (!RANGES.includes(days)) {
   console.error(`Range is one of ${RANGES.join(', ')} days, not ${process.argv[2]}.`);
@@ -46,7 +46,7 @@ function table(title, rows, columns = rows[0] ? Object.keys(rows[0]) : []) {
 }
 
 const now = new Date();
-console.log(`Canvas stats — ${now.toISOString().slice(0, 16).replace('T', ' ')} UTC (D1 ${DATABASE}, last ${days} days)`);
+console.log(`OpenFlowKit stats — ${now.toISOString().slice(0, 16).replace('T', ' ')} UTC (D1 ${DATABASE}, last ${days} days)`);
 
 try {
   const s = await loadStats(run, now, days);
@@ -90,7 +90,7 @@ try {
   if (s.budget.share >= 0.6) console.log('  WARNING: over 60%. Past 10M a month, requests cost $0.30 per million.');
 
   table(`Feature thumbs (${days} days)`, s.thumbs.map((row) => ({ ...row, up_share: pct(row.up + row.down ? row.up / (row.up + row.down) : null) })));
-  table(`PMF: "How would you feel if you could no longer use Canvas?" (${days} days)`, ['very', 'somewhat', 'not'].map((answer) => ({
+  table(`PMF: "How would you feel if you could no longer use OpenFlowKit?" (${days} days)`, ['very', 'somewhat', 'not'].map((answer) => ({
     disappointed: answer, people: int(s.pmf[answer]), share: pct(s.pmf.total ? s.pmf[answer] / s.pmf.total : null),
   })));
   console.log(`  ${pct(s.pmf.veryShare)} very disappointed of ${int(s.pmf.total)} (40% is the usual PMF bar)`);
@@ -100,7 +100,7 @@ try {
   table(`  Feels fair a month (median ${s.pro.price.median === null ? '—' : `$${s.pro.price.median}`})`, s.pro.price.bands);
   table('  Would pay for (waitlist)', Object.entries(s.pro.features).filter(([option]) => option !== 'free').map(([option, votes]) => ({ option, votes: int(votes) })));
   console.log(`\nEmails left: ${int(s.emails)} (${days} days)`);
-  console.log(s.unread ? `Unread feedback: ${int(s.unread.count)} (mark read at stats.canvas.hyperlab.sh)`
+  console.log(s.unread ? `Unread feedback: ${int(s.unread.count)} (mark read at stats.openflowkit.com)`
     : 'Unread feedback: unavailable — apply worker/migrations/0002_feedback_read.sql');
   console.log('\nLatest comments');
   if (!s.comments.length) console.log('  (none yet)');
@@ -111,7 +111,7 @@ try {
 
 async function publicNumber(label, url, pick) {
   try {
-    const response = await fetch(url, { headers: { 'User-Agent': 'canvas-stats', Accept: 'application/json' } });
+    const response = await fetch(url, { headers: { 'User-Agent': 'openflowkit-stats', Accept: 'application/json' } });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     console.log(`  ${label}: ${int(pick(await response.json()))}`);
   } catch (error) {
@@ -119,6 +119,6 @@ async function publicNumber(label, url, pick) {
   }
 }
 console.log('\nPublic growth');
-await publicNumber('npm downloads last week (canvas)',
-  'https://api.npmjs.org/downloads/point/last-week/canvas', (body) => body.downloads);
-await publicNumber('GitHub stars (hyperlab-sh/canvas-editor)', 'https://api.github.com/repos/hyperlab-sh/canvas-editor', (body) => body.stargazers_count);
+await publicNumber('npm downloads last week (openflowkit)',
+  'https://api.npmjs.org/downloads/point/last-week/openflowkit', (body) => body.downloads);
+await publicNumber('GitHub stars (openflowkit/openflowkit)', 'https://api.github.com/repos/openflowkit/openflowkit', (body) => body.stargazers_count);

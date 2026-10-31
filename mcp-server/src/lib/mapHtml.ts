@@ -38,7 +38,7 @@ export async function renderMapHtml(input: { name: string; model: MapModelData; 
     `<style>${css}</style>`,
     '</head><body>',
     '<div id="root"></div>',
-    `<script type="application/json" id="canvas-map-data">${data}</script>`,
+    `<script type="application/json" id="ofk-map-data">${data}</script>`,
     `<script>${js}</script>`,
     '</body></html>',
     '',

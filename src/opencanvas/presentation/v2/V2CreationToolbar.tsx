@@ -29,9 +29,9 @@ function skipCorners(event: React.KeyboardEvent<HTMLDivElement>): void {
   if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
   if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || !(event.target instanceof HTMLButtonElement)) return;
   const tools = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'))
-    .filter((button) => !button.classList.contains('canvas-v2-flyout-corner') && button.closest('[role="toolbar"]') === event.currentTarget);
-  const from = event.target.classList.contains('canvas-v2-flyout-corner')
-    ? event.target.parentElement?.querySelector<HTMLButtonElement>('button:not(.canvas-v2-flyout-corner)') ?? null : event.target;
+    .filter((button) => !button.classList.contains('ofk-v2-flyout-corner') && button.closest('[role="toolbar"]') === event.currentTarget);
+  const from = event.target.classList.contains('ofk-v2-flyout-corner')
+    ? event.target.parentElement?.querySelector<HTMLButtonElement>('button:not(.ofk-v2-flyout-corner)') ?? null : event.target;
   const index = from ? tools.indexOf(from) : -1;
   if (index < 0) return;
   event.preventDefault();
@@ -97,14 +97,14 @@ export function V2CreationToolbar(props: {
   };
 
   return (
-    <FloatingRegion ref={toolsRef} slot="top-start" className="canvas-v2-tools">
+    <FloatingRegion ref={toolsRef} slot="top-start" className="ofk-v2-tools">
       <Toolbar label="Create" orientation="vertical" onKeyDown={skipCorners}>
         <FlyoutButton label="Select" shortcut="V / H" icon={<Icon icon={IconPointer} />}
           selected={POINTER_TOOLS.has(tool)} open={flyout === 'pointer'}
           onActivate={() => props.onToolChange(lastUsed.pointer)} variant={variants.pointer}
           onOpenChange={setFlyoutOpen('pointer')} options={POINTER_OPTIONS} columns={2}
           selectedId={POINTER_TOOLS.has(tool) ? tool : null} onPick={props.onToolChange} />
-        <span className="canvas-v2-tools-separator" aria-hidden="true" />
+        <span className="ofk-v2-tools-separator" aria-hidden="true" />
         <FlyoutButton label="Shapes" icon={<Icon icon={IconSquare} />}
           selected={shapeArmed} open={flyout === 'shapes'}
           onActivate={() => props.onToolChange(lastUsed.shapes)} variant={variants.shapes}
@@ -126,7 +126,7 @@ export function V2CreationToolbar(props: {
           <IconButton variant="quiet" label="Text" icon={<Icon icon={IconTypography} />}
             selected={tool === 'text'} onClick={() => props.onToolChange('text')} />
         </Tooltip>
-        <span className="canvas-v2-tools-separator" aria-hidden="true" />
+        <span className="ofk-v2-tools-separator" aria-hidden="true" />
         <FlyoutButton label="Draw" shortcut="P" icon={<Icon icon={IconPencil} />}
           selected={DRAW_TOOLS.has(tool)} open={flyout === 'draw'}
           onActivate={() => props.onToolChange(lastUsed.draw)} variant={variants.draw}
@@ -145,7 +145,7 @@ export function V2CreationToolbar(props: {
       </Toolbar>
       <Popover role="dialog" aria-label="Icon library" open={props.iconsOpen} anchorRef={iconsRef}
         onClose={() => props.onIconsOpenChange(false)} placement="right-start" gap={12}
-        className="canvas-style-panel canvas-style-panel--icons" onPointerDown={(event) => event.stopPropagation()}>
+        className="ofk-style-panel ofk-style-panel--icons" onPointerDown={(event) => event.stopPropagation()}>
         <V2IconPicker key={props.librarySection} initialPack={props.librarySection === 'emoji' ? 'emoji' : 'all'}
           recentEmoji={props.recentEmoji} onPickEmoji={props.onPickEmoji}
           onClose={() => props.onIconsOpenChange(false)}

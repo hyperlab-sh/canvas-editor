@@ -22,7 +22,7 @@ export interface ElementAnimations {
   readonly path?: CssAnimation & { readonly dash: string; readonly unitLength?: boolean };
 }
 
-export const ANIMATED_CLASS = 'canvas-anim';
+export const ANIMATED_CLASS = 'ofk-anim';
 
 export function number(value: number): string {
   return Number(value.toFixed(3)).toString();

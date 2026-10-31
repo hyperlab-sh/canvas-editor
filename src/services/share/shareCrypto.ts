@@ -72,7 +72,7 @@ export async function decryptDocument(body: Uint8Array, key: string): Promise<Sc
   const version = body[0];
   if (version !== SHARE_ENVELOPE_VERSION) {
     throw new ShareCryptoError('unknown-version',
-      'This link was made by a different version of Canvas. Update the app, or ask for a new link.');
+      'This link was made by a different version of OpenFlowKit. Update the app, or ask for a new link.');
   }
   if (body.length < 1 + IV_BYTES + 16) throw new ShareCryptoError('corrupt', 'This link’s data is empty or damaged.');
   let plaintext: ArrayBuffer;
@@ -89,13 +89,13 @@ export async function decryptDocument(body: Uint8Array, key: string): Promise<Sc
   try {
     parsed = JSON.parse(new TextDecoder().decode(plaintext));
   } catch {
-    throw new ShareCryptoError('invalid-document', 'This link doesn’t hold a Canvas diagram.');
+    throw new ShareCryptoError('invalid-document', 'This link doesn’t hold an OpenFlowKit diagram.');
   }
   const migrated = migrateSceneDocument(parsed);
   if (migrated.success === false) {
     throw new ShareCryptoError('invalid-document', migrated.reason === 'newer-schema'
-      ? 'This diagram was shared from a newer Canvas. Update the app to open it.'
-      : 'This link doesn’t hold a valid Canvas diagram.');
+      ? 'This diagram was shared from a newer OpenFlowKit. Update the app to open it.'
+      : 'This link doesn’t hold a valid OpenFlowKit diagram.');
   }
   return migrated.document;
 }

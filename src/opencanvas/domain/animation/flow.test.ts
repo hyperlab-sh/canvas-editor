@@ -34,7 +34,7 @@ function document(): SceneDocumentV1 {
     [{ ...animEdge('rel:customer->shop.web', 'n-customer', 'n-web'), metadata: {} }],
   );
   return {
-    format: 'canvas.scene', schemaVersion: 1, id: 'doc', name: 'Doc',
+    format: 'openflowkit.scene', schemaVersion: 1, id: 'doc', name: 'Doc',
     createdAt: '', updatedAt: '', pages: [page], metadata: {}, extensions: {},
   };
 }

@@ -32,7 +32,7 @@ export class StructurizrResolver extends StructurizrReader {
     }
   }
 
-  /** The Canvas kinds a Structurizr `element.type==` names, once tags have refined them. */
+  /** The OFK kinds a Structurizr `element.type==` names, once tags have refined them. */
   protected kindsOf(kind: string): string[] {
     const refined = Object.values(KIND_BY_TAG[kind] ?? {});
     return [kind, ...new Set(refined.filter((variant) => this.elements.some((element) => element.kind === variant)))];
@@ -60,10 +60,10 @@ export class StructurizrResolver extends StructurizrReader {
     }
   }
 
-  /** `containerInstance api` → `instance Shop.API`: one token, so the Canvas parser resolves it. */
+  /** `containerInstance api` → `instance Shop.API`: one token, so the OFK parser resolves it. */
   protected instanceRef(target: DraftElement): string {
     const display = this.displayPath(target);
-    return display.split('.').every(isSafeWord) ? display : target.canvasId;
+    return display.split('.').every(isSafeWord) ? display : target.ofkId;
   }
 
   protected prune(): void {
@@ -198,7 +198,7 @@ export class StructurizrResolver extends StructurizrReader {
   protected assignIds(): void {
     const used = new Set<string>();
     const visit = (element: DraftElement): void => {
-      element.canvasId = this.uniquePath(element.parent?.canvasId ?? null, this.localId(element), used);
+      element.ofkId = this.uniquePath(element.parent?.ofkId ?? null, this.localId(element), used);
       for (const child of element.children) visit(child);
     };
     for (const root of this.modelElements.filter((element) => !element.parent)) visit(root);
@@ -207,7 +207,7 @@ export class StructurizrResolver extends StructurizrReader {
     }
   }
 
-  /** Structurizr ids are the Canvas ids, as written (`webApi`; ids are case-sensitive, §2.6); display names stay labels. */
+  /** Structurizr ids are the OFK ids, as written (`webApi`; ids are case-sensitive, §2.6); display names stay labels. */
   protected localId(element: DraftElement): string {
     if (element.kind === 'instance') return slugifyDslId(element.name);
     if (element.explicitSid) {
@@ -228,12 +228,12 @@ export class StructurizrResolver extends StructurizrReader {
   }
 
   protected refOf(element: DraftElement): string {
-    return (this.nameCounts.get(element.name.toLowerCase()) ?? 0) === 1 ? quote(element.name) : element.canvasId;
+    return (this.nameCounts.get(element.name.toLowerCase()) ?? 0) === 1 ? quote(element.name) : element.ofkId;
   }
 
   protected scopeRefOf(element: DraftElement): string {
     const segments: string[] = [];
     for (let current: DraftElement | null = element; current; current = current.parent) segments.unshift(current.name);
-    return segments.every(isSafeWord) ? segments.join('.') : element.canvasId;
+    return segments.every(isSafeWord) ? segments.join('.') : element.ofkId;
   }
 }

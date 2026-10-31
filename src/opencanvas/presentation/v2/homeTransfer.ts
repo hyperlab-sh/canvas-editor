@@ -22,7 +22,7 @@ export interface HomeTransfer {
 export async function importHomeFiles({ repository, toast, create, refresh, setThumbnails }: HomeTransfer, files: readonly File[]): Promise<void> {
   const usable = files.filter((file) => importKind(file.name));
   if (!usable.length) {
-    toast({ tone: 'danger', title: 'Nothing here to import', description: 'Canvas imports its own .json files, and Mermaid, D2, Structurizr or OpenFlow DSL text files.' });
+    toast({ tone: 'danger', title: 'Nothing here to import', description: 'OpenFlowKit imports its own .json files, and Mermaid, D2, Structurizr or OpenFlow DSL text files.' });
     return;
   }
   const report = await importDocumentFiles(usable, repository, () => mintV2Id('doc'));
@@ -50,7 +50,7 @@ export async function downloadAllDiagrams({ repository, toast, fail }: HomeTrans
     const documents = await readAllDocuments(repository);
     if (!documents.length) { toast({ tone: 'info', title: 'No diagrams to download yet' }); return; }
     const backup = buildV2Backup(documents);
-    downloadTextFile(`canvas-diagrams-${backup.exportedAt.slice(0, 10)}.json`, JSON.stringify(backup), 'application/json');
+    downloadTextFile(`openflowkit-diagrams-${backup.exportedAt.slice(0, 10)}.json`, JSON.stringify(backup), 'application/json');
     toast({ tone: 'success', title: `Downloaded ${plural(documents.length, 'diagram')}`, description: 'One file. Import it here to bring them back.' });
   } catch (error) { fail(error); }
 }

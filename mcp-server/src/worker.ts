@@ -1,4 +1,4 @@
-// The remote MCP endpoint on Cloudflare Workers (wrangler.toml): https://mcp.canvas.hyperlab.sh/mcp.
+// The remote MCP endpoint on Cloudflare Workers (wrangler.toml): https://mcp.openflowkit.com/mcp.
 // Stateless and stores nothing; the grammar and icon data are the Worker's static assets (data/).
 import viewerHtml from './viewer/viewer.html';
 import { createFetchHandler } from './remote/fetchHandler.js';

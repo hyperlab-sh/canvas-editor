@@ -48,9 +48,9 @@ test('a /view?flow= link without a hash still reaches the explainer @gate', asyn
 });
 
 test('#/docs links still reach the docs site @gate', async ({ page }) => {
-  await page.route('https://docs.canvas.hyperlab.sh/**', (route) => route.fulfill({ contentType: 'text/html', body: '<title>docs</title>' }));
+  await page.route('https://docs.openflowkit.com/**', (route) => route.fulfill({ contentType: 'text/html', body: '<title>docs</title>' }));
   await page.goto('/#/docs/getting-started');
-  await expect(page).toHaveURL('https://docs.canvas.hyperlab.sh/');
+  await expect(page).toHaveURL('https://docs.openflowkit.com/');
 });
 
 test('other v1 screens land on home @gate', async ({ page }) => {

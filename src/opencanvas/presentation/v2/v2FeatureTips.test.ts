@@ -23,11 +23,11 @@ describe('feature tip rules', () => {
   it('never explains a feature already used', () => {
     markTipSeen('assistant');
     expect(mayShowTip('assistant')).toBe(false);
-    expect(JSON.parse(localStorage.getItem('canvas.tips.seen')!)).toEqual(['assistant']);
+    expect(JSON.parse(localStorage.getItem('ofk.tips.seen')!)).toEqual(['assistant']);
   });
 
   it('survives storage that throws or holds junk', () => {
-    localStorage.setItem('canvas.tips.seen', '{not json');
+    localStorage.setItem('ofk.tips.seen', '{not json');
     expect(tipSeen('code')).toBe(false);
     const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('blocked'); });
     const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('blocked'); });

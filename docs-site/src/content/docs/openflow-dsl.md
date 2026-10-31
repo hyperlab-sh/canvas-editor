@@ -3,7 +3,7 @@ title: OpenFlow DSL
 description: The editor-native text language — write a diagram, generate it as a frame, and keep the text and canvas from lying to each other.
 ---
 
-OpenFlow DSL is the hub of Canvas: the code panel, AI generation, Mermaid import and the
+OpenFlow DSL is the hub of OpenFlowKit: the code panel, AI generation, Mermaid import and the
 MCP tools all produce it, and one compiler turns it into the canvas. The grammar is versioned
 and written down in full in the [DSL reference](/openflow-dsl-reference/).
 

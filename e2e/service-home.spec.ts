@@ -16,7 +16,7 @@ const ids: Record<string, string> = {};
 
 test.beforeAll(async () => {
   test.setTimeout(240_000);
-  scratch = mkdtempSync(join(tmpdir(), 'canvas-service-home-'));
+  scratch = mkdtempSync(join(tmpdir(), 'ofk-service-home-'));
   alphaDir = join(scratch, 'alpha');
   mkdirSync(alphaDir);
   mkdirSync(join(scratch, 'beta'));

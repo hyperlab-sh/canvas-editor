@@ -1,6 +1,6 @@
 ---
 title: Coming from Structurizr
-description: Move a Structurizr DSL workspace into Canvas, see what is reported as lost, and keep the diagrams in your repository and CI.
+description: Move a Structurizr DSL workspace into OpenFlowKit, see what is reported as lost, and keep the diagrams in your repository and CI.
 ---
 
 If you have a `workspace.dsl`, you can bring it here. The import runs on your machine. Nothing is uploaded.
@@ -21,14 +21,14 @@ Pick one way.
 - **With the CLI.** This writes an editable file with every view in it, and an SVG next to it:
 
   ```text
-  canvas convert workspace.dsl -o x.openflow.json --svg
+  openflowkit convert workspace.dsl -o x.openflow.json --svg
   ```
 
   The CLI prints one line per loss to stderr. Add `--strict` to exit 1 when anything was
   lost. Add `--json` for a machine-readable report. `--svg` needs `-o`.
 
-The `canvas` CLI ships in the MCP server package, version 0.2.0 or newer
-(`npx @hyperlab.sh/canvas convert …`). See [the CLI](/cli/).
+The `openflowkit` CLI ships in the MCP server package, version 0.2.0 or newer
+(`npx openflowkit convert …`). See [the CLI](/cli/).
 
 ## A worked example
 
@@ -60,7 +60,7 @@ workspace "Shop" "An online shop" {
 }
 ```
 
-ran through `canvas convert` and printed four losses:
+ran through `openflowkit convert` and printed four losses:
 
 ```text
 convert: structurizr line 1: not converted — workspace description dropped
@@ -158,32 +158,32 @@ panel is marked beta. The same model is plain text in the code panel if you pref
 Commit the files, not a service.
 
 ```text
-canvas convert workspace.dsl -o docs/shop.openflow.json --svg
+openflowkit convert workspace.dsl -o docs/shop.openflow.json --svg
 ```
 
 That writes `docs/shop.openflow.json` (open it again in the app) and `docs/shop.svg` (embed it
 in a README). Rerun the command after you change the source. `convert` keeps every view;
 `render` draws only the first.
 
-The [workspace folder](/architecture-workspace/) keeps the DSL as `architecture.canvas` instead,
+The [workspace folder](/architecture-workspace/) keeps the DSL as `architecture.ofk` instead,
 with layout overrides and ADRs, if you want to edit in the app and commit text.
 
 ## Catch drift in CI
 
 ```text
-canvas drift . --model architecture.canvas
+openflowkit drift . --model architecture.ofk
 ```
 
 It scans the repository and compares it with the model by element name and technology. It
 prints what the model has that the code does not, and the reverse. It exits 1 when it finds
 any drift, 2 on a usage error. `--json` gives a machine-readable report. It cannot see
 intent, renames or moved code ([details](/architecture-workspace/)). The default model path
-is `<dir>/architecture.canvas`.
+is `<dir>/architecture.ofk`.
 
 ## Diagrams in pull requests
 
-The Canvas PR diagrams GitHub Action comments on a pull request with how its diagrams
-changed: node and connector counts before and after, the DSL diff, and drift for `.canvas` models.
+The OpenFlowKit PR diagrams GitHub Action comments on a pull request with how its diagrams
+changed: node and connector counts before and after, the DSL diff, and drift for `.ofk` models.
 It runs in your CI, with the CLI, `git` and `gh`. It can also refresh a stale committed `.svg`
 beside a diagram. See [GitHub Action](/github-action/) for the setup, the inputs, fork behavior
 and branch-protection notes.

@@ -3,7 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 /**
  * Prompts are reusable templates that MCP clients can offer users as
- * starting points. They steer the model toward the right Canvas tool
+ * starting points. They steer the model toward the right OpenFlowKit tool
  * with the right arguments.
  */
 export function registerPrompts(server: McpServer): void {
@@ -26,7 +26,7 @@ export function registerPrompts(server: McpServer): void {
           content: {
             type: 'text' as const,
             text:
-              `Read \`canvas://docs/grammar\`, then write OpenFlow DSL yourself for this flowchart.\n\n` +
+              `Read \`openflowkit://docs/grammar\`, then write OpenFlow DSL yourself for this flowchart.\n\n` +
               `Description:\n${description}\n\n` +
               `Call \`validate_openflow_dsl\` on your DSL and fix any errors. Then call \`create_diagram\` with the final DSL ` +
               `(or \`openflow_create\` + \`create_diagram\` for file mode; with the local service, \`create_diagram\` with a \`project\` makes a diagram and returns its link, or \`connect_diagram\` first for an existing diagram the user names) and report what was drawn.`,
@@ -52,7 +52,7 @@ export function registerPrompts(server: McpServer): void {
           content: {
             type: 'text' as const,
             text:
-              `Call \`analyze_codebase\` on rootPath=\`${rootPath}\`, then read \`canvas://docs/grammar\`.\n\n` +
+              `Call \`analyze_codebase\` on rootPath=\`${rootPath}\`, then read \`openflowkit://docs/grammar\`.\n\n` +
               `Write an OpenFlow DSL architecture diagram yourself from the scan. Use \`search_icons\` before assigning architecture icon slugs. Call \`validate_openflow_dsl\`, fix any errors, then draw it with \`create_diagram\`.\n\n` +
               `Return the final DSL, lint status, and a short architecture summary.`,
           },

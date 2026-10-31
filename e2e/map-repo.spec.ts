@@ -194,12 +194,12 @@ test('Find reveals a file buried in a closed folder and selects it @gate', async
   const find = page.getByRole('searchbox', { name: 'Find in map' });
   await expect(find).toBeVisible();
   await find.fill('Modal');
-  await expect(page.locator('.canvas-v2-find-count')).toContainText('found');
+  await expect(page.locator('.ofk-v2-find-count')).toContainText('found');
   await page.keyboard.press('Enter');
   await expect.poll(() => selected(page)).toEqual(['web/src/ui/Modal.ts']);
   await expect.poll(async () => (await mapState(page)).nodes).toContain('web/src/ui/Modal.ts');
   await find.fill('zzzz');
-  await expect(page.locator('.canvas-v2-find-count')).toContainText(/no match|0/i);
+  await expect(page.locator('.ofk-v2-find-count')).toContainText(/no match|0/i);
 });
 
 test('the keyboard walks between boxes, opens and backs out of them @gate', async ({ page }) => {
@@ -276,7 +276,7 @@ test('a bad address says so and gives the field back; a doubled slash is a typo;
 
   // Home: a GitHub link pasted anywhere (not in a field) opens its map, with no Untitled diagram on the way.
   await page.goto('/#/home');
-  await page.waitForSelector('.canvas-home-starts, .canvas-home-chips');
+  await page.waitForSelector('.ofk-home-starts, .ofk-home-chips');
   await page.evaluate(() => {
     const data = new DataTransfer();
     data.setData('text/plain', 'https://github.com/acme/shop');
@@ -298,9 +298,9 @@ test('a rate-limited read asks for a token, sends it to the API only, and then d
   });
   await page.goto('/#/map/github/acme/shop');
   await expect(alert(page)).toContainText('limiting reads');
-  await expect(alert(page)).toContainText('The CLI reads a checkout with no limit: npx @hyperlab.sh/canvas map . --html map.html');
+  await expect(alert(page)).toContainText('The CLI reads a checkout with no limit: npx openflowkit map . --html map.html');
   await expect(alert(page)).not.toContainText('discover');
-  expect(((await alert(page).innerText()).match(/canvas map/g) ?? []).length, 'the command, once').toBe(1);
+  expect(((await alert(page).innerText()).match(/openflowkit map/g) ?? []).length, 'the command, once').toBe(1);
   await expect(page.getByRole('button', { name: 'Try with token' })).toHaveAttribute('data-variant', 'primary');
   limited = false;
   await page.getByLabel('GitHub token (optional)').fill('github_pat_test123');
@@ -341,7 +341,7 @@ test('a repo that is not found, an unreachable GitHub and a repo with nothing to
   await page.goto('/#/map/github/acme/shop');
   await expect(alert(page)).toContainText('not found, or it is private');
   await expect(toolbar(page), 'no toolbar for a map that is not there').toHaveCount(0);
-  expect(((await alert(page).innerText()).match(/canvas map/g) ?? []).length, 'the command, once').toBe(1);
+  expect(((await alert(page).innerText()).match(/openflowkit map/g) ?? []).length, 'the command, once').toBe(1);
   // Most often a typo: the address comes back, ready to fix; home stays one click away.
   await expect(alert(page).getByRole('textbox', { name: 'Map a GitHub repo' })).toHaveValue('acme/shop');
   await expect(page.getByRole('button', { name: 'Back to home' })).toBeVisible();

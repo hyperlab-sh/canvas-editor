@@ -6,7 +6,7 @@ const STUB = 'http://127.0.0.1:4399/v1';
 
 test('a large AI diagram lands at a readable zoom with the Fit hint @gate', async ({ page }) => {
   await page.addInitScript((baseUrl) => {
-    localStorage.setItem('canvas-v2-ai', JSON.stringify({
+    localStorage.setItem('openflowkit-v2-ai', JSON.stringify({
       provider: 'custom', connections: { custom: { apiKey: 'sk-ok', baseUrl, model: 'stub-model' } },
     }));
   }, STUB);
@@ -28,7 +28,7 @@ test('a large AI diagram lands at a readable zoom with the Fit hint @gate', asyn
 
 test('after Apply the camera lands on the diagram just drawn, never closer than 140% @gate', async ({ page }) => {
   await page.addInitScript((baseUrl) => {
-    localStorage.setItem('canvas-v2-ai', JSON.stringify({
+    localStorage.setItem('openflowkit-v2-ai', JSON.stringify({
       provider: 'custom', connections: { custom: { apiKey: 'sk-ok', baseUrl, model: 'stub-model' } },
     }));
   }, STUB);

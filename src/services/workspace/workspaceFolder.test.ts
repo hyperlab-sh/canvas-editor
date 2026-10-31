@@ -79,7 +79,7 @@ describe('workspace folder', () => {
     const page = document.pages.find((candidate) => candidate.name === 'Services: Shop')!;
     const snap = snapOfPage(page)!;
     const folder = fakeFolder({
-      'architecture.canvas': WORKSPACE,
+      'architecture.ofk': WORKSPACE,
       'views/view-container-shop.snap': serializeSnap(snap),
       'adr/0001-use-postgres.md': '# Postgres\n\nWe chose Postgres.',
       'notes.txt': 'ignored',
@@ -90,7 +90,7 @@ describe('workspace folder', () => {
     expect(contents.adrs.map((adr) => adr.path)).toEqual(['adr/0001-use-postgres.md']);
 
     await writeWorkspace(folder, { dsl: WORKSPACE, document });
-    expect(folder.files['architecture.canvas']).toBe(WORKSPACE);
+    expect(folder.files['architecture.ofk']).toBe(WORKSPACE);
     expect(Object.keys(folder.files).some((path) => path.startsWith('views/') && path.endsWith('.snap'))).toBe(true);
     const roundTrip = await readWorkspace(folder);
     expect(roundTrip.snaps['view:container:shop']?.positions).toEqual(snap.positions);
@@ -107,9 +107,9 @@ describe('workspace folder', () => {
     const tree = treeDir('root');
     const folder = folderFromHandle(dirHandle(tree) as never);
     await folder.writeText('views/x.snap', '{}');
-    await folder.writeText('architecture.canvas', 'dsl');
+    await folder.writeText('architecture.ofk', 'dsl');
     expect(await folder.readText('views/x.snap')).toBe('{}');
-    expect(await folder.readText('architecture.canvas')).toBe('dsl');
+    expect(await folder.readText('architecture.ofk')).toBe('dsl');
     expect(await folder.list('views/')).toEqual(['x.snap']);
     expect(await folder.readText('missing.txt')).toBeNull();
   });

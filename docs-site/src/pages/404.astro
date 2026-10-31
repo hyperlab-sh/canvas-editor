@@ -49,7 +49,7 @@ const destinations = [
     margin: 0;
     font-size: 1.125rem;
     line-height: 1.65;
-    color: var(--canvas-text);
+    color: var(--ofk-text);
   }
   .search-hint {
     display: inline-flex;
@@ -64,11 +64,11 @@ const destinations = [
   .search-hint kbd {
     min-width: 1.5rem;
     padding: 0.05rem 0.35rem;
-    border: 1px solid var(--canvas-border);
+    border: 1px solid var(--ofk-border);
     border-radius: 6px;
-    background: var(--canvas-raised);
+    background: var(--ofk-raised);
     font: 500 0.8125rem/1.4 var(--sl-font);
-    color: var(--canvas-text);
+    color: var(--ofk-text);
   }
   .destinations {
     display: grid;
@@ -84,34 +84,34 @@ const destinations = [
     gap: 0.25rem;
     height: 100%;
     padding: 1rem 1.125rem;
-    border: 1px solid var(--canvas-border);
+    border: 1px solid var(--ofk-border);
     border-radius: 12px;
-    background: var(--canvas-surface);
+    background: var(--ofk-surface);
     text-decoration: none;
-    transition: border-color 150ms ease, transform 120ms var(--canvas-ease);
+    transition: border-color 150ms ease, transform 120ms var(--ofk-ease);
   }
   .destinations a:active {
     transform: scale(0.98);
   }
   @media (hover: hover) {
     .destinations a:hover {
-      border-color: var(--canvas-border-strong);
+      border-color: var(--ofk-border-strong);
     }
   }
   .destinations strong {
-    color: var(--canvas-text);
+    color: var(--ofk-text);
     font-weight: 600;
   }
   .destinations span {
     font-size: 0.9rem;
-    color: var(--canvas-muted);
+    color: var(--ofk-muted);
   }
   .home {
     margin: 2rem 0 0;
     font-size: 0.9rem;
   }
   .home a {
-    color: var(--canvas-muted);
+    color: var(--ofk-muted);
     text-decoration: none;
   }
 </style>

@@ -43,7 +43,7 @@ function iconId(sheet: IconSheet, href: string): string {
   if (known) return known;
   let hash = 0x811c9dc5;
   for (let index = 0; index < href.length; index += 1) hash = Math.imul(hash ^ href.charCodeAt(index), 0x01000193);
-  const base = `canvas-icon-${(hash >>> 0).toString(36)}`;
+  const base = `ofk-icon-${(hash >>> 0).toString(36)}`;
   const taken = new Set(sheet.ids.values());
   let id = base;
   for (let suffix = 2; taken.has(id); suffix += 1) id = `${base}-${suffix}`;

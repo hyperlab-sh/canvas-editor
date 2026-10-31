@@ -58,17 +58,17 @@ export const WAITING = 'Waiting for your agent…';
 /** Another tab in this browser holds the lock, which a tab takes only once the agent's server answers (and lets go when it stops). */
 export const ELSEWHERE = 'Connect is on in another tab.';
 /** The server's 409: another tab, perhaps in another browser, said hello after this one. */
-export const TAKEN = 'Another Canvas tab has the agent connection.';
+export const TAKEN = 'Another OpenFlowKit tab has the agent connection.';
 export const stillWaiting = (port: number): string =>
-  `Still waiting on 127.0.0.1:${port}. Is Canvas added to your agent, and did you restart it after? If your browser asked about local network access, allow it.`;
+  `Still waiting on 127.0.0.1:${port}. Is OpenFlowKit added to your agent, and did you restart it after? If your browser asked about local network access, allow it.`;
 export const portTaken = (port: number): string =>
-  `Something other than Canvas answers on 127.0.0.1:${port}. Pick another port under Connection settings and copy the setup again.`;
+  `Something other than OpenFlowKit answers on 127.0.0.1:${port}. Pick another port under Connection settings and copy the setup again.`;
 
 const RETRY_MS = 1500;
 const SLOW_RETRY_MS = 5000;
 const SLOW_AFTER_MS = 30_000;
-const LOCK = 'canvas-agent-bridge';
-const TAB_KEY = 'canvas-agent-tab';
+const LOCK = 'ofk-agent-bridge';
+const TAB_KEY = 'ofk-agent-tab';
 
 /** Comment writes: "is commenting…", and no drawing cursor. */
 const THREAD_OPS = new Set(['start_thread', 'reply_to_thread', 'resolve_thread']);
@@ -192,7 +192,7 @@ export function useV2AgentBridge(options: V2AgentBridgeOptions): V2AgentBridge {
           pages: document.pages.map<BridgePageSummary>((page) => ({
             pageId: page.id, name: page.name, nodes: page.nodes.length, connectors: page.connectors.length,
           })),
-          app: 'canvas-editor',
+          app: 'openflowkit-editor',
         };
         const response = await post(urls.hello, { document: info }, hold);
         check(response);

@@ -7,7 +7,7 @@ export function V2FindBar({ find, label = 'Find on canvas' }: { readonly find: R
   const { query, index, count } = find;
   const status = !query.trim() ? '' : count === 0 ? 'No matches' : index < 0 ? `${count} found` : `${index + 1} of ${count}`;
   return (
-    <div className="canvas-v2-find" role="search" aria-label={label}>
+    <div className="ofk-v2-find" role="search" aria-label={label}>
       <Field ref={(input) => find.register(input)} label={label} type="search" autoFocus autoComplete="off" value={query}
         placeholder={label}
         onChange={(event) => find.search(event.target.value)}
@@ -21,7 +21,7 @@ export function V2FindBar({ find, label = 'Find on canvas' }: { readonly find: R
           event.preventDefault();
           event.stopPropagation();
         }} />
-      <span className="canvas-v2-find-count" aria-live="polite">{status}</span>
+      <span className="ofk-v2-find-count" aria-live="polite">{status}</span>
       <IconButton variant="quiet" label="Previous match" disabled={count === 0} icon={<Icon icon={IconChevronUp} />}
         onClick={() => find.step(-1)} />
       <IconButton variant="quiet" label="Next match" disabled={count === 0} icon={<Icon icon={IconChevronDown} />}

@@ -1,9 +1,9 @@
 /* What the editor's repo-map notes use: the reading counter and the sampled/crowded chips. The standalone viewer has its own sheet in src/viewer/map. */
 .map-status { position: absolute; left: 16px; bottom: 80px; display: grid; gap: 6px; justify-items: start; }
 /* A note over the map: the toast/tip card in small, UI type, muted words, a quiet text action. */
-.map-chip { display: flex; align-items: center; gap: 2px; min-height: 32px; box-sizing: border-box; padding: 3px 10px; background: var(--canvas-surface); border: 1px solid var(--canvas-border); border-radius: var(--canvas-radius-control); box-shadow: var(--canvas-material-shadowChrome); font: 400 12px/1.4 var(--canvas-font); font-variant-numeric: tabular-nums; color: var(--canvas-secondary); }
-.map-chip:has(> .canvas-button) { padding-inline-end: 3px; }
-.canvas-system .map-chip > .canvas-button { min-height: 24px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: var(--canvas-weight-label); color: var(--canvas-text); }
-.map-chip .canvas-progress { min-width: 220px; }
+.map-chip { display: flex; align-items: center; gap: 2px; min-height: 32px; box-sizing: border-box; padding: 3px 10px; background: var(--ofk-surface); border: 1px solid var(--ofk-border); border-radius: var(--ofk-radius-control); box-shadow: var(--ofk-material-shadowChrome); font: 400 12px/1.4 var(--ofk-font); font-variant-numeric: tabular-nums; color: var(--ofk-secondary); }
+.map-chip:has(> .ofk-button) { padding-inline-end: 3px; }
+.ofk-system .map-chip > .ofk-button { min-height: 24px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: var(--ofk-weight-label); color: var(--ofk-text); }
+.map-chip .ofk-progress { min-width: 220px; }
 /* Map's start screen shares the Canvas welcome's layout, not its arrows: they point at drawing tools Map does not use. */
-[data-testid="v2-map-start"] .canvas-v2-guide { display: none; }
+[data-testid="v2-map-start"] .ofk-v2-guide { display: none; }

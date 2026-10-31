@@ -82,7 +82,7 @@ open `#/map/github/<owner>/<repo>` (add `/tree/<branch>` for a branch). These al
 
 The browser reads the repository itself — the file list from `api.github.com`, the files from
 `raw.githubusercontent.com` (or, for a [private repo](#private-repos), from `api.github.com`) —
-and draws it. Nothing goes through a Canvas server. The map's
+and draws it. Nothing goes through an OpenFlowKit server. The map's
 parts come from what discovery finds deployable: Dockerfiles, compose files, Kubernetes and
 Terraform files, package manifests and Wrangler (Cloudflare Workers) configs, with the imports
 between source files as arrows. A repo built from those maps best.
@@ -110,7 +110,7 @@ A private repo can be mapped three ways:
   each, so a big private repo uses more of the 5,000-an-hour limit. The token stays in this tab
   and goes only to `api.github.com`. If the token can list the repo but not read its files, the
   page asks for one with Contents access.
-- **From a checkout, with the CLI:** `npx @hyperlab.sh/canvas map .` ([below](#from-a-checkout-the-cli)).
+- **From a checkout, with the CLI:** `npx openflowkit map .` ([below](#from-a-checkout-the-cli)).
   No token and no rate limit.
 - **Through your agent.** With the local [MCP server](/mcp-server/), `discover_architecture`
   reads a checkout on your machine and proposes its architecture model; your agent can draw it on
@@ -122,7 +122,7 @@ For no rate limit, or a private repo without a token, map a local checkout with 
 MCP server package:
 
 ```text
-npx @hyperlab.sh/canvas map . [--depth overview|detailed|everything] [--html map.html]
+npx openflowkit map . [--depth overview|detailed|everything] [--html map.html]
 ```
 
 It prints the parts, files, lines and imports; `--html` also writes the interactive map as one
@@ -134,7 +134,7 @@ offline page. In a git checkout only tracked files are mapped.
 architecture model in the editor instead of a map, built by the same discovery. Its evidence
 links are pinned to the commit that was read, so they keep pointing at the right lines after the
 repo moves on. A [private repo](#private-repos) opens the same way, with a token. The CLI equivalent
-is `canvas discover .`.
+is `openflowkit discover .`.
 
 ## What it cannot do
 
@@ -149,4 +149,4 @@ is `canvas discover .`.
 
 - [Architecture (C4)](/architecture-c4/) — the model Map draws.
 - [Architecture workspace](/architecture-workspace/) — discovery and drift against a repo.
-- [The canvas CLI](/cli/) — `map`, `discover` and `drift` on a checkout.
+- [The openflowkit CLI](/cli/) — `map`, `discover` and `drift` on a checkout.

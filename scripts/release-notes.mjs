@@ -23,9 +23,9 @@ function notes(tag) {
   if (mcp) {
     const { version } = JSON.parse(read('mcp-server/package.json'));
     if (version !== mcp[1]) fail(`tag ${tag} but mcp-server/package.json is ${version}`);
-    return `MCP server ${version}: \`npx -y @hyperlab.sh/canvas@${version} mcp\` ` +
-      `([npm](https://www.npmjs.com/package/@hyperlab.sh/canvas/v/${version})). ` +
-      'Changes are under "For developers" in [CHANGELOG.md](https://github.com/hyperlab-sh/canvas-editor/blob/main/CHANGELOG.md).';
+    return `MCP server ${version}: \`npx -y openflowkit@${version} mcp\` ` +
+      `([npm](https://www.npmjs.com/package/openflowkit/v/${version})). ` +
+      'Changes are under "For developers" in [CHANGELOG.md](https://github.com/openflowkit/openflowkit/blob/main/CHANGELOG.md).';
   }
   const app = /^v(\d+\.\d+\.\d+)$/.exec(tag);
   if (!app) fail(`${tag} is neither vX.Y.Z nor mcp-vX.Y.Z`);

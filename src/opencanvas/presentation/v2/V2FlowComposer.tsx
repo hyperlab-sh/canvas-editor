@@ -26,7 +26,7 @@ export function V2FlowComposer({
   const elements = model.elements.filter((element) => !element.env);
   return (
     <form
-      className="canvas-v2-model-inspector"
+      className="ofk-v2-model-inspector"
       aria-label="Create flow"
       onSubmit={(event) => {
         event.preventDefault();
@@ -46,16 +46,16 @@ export function V2FlowComposer({
         });
       }}
     >
-      <label className="canvas-v2-model-field">
+      <label className="ofk-v2-model-field">
         <span>Flow name</span>
         <input required autoFocus value={name} onChange={(event) => setName(event.target.value)} />
       </label>
       {duplicate ? <p role="alert">A flow with this name already exists.</p> : null}
       {messages.map((message, index) => (
-        <fieldset key={index} className="canvas-v2-flow-message">
+        <fieldset key={index} className="ofk-v2-flow-message">
           <legend>Message {index + 1}</legend>
           {(['from', 'to'] as const).map((field) => (
-            <label key={field} className="canvas-v2-model-field">
+            <label key={field} className="ofk-v2-model-field">
               <span>{field === 'from' ? 'From' : 'To'}</span>
               <select
                 required
@@ -77,7 +77,7 @@ export function V2FlowComposer({
               </select>
             </label>
           ))}
-          <label className="canvas-v2-model-field">
+          <label className="ofk-v2-model-field">
             <span>Message</span>
             <input
               required
@@ -91,7 +91,7 @@ export function V2FlowComposer({
               }
             />
           </label>
-          <label className="canvas-v2-model-field">
+          <label className="ofk-v2-model-field">
             <span>Protocol</span>
             <input
               value={message.tech}
@@ -125,10 +125,10 @@ export function V2FlowComposer({
       >
         Add message
       </Button>
-      <p className="canvas-v2-model-hint">
+      <p className="ofk-v2-model-hint">
         For parallel paths, alternatives and notes, edit the flow in diagram source.
       </p>
-      <div className="canvas-v2-model-inspector-actions">
+      <div className="ofk-v2-model-inspector-actions">
         <Button type="submit" variant="primary" disabled={!valid}>
           Save flow
         </Button>

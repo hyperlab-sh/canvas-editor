@@ -6,7 +6,7 @@ import type { ArchFlow, ArchModel, FlowStep } from './types';
  * of the three, never back into an editable diagram.
  */
 
-type Body = 'mermaid' | 'plantuml' | 'canvas';
+type Body = 'mermaid' | 'plantuml' | 'ofk';
 
 interface Participant {
   readonly id: string;
@@ -38,14 +38,14 @@ const arrow = (body: Body, from: string, to: string, label: string): string =>
   body === 'mermaid' ? `${from}->>${to}: ${label}` : `${from} -> ${to} : ${label}`;
 
 const blockOpen = (body: Body, kind: 'alt' | 'par', label: string | undefined, indent: string): string =>
-  `${indent}${kind}${label ? ` ${label}` : ''}${body === 'canvas' ? ' {' : ''}`;
+  `${indent}${kind}${label ? ` ${label}` : ''}${body === 'ofk' ? ' {' : ''}`;
 
 const blockMiddle = (body: Body, kind: 'else' | 'and', label: string | undefined, indent: string): string =>
-  body === 'canvas'
+  body === 'ofk'
     ? `${indent}} ${kind}${label ? ` ${label}` : ''} {`
     : `${indent}${kind}${label ? ` ${label}` : ''}`;
 
-const blockClose = (body: Body, indent: string): string => body === 'canvas' ? `${indent}}` : `${indent}end`;
+const blockClose = (body: Body, indent: string): string => body === 'ofk' ? `${indent}}` : `${indent}end`;
 
 const note = (body: Body, over: string, text: string): string =>
   body === 'mermaid' ? `Note over ${over}: ${text}` : `note over ${over} : ${text}`;
@@ -121,12 +121,12 @@ function plantUmlBody(model: ArchModel, flow: ArchFlow, participants: readonly P
 export function flowToSequenceDsl(flow: ArchFlow, model: ArchModel): string {
   const participants = participantOrder(model, flow);
   return [
-    '%% canvas 1',
+    '%% ofk 1',
     'sequence',
     `title: ${flow.name}`,
     'autonumber',
     ...participants.map((participant) => `participant ${participant.name}`),
-    ...renderSteps(model, flow.steps, 'canvas', '', participants),
+    ...renderSteps(model, flow.steps, 'ofk', '', participants),
   ].join('\n') + '\n';
 }
 

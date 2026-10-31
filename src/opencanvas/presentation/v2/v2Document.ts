@@ -45,7 +45,7 @@ export function firstV2Page(document: SceneDocumentV1): ScenePage {
 let v2IdCounter = 0;
 // Kept per tab across reloads: a reload before the editor finishes loading (a stale-chunk reload, the
 // v1 kill switch's navigation, F5) must still open the diagram this tab just started.
-const MINTED_KEY = 'canvas:minted-documents';
+const MINTED_KEY = 'ofk:minted-documents';
 
 function mintedHere(): Set<string> {
   try { return new Set(JSON.parse(sessionStorage.getItem(MINTED_KEY) ?? '[]') as string[]); } catch { return new Set(); }
@@ -78,14 +78,14 @@ export function mayCreateDocument(id: string, lastOpen: string | null): boolean 
 
 // `/` reopens the document you had open last (Excalidraw's "refresh, same
 // drawing") instead of minting a fresh one on every visit.
-const LAST_DOCUMENT_KEY = 'canvas:last-document';
+const LAST_DOCUMENT_KEY = 'ofk:last-document';
 
 export function rememberLastDocument(id: string): void {
   try { localStorage.setItem(LAST_DOCUMENT_KEY, id); } catch { /* private mode: every visit is new */ }
 }
 
 // The page a document was left on, so a reload (and the next export) opens there: this browser only, never the document or undo.
-const pageKey = (documentId: string): string => `canvas.page:${documentId}`;
+const pageKey = (documentId: string): string => `ofk.page:${documentId}`;
 
 export function savedPageId(documentId: string): string | null {
   try { return localStorage.getItem(pageKey(documentId)); } catch { return null; }

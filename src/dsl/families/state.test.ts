@@ -24,7 +24,7 @@ describe('state family', () => {
   });
 
   it('keeps the line breaks of a note, in the sticky and in the text it writes back', async () => {
-    const text = '%% canvas 1\nstate\n\nIdle\nnote Idle : "waits for a job\\nretries twice"\n';
+    const text = '%% ofk 1\nstate\n\nIdle\nnote Idle : "waits for a job\\nretries twice"\n';
     const result = await compile(text);
     expect(result.diagnostics.filter((item) => item.severity !== 'info')).toEqual([]);
     const sticky = result.nodes.find((node) => node.kind === 'sticky')!;
@@ -34,7 +34,7 @@ describe('state family', () => {
   });
 
   it('puts a note on a composite state: a sticky beside its box, written back as a note', async () => {
-    const text = '%% canvas 1\nstate\n\nstate Moving {\n  Walking\n}\nnote Moving : whole box\n';
+    const text = '%% ofk 1\nstate\n\nstate Moving {\n  Walking\n}\nnote Moving : whole box\n';
     const result = await compile(text);
     expect(result.diagnostics.filter((item) => item.severity !== 'info')).toEqual([]);
     const moving = result.groups.find((group) => group.id === 'moving')!;

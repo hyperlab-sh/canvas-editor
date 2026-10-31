@@ -11,10 +11,10 @@ test('diagram source generates and regenerates as one undo step', async ({ page 
   await page.getByRole('toolbar', { name: 'Workspace', exact: true }).getByRole('button', { name: 'Diagram as code' }).click();
   const source = page.getByRole('textbox', { name: 'Diagram source' });
   await expect(source).toBeVisible();
-  await source.fill('%% canvas 1\nflowchart\nStart -> Build -> Ship');
+  await source.fill('%% ofk 1\nflowchart\nStart -> Build -> Ship');
   await source.press('ControlOrMeta+Enter');
   await expect.poll(() => count(page)).toBe(4);
-  await source.fill('%% canvas 1\nflowchart\nStart -> Test -> Build -> Ship');
+  await source.fill('%% ofk 1\nflowchart\nStart -> Test -> Build -> Ship');
   await source.press('ControlOrMeta+Enter');
   await expect.poll(() => count(page)).toBe(5);
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
@@ -94,8 +94,8 @@ test('the code editor wraps long lines in step with its highlight, and ⌘Z undo
   const long = `flowchart\n${Array.from({ length: 12 }, (_, index) => `Step${index}`).join(' -> ')} -> ${'x'.repeat(120)}\nEmoji 🚀 -> Tab\tEnd`;
   await source.fill(long);
   const metrics = await page.evaluate(() => {
-    const editor = document.querySelector<HTMLTextAreaElement>('.canvas-v2-code-editor')!;
-    const highlight = document.querySelector<HTMLPreElement>('.canvas-v2-code-highlight')!;
+    const editor = document.querySelector<HTMLTextAreaElement>('.ofk-v2-code-editor')!;
+    const highlight = document.querySelector<HTMLPreElement>('.ofk-v2-code-highlight')!;
     return {
       sideways: editor.scrollWidth > editor.clientWidth + 1,
       editorHeight: editor.scrollHeight, highlightHeight: highlight.scrollHeight,

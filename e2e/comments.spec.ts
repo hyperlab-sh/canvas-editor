@@ -3,9 +3,9 @@ import type { AddressInfo } from 'node:net';
 import { expect, test, type Page } from './test';
 
 // Discussions: Figma-style comments pinned on the canvas. They are document data (saved, reloaded, carried with the node)
-// but never undo history. CANVAS_SHOTS_DIR=<dir> also writes screenshots.
+// but never undo history. OFK_SHOTS_DIR=<dir> also writes screenshots.
 
-const SHOTS = process.env.CANVAS_SHOTS_DIR;
+const SHOTS = process.env.OFK_SHOTS_DIR;
 type V2Api = {
   getState(): { nodes: string[]; revision: number; saveStatus?: string };
   getNodeRect(id: string): { x: number; y: number; width: number; height: number } | null;
@@ -16,7 +16,7 @@ const threads = (page: Page) => api(page, (v2) => v2.getDocument().pages[0]!.thr
 const shot = async (page: Page, name: string) => { if (SHOTS) await page.screenshot({ path: `${SHOTS}/${name}.png` }); };
 
 async function start(page: Page, preferences: Record<string, unknown> = {}): Promise<{ id: string; centre: { x: number; y: number } }> {
-  await page.addInitScript((value) => localStorage.setItem('canvas-v2-preferences', JSON.stringify({ theme: 'dark', ...value })), preferences);
+  await page.addInitScript((value) => localStorage.setItem('openflowkit-v2-preferences', JSON.stringify({ theme: 'dark', ...value })), preferences);
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/');
   await page.waitForFunction(() => window.__V2__?.getState());
@@ -51,7 +51,7 @@ test('press C, click a node, type, Enter: a pin appears, survives a reload, and 
   await expect(pin).toHaveCount(1);
   expect(await threads(page)).toMatchObject([{ anchor: { nodeId: id }, resolved: false, comments: [{ body: 'Why is this a queue?', author: { kind: 'human', name: 'User' } }] }]);
   await expect(pin.getByRole('button', { name: 'Comment by User' })).toBeVisible();
-  await expect(pin.locator('.canvas-comment-avatar svg')).toHaveCount(1);
+  await expect(pin.locator('.ofk-comment-avatar svg')).toHaveCount(1);
   // The tip of the pin is where it was clicked.
   const before = (await pin.boundingBox())!;
   expect(Math.abs(before.x - centre.x)).toBeLessThan(2);
@@ -202,7 +202,7 @@ test('live comments are off without an agent, and say why', async ({ page }) => 
   await shot(page, 'comment-agent-panel');
   await page.getByRole('button', { name: 'Close agent connection' }).click();
   await page.getByRole('button', { name: /^Threads/ }).click();
-  await expect(page.getByTestId('v2-threads-panel').locator('.canvas-comment-live')).toHaveAttribute('title', /Connect an agent/);
+  await expect(page.getByTestId('v2-threads-panel').locator('.ofk-comment-live')).toHaveAttribute('title', /Connect an agent/);
 });
 
 // A fake MCP server's bridge: long-poll /next, results on /result, and the comment events of live mode on /event.
@@ -253,7 +253,7 @@ test('an agent whose session cannot hear comments keeps live comments and Send o
     await comment(page, centre, 'Anyone listening?');
     const panel = page.getByTestId('v2-threads-panel');
     await expect(panel.getByRole('switch', { name: 'Live comments' })).toBeDisabled();
-    await expect(panel.locator('.canvas-comment-live')).toHaveAttribute('title', /cannot receive comments/);
+    await expect(panel.locator('.ofk-comment-live')).toHaveAttribute('title', /cannot receive comments/);
     const send = page.getByTestId('v2-threads-send');
     await expect(send).toHaveText('Send 1 comment to agent');
     await expect(send).toBeDisabled();
@@ -315,7 +315,7 @@ test('live comments: each new human message is posted to the agent, and the agen
     fake.send({ id: 'r2', op: 'start_thread', input: { nodeId: id, body: 'Also check the queue.' }, client: 'claude-code' });
     // The thread is open over the first pin: the agent's is the second.
     await expect(page.getByTestId('v2-comment-pin')).toHaveCount(2);
-    await expect(page.locator('.canvas-comment-pin[data-kind="agent"]')).toHaveCount(1);
+    await expect(page.locator('.ofk-comment-pin[data-kind="agent"]')).toHaveCount(1);
     await expect.poll(() => fake.results.map((result) => result.ok)).toEqual([true, true]);
   } finally {
     await fake.close();

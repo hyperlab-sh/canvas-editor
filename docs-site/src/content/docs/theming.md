@@ -3,7 +3,7 @@ title: Theming
 description: Light and dark themes, the four diagram palettes, and how a document's appearance travels with the text.
 ---
 
-There are two layers of colour in Canvas: the **app's theme**, which is a preference, and
+There are two layers of colour in OpenFlowKit: the **app's theme**, which is a preference, and
 the **diagram palette**, which belongs to a document.
 
 ## The app theme
@@ -32,7 +32,7 @@ round-trips through JSON.
 Set the default in the [code panel's palette picker](/settings/), or per document in the text:
 
 ```openflow
-%% canvas 1
+%% ofk 1
 flowchart
 appearance: mono
 Client -> API : request

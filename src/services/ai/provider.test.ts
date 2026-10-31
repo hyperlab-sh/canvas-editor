@@ -124,8 +124,8 @@ describe('openai wire', () => {
 
   it('adds attribution headers for OpenRouter only', async () => {
     const { headers } = await call('openrouter', ok({ choices: [{ message: { content: 'x' } }] }));
-    expect(headers['HTTP-Referer']).toBe('https://canvas.hyperlab.sh');
-    expect(headers['X-Title']).toBe('Canvas');
+    expect(headers['HTTP-Referer']).toBe('https://openflowkit.com');
+    expect(headers['X-Title']).toBe('OpenFlowKit');
 
     const { headers: plain } = await call('groq', ok({ choices: [{ message: { content: 'x' } }] }));
     expect(plain['HTTP-Referer']).toBeUndefined();

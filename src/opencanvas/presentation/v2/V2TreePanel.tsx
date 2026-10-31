@@ -74,14 +74,14 @@ const LayerRowView = memo(function LayerRowView({ handlers, readOnly, ...row }: 
   // Dragging moves a shape; a hidden or locked one stays put, as it does on the canvas.
   const draggable = renamable && !locked;
   return <li>
-    <div className="canvas-object-row" data-object-id={id} data-connector={connector || undefined} data-selected={row.selected || undefined}
+    <div className="ofk-object-row" data-object-id={id} data-connector={connector || undefined} data-selected={row.selected || undefined}
       data-hidden={hidden || undefined} data-dragging={row.dragging || undefined} data-drop={row.dropEdge ?? undefined}
-      style={{ paddingInlineStart: 8 + row.depth * 14, '--canvas-drop-indent': `${8 + row.dropDepth * 14}px` } as React.CSSProperties}
+      style={{ paddingInlineStart: 8 + row.depth * 14, '--ofk-drop-indent': `${8 + row.dropDepth * 14}px` } as React.CSSProperties}
       onContextMenu={(event) => { event.preventDefault(); if (!readOnly) handlers.menu(id, connector, event.currentTarget); }}>
-      {row.nested ? <button type="button" className="canvas-object-expand" aria-label={`${row.expanded ? 'Collapse' : 'Expand'} ${name}`}
+      {row.nested ? <button type="button" className="ofk-object-expand" aria-label={`${row.expanded ? 'Collapse' : 'Expand'} ${name}`}
         aria-expanded={row.expanded} onClick={() => handlers.toggle(id)}><Icon icon={IconChevronRight} /></button>
-        : <span className="canvas-object-indent" />}
-      <button type="button" className="canvas-object-select" aria-pressed={row.selected} aria-disabled={hidden || undefined}
+        : <span className="ofk-object-indent" />}
+      <button type="button" className="ofk-object-select" aria-pressed={row.selected} aria-disabled={hidden || undefined}
         title={hidden ? `${name} (hidden)` : name}
         onClick={(event) => { if (!hidden) handlers.select(id, connector, event.shiftKey || event.metaKey || event.ctrlKey); }}
         onPointerDown={(event) => { if (draggable && event.button === 0) handlers.dragStart(id, event); }}
@@ -94,7 +94,7 @@ const LayerRowView = memo(function LayerRowView({ handlers, readOnly, ...row }: 
             event.preventDefault(); handlers.action(id, false, 'rename');
           }
         }}><Icon icon={row.glyph} /><span>{name}</span></button>
-      <div className="canvas-object-actions">
+      <div className="ofk-object-actions">
         {/* Read-only (a shared view, Map) keeps the state icons and drops the controls. */}
         {!readOnly || hidden ? <IconButton variant="quiet" label={`${row.ownHidden ? 'Show' : 'Hide'} ${name}`} disabled={readOnly}
           data-persistent={hidden || undefined} data-inherited={(hidden && !row.ownHidden) || undefined}
@@ -197,7 +197,7 @@ export function V2TreePanel(props: V2TreePanelProps): React.JSX.Element {
   /** Where a row dragged to viewport `y` would land, or null where it may not go (the canvas drop rules). */
   function targetAt(dragId: string, y: number): DropTarget | null {
     const { children: tree, nodeById: byId, collapsed: shut } = treeRef.current;
-    const elements = [...(listRef.current?.querySelectorAll<HTMLElement>('.canvas-object-row:not([data-connector])') ?? [])];
+    const elements = [...(listRef.current?.querySelectorAll<HTMLElement>('.ofk-object-row:not([data-connector])') ?? [])];
     if (elements.length === 0) return null;
     const parentOf = (id: string) => { const parent = byId.get(id)?.parentId; return parent && byId.has(parent) ? parent : null; };
     let depth = 0;
@@ -239,7 +239,7 @@ export function V2TreePanel(props: V2TreePanelProps): React.JSX.Element {
     let target: DropTarget | null = null;
     let lastY = startY;
     let frame = 0;
-    const scroller = listRef.current?.closest<HTMLElement>('.canvas-panel-body') ?? null;
+    const scroller = listRef.current?.closest<HTMLElement>('.ofk-panel-body') ?? null;
     const update = () => { target = targetAt(id, lastY); setDrag({ id, target }); };
     const scroll = () => {
       const box = scroller?.getBoundingClientRect();
@@ -293,16 +293,16 @@ export function V2TreePanel(props: V2TreePanelProps): React.JSX.Element {
   const isGroup = menuRow && !menuRow.connector && nodeById.get(menuRow.id)?.kind === 'group';
   // Already in front of (or behind) everything it paints with: those Reorder items would change nothing.
   const edges = menuRow && !menuRow.connector ? layerPaintEdges(page, menuRow.id) : null;
-  return <Panel title="Layers" side="start" onClose={props.onClose} className="canvas-v2-layers-panel"
-    tools={<span className="canvas-v2-panel-badge" title={page.name}>{page.name}</span>}>
-    {rows.length === 0 ? <div className="canvas-panel-empty">
+  return <Panel title="Layers" side="start" onClose={props.onClose} className="ofk-v2-layers-panel"
+    tools={<span className="ofk-v2-panel-badge" title={page.name}>{page.name}</span>}>
+    {rows.length === 0 ? <div className="ofk-panel-empty">
       <Icon icon={IconLayersIntersect} />
       {props.mapMode ? <><strong>Nothing on the map</strong><p>Map shows architecture models.<br />Canvas has this page&apos;s drawing.</p></>
         : <><strong>No objects yet</strong><p>Add a shape or generate a diagram.<br />Manage its layers here.</p></>}
-    </div> : <ul ref={listRef} className="canvas-object-list" aria-label="Objects on this page"
+    </div> : <ul ref={listRef} className="ofk-object-list" aria-label="Objects on this page"
       data-drag={drag ? (drag.target ? 'ok' : 'refused') : undefined} onKeyDown={(event) => {
-      if (!(event.target instanceof HTMLElement) || !event.target.matches('.canvas-object-select')) return;
-      const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('.canvas-object-select'));
+      if (!(event.target instanceof HTMLElement) || !event.target.matches('.ofk-object-select')) return;
+      const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('.ofk-object-select'));
       const index = buttons.indexOf(event.target as HTMLButtonElement);
       let next: HTMLButtonElement | undefined;
       if (event.key === 'ArrowDown') next = buttons[index + 1];

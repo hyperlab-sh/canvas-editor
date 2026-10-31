@@ -1,20 +1,20 @@
 {
-  "name": "canvas-app",
+  "name": "openflowkit-app",
   "private": true,
   "version": "2.1.0",
   "description": "Architecture diagrams you draw, write as code, or hand to your agent.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hyperlab-sh/canvas-editor.git"
+    "url": "https://github.com/openflowkit/openflowkit.git"
   },
-  "bugs": "https://github.com/hyperlab-sh/canvas-editor/issues",
+  "bugs": "https://github.com/openflowkit/openflowkit/issues",
   "type": "module",
   "workspaces": [
     "docs-site",
     "mcp-server"
   ],
-  "homepage": "https://canvas.hyperlab.sh",
+  "homepage": "https://openflowkit.com",
   "engines": {
     "node": ">=22.22.0"
   },

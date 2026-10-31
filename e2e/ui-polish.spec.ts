@@ -1,13 +1,13 @@
 // Headed: first-visit polish found by the 2026-10-13 personas (V12, V13, R19, V11/R18).
-// CANVAS_SHOTS_DIR=<dir> keeps a light and a dark screenshot of each state, for review.
+// OFK_SHOTS_DIR=<dir> keeps a light and a dark screenshot of each state, for review.
 // npx playwright test e2e/ui-polish.spec.ts --headed --workers=1
 import { expect, test, type Page } from './test';
 import { openCanvas } from './helpers';
 
 const shot = async (page: Page, name: string) => {
-  if (!process.env.CANVAS_SHOTS_DIR) return;
-  const theme = await page.locator('.canvas-system').first().getAttribute('data-canvas-appearance');
-  await page.screenshot({ animations: 'disabled', path: `${process.env.CANVAS_SHOTS_DIR}/${name}-${theme}.png` });
+  if (!process.env.OFK_SHOTS_DIR) return;
+  const theme = await page.locator('.ofk-system').first().getAttribute('data-ofk-appearance');
+  await page.screenshot({ animations: 'disabled', path: `${process.env.OFK_SHOTS_DIR}/${name}-${theme}.png` });
 };
 const rail = (page: Page) => page.getByRole('toolbar', { name: 'Workspace', exact: true });
 const settingsDialog = (page: Page) => page.getByRole('dialog', { name: 'Settings' });
@@ -39,7 +39,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme });
     await page.setViewportSize({ width: 1440, height: 900 });
     await openCanvas(page);
-    const guides = page.locator('.canvas-v2-guide');
+    const guides = page.locator('.ofk-v2-guide');
     await expect(guides.first()).toBeVisible();
     await shot(page, 'v13-welcome');
 
@@ -126,7 +126,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await page.getByRole('complementary', { name: 'Map' }).getByRole('button', { name: 'Close panel' }).click();
     await page.reload();
     await expect(page.getByRole('toolbar', { name: 'Map depth', exact: true })).toBeVisible({ timeout: 20_000 });
-    const toast = page.locator('.canvas-toast').filter({ hasText: 'Showing part of the map' });
+    const toast = page.locator('.ofk-toast').filter({ hasText: 'Showing part of the map' });
     await expect(toast).toBeVisible({ timeout: 10_000 });
     await shot(page, 'v11-390-map-toast');
     const t = (await toast.boundingBox())!;

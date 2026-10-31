@@ -24,7 +24,7 @@ interface V2IconPickerProps {
 const PAGE = 160;
 /** Browse view (no query): this many per provider before "Show all". */
 const GROUP_PREVIEW = 42;
-const RECENT_KEY = 'canvas.recentIcons';
+const RECENT_KEY = 'ofk.recentIcons';
 const RECENT_LIMIT = 14;
 
 // Per-viewer convenience only: the last icons picked on this browser.
@@ -81,25 +81,25 @@ export function V2IconPicker({
   const cell = (icon: IconChoice) => (
     <button key={`${icon.packId}:${icon.shapeId}`} type="button" role="option"
       aria-selected={selected?.packId === icon.packId && selected.shapeId === icon.shapeId}
-      className="canvas-icon-picker-cell" title={icon.label} data-provider={icon.provider}
+      className="ofk-icon-picker-cell" title={icon.label} data-provider={icon.provider}
       onClick={() => pick(icon)} onMouseEnter={() => setHovered(icon)} onFocus={() => setHovered(icon)}>
       <IconPreview icon={icon} />
     </button>
   );
   const tab = (id: string, label: string, current: string, set: (id: string) => void) => (
-    <button key={id} type="button" role="tab" aria-selected={current === id} className="canvas-icon-picker-tab" onClick={() => set(id)}>{label}</button>
+    <button key={id} type="button" role="tab" aria-selected={current === id} className="ofk-icon-picker-tab" onClick={() => set(id)}>{label}</button>
   );
   const emojiCell = (glyph: string, key: string) => (
     <button key={key} type="button" role="option" aria-selected={false} aria-label={glyph}
-      className="canvas-icon-picker-cell canvas-icon-picker-cell--emoji" onClick={() => onPickEmoji?.(glyph)}>
+      className="ofk-icon-picker-cell ofk-icon-picker-cell--emoji" onClick={() => onPickEmoji?.(glyph)}>
       {glyph}
     </button>
   );
 
   return (
-    <div className="canvas-icon-picker" onKeyDown={(event) => { if (event.key === 'Escape') { event.stopPropagation(); onClose(); } }}>
-      <header className="canvas-icon-picker-head">
-        <div className="canvas-icon-picker-tabs" role="tablist" aria-label="Icon packs">
+    <div className="ofk-icon-picker" onKeyDown={(event) => { if (event.key === 'Escape') { event.stopPropagation(); onClose(); } }}>
+      <header className="ofk-icon-picker-head">
+        <div className="ofk-icon-picker-tabs" role="tablist" aria-label="Icon packs">
           {tab('all', 'All', pack, setPack)}
           {ICON_PACKS.map((item) => tab(item.id, item.label, pack, setPack))}
           {onPickEmoji ? tab('emoji', 'Emoji', pack, setPack) : null}
@@ -108,12 +108,12 @@ export function V2IconPicker({
         <IconButton variant="quiet" label="Close icons" icon={<Icon icon={IconX} />} onClick={onClose} />
       </header>
       {pack === 'cloud' ? (
-        <div className="canvas-icon-picker-tabs canvas-icon-picker-tabs--sub" role="tablist" aria-label="Cloud providers">
+        <div className="ofk-icon-picker-tabs ofk-icon-picker-tabs--sub" role="tablist" aria-label="Cloud providers">
           {tab('cloud', 'All', vendor, setVendor)}
           {CLOUD_PROVIDERS.map((item) => tab(item.id, item.label, vendor, setVendor))}
         </div>
       ) : null}
-      <label className="canvas-icon-picker-search">
+      <label className="ofk-icon-picker-search">
         <Icon icon={IconSearch} />
         <input type="search" value={query} data-autofocus
           placeholder={emojiTab ? 'Search emoji' : `Search ${scope === 'all' ? 'all' : packLabel(scope)} icons`}
@@ -132,31 +132,31 @@ export function V2IconPicker({
           }} />
         {query ? <IconButton variant="quiet" label="Clear search" icon={<Icon icon={IconX} />} onClick={() => setQuery('')} /> : null}
       </label>
-      <div ref={gridRef} className="canvas-icon-picker-body" onKeyDown={moveFocus}>
+      <div ref={gridRef} className="ofk-icon-picker-body" onKeyDown={moveFocus}>
         {emojiTab ? (
           <>
             {q ? (
-              <section className="canvas-icon-picker-group">
-                <h3 className="canvas-caption">Results <span>{emojiHits.length}</span></h3>
-                <div className="canvas-icon-picker-grid canvas-icon-picker-grid--emoji" role="listbox" aria-label="Emoji results">
+              <section className="ofk-icon-picker-group">
+                <h3 className="ofk-caption">Results <span>{emojiHits.length}</span></h3>
+                <div className="ofk-icon-picker-grid ofk-icon-picker-grid--emoji" role="listbox" aria-label="Emoji results">
                   {emojiHits.map((glyph) => emojiCell(glyph, `hit:${glyph}`))}
-                  {emojiHits.length === 0 ? <p className="canvas-icon-picker-empty">No emoji match “{q}”.</p> : null}
+                  {emojiHits.length === 0 ? <p className="ofk-icon-picker-empty">No emoji match “{q}”.</p> : null}
                 </div>
               </section>
             ) : (
               <>
                 {recentEmoji.length > 0 ? (
-                  <section className="canvas-icon-picker-group">
-                    <h3 className="canvas-caption">Recent <span>{recentEmoji.length}</span></h3>
-                    <div className="canvas-icon-picker-grid canvas-icon-picker-grid--emoji" role="listbox" aria-label="Recent emoji">
+                  <section className="ofk-icon-picker-group">
+                    <h3 className="ofk-caption">Recent <span>{recentEmoji.length}</span></h3>
+                    <div className="ofk-icon-picker-grid ofk-icon-picker-grid--emoji" role="listbox" aria-label="Recent emoji">
                       {recentEmoji.map((glyph) => emojiCell(glyph, `recent:${glyph}`))}
                     </div>
                   </section>
                 ) : null}
                 {EMOJI_GROUPS.map((group) => (
-                  <section key={group.id} className="canvas-icon-picker-group">
-                    <h3 className="canvas-caption">{group.label} <span>{group.glyphs.length}</span></h3>
-                    <div className="canvas-icon-picker-grid canvas-icon-picker-grid--emoji" role="listbox" aria-label={group.label}>
+                  <section key={group.id} className="ofk-icon-picker-group">
+                    <h3 className="ofk-caption">{group.label} <span>{group.glyphs.length}</span></h3>
+                    <div className="ofk-icon-picker-grid ofk-icon-picker-grid--emoji" role="listbox" aria-label={group.label}>
                       {group.glyphs.map((glyph) => emojiCell(glyph, `${group.id}:${glyph}`))}
                     </div>
                   </section>
@@ -165,26 +165,26 @@ export function V2IconPicker({
             )}
           </>
         ) : q ? (
-          <div className="canvas-icon-picker-grid" role="listbox" aria-label="Icons">
+          <div className="ofk-icon-picker-grid" role="listbox" aria-label="Icons">
             {result.icons.map(cell)}
-            {result.total === 0 ? <p className="canvas-icon-picker-empty">No icons match “{q}”.</p> : null}
+            {result.total === 0 ? <p className="ofk-icon-picker-empty">No icons match “{q}”.</p> : null}
           </div>
         ) : (
           <>
             {pack === 'all' && recent.length ? (
-              <section className="canvas-icon-picker-group">
-                <h3 className="canvas-caption">Recent <span>{recent.length}</span></h3>
-                <div className="canvas-icon-picker-grid" role="listbox" aria-label="Recent icons">{recent.map(cell)}</div>
+              <section className="ofk-icon-picker-group">
+                <h3 className="ofk-caption">Recent <span>{recent.length}</span></h3>
+                <div className="ofk-icon-picker-grid" role="listbox" aria-label="Recent icons">{recent.map(cell)}</div>
               </section>
             ) : null}
             {groups.map((group) => (
-              <section key={group.provider} className="canvas-icon-picker-group">
-                <h3 className="canvas-caption">
+              <section key={group.provider} className="ofk-icon-picker-group">
+                <h3 className="ofk-caption">
                   {packLabel(group.provider)} <span>{group.total.toLocaleString()}</span>
                   {groups.length > 1 && group.total > group.icons.length
-                    ? <button type="button" className="canvas-icon-picker-more" onClick={() => showAll(group.provider)}>Show all</button> : null}
+                    ? <button type="button" className="ofk-icon-picker-more" onClick={() => showAll(group.provider)}>Show all</button> : null}
                 </h3>
-                <div className="canvas-icon-picker-grid" role="listbox" aria-label={`${packLabel(group.provider)} icons`}>
+                <div className="ofk-icon-picker-grid" role="listbox" aria-label={`${packLabel(group.provider)} icons`}>
                   {(groups.length > 1 ? group.icons : searchIcons('', group.provider, PAGE).icons).map(cell)}
                 </div>
               </section>
@@ -192,7 +192,7 @@ export function V2IconPicker({
           </>
         )}
       </div>
-      <footer className="canvas-icon-picker-footer">
+      <footer className="ofk-icon-picker-footer">
         <span>{hovered?.label ?? (q && result.total > PAGE ? `Showing ${PAGE} of ${result.total.toLocaleString()}` : ' ')}</span>
         <span>{emojiTab ? 'Emoji' : hovered ? packLabel(hovered.provider) : `${result.total.toLocaleString()} icons`}</span>
       </footer>
@@ -215,5 +215,5 @@ function IconPreview({ icon }: { readonly icon: IconChoice }): React.JSX.Element
     });
     return () => { alive = false; };
   }, [icon.packId, icon.shapeId, key, url]);
-  return url ? <img src={url} alt="" loading="lazy" draggable={false} /> : <span className="canvas-icon-picker-skeleton" />;
+  return url ? <img src={url} alt="" loading="lazy" draggable={false} /> : <span className="ofk-icon-picker-skeleton" />;
 }

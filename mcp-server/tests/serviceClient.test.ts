@@ -430,15 +430,15 @@ describe('a port held by something else (R-5)', () => {
     await new Promise<void>((ready) => other!.listen(0, '127.0.0.1', ready));
     const port = (other.address() as { port: number }).port;
     const client = new ServiceClient({ url: `http://127.0.0.1:${port}`, clientName: () => 'x', log: () => undefined });
-    await expect(client.ensure()).rejects.toThrow(new RegExp(`Port ${port} is in use[\\s\\S]*"port"[\\s\\S]*CANVAS_SERVICE_URL`));
+    await expect(client.ensure()).rejects.toThrow(new RegExp(`Port ${port} is in use[\\s\\S]*"port"[\\s\\S]*OPENFLOWKIT_SERVICE_URL`));
   });
 });
 
 describe('starting the service (AC-4, D10)', () => {
-  const saved = { config: process.env.CANVAS_SERVICE_CONFIG, home: process.env.HOME };
+  const saved = { config: process.env.OPENFLOWKIT_SERVICE_CONFIG, home: process.env.HOME };
   let url = '';
   afterEach(async () => {
-    if (saved.config === undefined) delete process.env.CANVAS_SERVICE_CONFIG; else process.env.CANVAS_SERVICE_CONFIG = saved.config;
+    if (saved.config === undefined) delete process.env.OPENFLOWKIT_SERVICE_CONFIG; else process.env.OPENFLOWKIT_SERVICE_CONFIG = saved.config;
     process.env.HOME = saved.home;
     // Whatever the test got to, the service it started must not outlive the run.
     const running = url ? await fetch(`${url}/health`).then((reply) => reply.json() as Promise<{ pid: number }>).catch(() => null) : null;
@@ -453,18 +453,18 @@ describe('starting the service (AC-4, D10)', () => {
     const file = join(home, 'service.json');
     await writeFile(file, typeof config === 'string' ? config : config(port, (await tempConfig('alpha')).projects));
     url = `http://127.0.0.1:${port}`;
-    return { port, home, file, env: { CANVAS_SERVICE_URL: url, CANVAS_SERVICE_CONFIG: file, HOME: home } };
+    return { port, home, file, env: { OPENFLOWKIT_SERVICE_URL: url, OPENFLOWKIT_SERVICE_CONFIG: file, HOME: home } };
   }
   const settings = (port: number, projects: unknown): string => JSON.stringify({ port, projects });
 
   it('a real MCP server process starts serve, the service outlives it, and a second server reuses it', async () => {
     const { env } = await environment(settings);
-    Object.assign(process.env, { CANVAS_SERVICE_CONFIG: env.CANVAS_SERVICE_CONFIG, HOME: env.HOME });
+    Object.assign(process.env, { OPENFLOWKIT_SERVICE_CONFIG: env.OPENFLOWKIT_SERVICE_CONFIG, HOME: env.HOME });
     const health = async () => (await (await fetch(`${url}/health`)).json()) as { pid: number };
 
     const transport = new StdioClientTransport({
       command: process.execPath, args: ['--import', 'tsx', 'src/index.ts'], cwd: fileURLToPath(new URL('..', import.meta.url)), stderr: 'ignore',
-      env: { ...process.env as Record<string, string>, ...env, CANVAS_BRIDGE_PORT: String(await freePort()) },
+      env: { ...process.env as Record<string, string>, ...env, OPENFLOWKIT_BRIDGE_PORT: String(await freePort()) },
     });
     const child = new Client({ name: 'claude-code', version: '0.0.0' });
     await child.connect(transport);
@@ -489,10 +489,10 @@ describe('starting the service (AC-4, D10)', () => {
 
   it('says what went wrong when serve cannot read its config, not that the port is taken', async () => {
     const { port, env } = await environment('{not json');
-    Object.assign(process.env, { CANVAS_SERVICE_CONFIG: env.CANVAS_SERVICE_CONFIG, HOME: env.HOME });
+    Object.assign(process.env, { OPENFLOWKIT_SERVICE_CONFIG: env.OPENFLOWKIT_SERVICE_CONFIG, HOME: env.HOME });
     const client = new ServiceClient({ url, clientName: () => 'x', log: () => undefined });
     const failure = await client.ensure().then(() => '', (error: Error) => error.message);
-    expect(failure).toMatch(/exited with code 2[\s\S]*canvas serve/);
+    expect(failure).toMatch(/exited with code 2[\s\S]*openflowkit serve/);
     expect(failure).not.toContain(`Port ${port}`);
   }, 30_000);
 });

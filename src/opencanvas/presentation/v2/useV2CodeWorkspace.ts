@@ -63,7 +63,7 @@ function convertSafely(foreign: Foreign, text: string): ReturnType<Foreign['conv
   }
 }
 
-/** Text the code panel can draw: Mermaid, Structurizr, D2, or Canvas source (a family line, then more). */
+/** Text the code panel can draw: Mermaid, Structurizr, D2, or OpenFlowKit source (a family line, then more). */
 export function looksLikeDiagramCode(text: string): boolean {
   if (detectForeign(text)) return true;
   const lines = text.split('\n').map((line) => line.trim()).filter((line) => line && !/^(?:%%|\/\/|#)/.test(line));
@@ -113,7 +113,7 @@ export function useV2CodeWorkspace(options: V2CodeWorkspaceOptions) {
   const foreign = useMemo(() => detectForeign(draft), [draft]);
   const diagnostics = useMemo(() => {
     // compile() re-parses, so dedupe the live parse pass against the last generate. Foreign text skips
-    // the Canvas parse (it describes a language nobody wrote) but keeps what a conversion reported.
+    // the OpenFlowKit parse (it describes a language nobody wrote) but keeps what a conversion reported.
     const seen = new Set<string>();
     return [...(foreign ? [] : parse(draft).diagnostics), ...compileDiagnostics].filter((item) => {
       const key = `${item.code}:${item.line}:${item.col}:${item.message}`;

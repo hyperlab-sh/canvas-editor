@@ -60,7 +60,7 @@ export const foundation = {
 } as const;
 
 // Shared sRGB values keep DOM/Pixi feedback identical; neutrals have a warm tint.
-// The brand seed (foundation.brand, --canvas-brand) is not a normal-text foreground or a white-text button background.
+// The brand seed (foundation.brand, --ofk-brand) is not a normal-text foreground or a white-text button background.
 const lightColors = {
   canvas: '#f7f7f5',
   surface: '#fdfdfb',

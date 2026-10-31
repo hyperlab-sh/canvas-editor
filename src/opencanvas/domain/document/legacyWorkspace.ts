@@ -11,9 +11,9 @@ import { validateSceneDocumentV1 } from './validation';
 export interface LegacyWorkspaceSources {
   /** IndexedDB `documents` rows (`PersistedDocument`, since 2026-03-27). */
   readonly documents: readonly unknown[];
-  /** localStorage `canvas-documents-fallback`: a JSON array of the same shape. */
+  /** localStorage `openflowkit-documents-fallback`: a JSON array of the same shape. */
   readonly fallback: string | null;
-  /** zustand `canvas-storage` blobs holding pre-March `{ state: { tabs } }`. */
+  /** zustand `openflowkit-storage` blobs holding pre-March `{ state: { tabs } }`. */
   readonly tabStates: readonly (string | null)[];
 }
 
@@ -186,8 +186,8 @@ function collectLegacyRecords(sources: LegacyWorkspaceSources, failures: LegacyI
   }
   const raw = [
     ...rows,
-    ...parse('canvas-documents-fallback', sources.fallback, (value) => value, failures),
-    ...sources.tabStates.flatMap((blob) => parse('canvas-storage', blob, (value) =>
+    ...parse('openflowkit-documents-fallback', sources.fallback, (value) => value, failures),
+    ...sources.tabStates.flatMap((blob) => parse('openflowkit-storage', blob, (value) =>
       isJsonObject(value) && isJsonObject(value.state) ? (value.state.tabs ?? []) : null, failures).map(fromTab)),
   ];
   const shown = rows.some((row) => row.deletedAt === null || row.deletedAt === undefined)

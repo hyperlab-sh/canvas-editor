@@ -59,14 +59,14 @@ test('the viewer renders, zooms and opens the editor link @gate', async ({ page 
   await expect.poll(() => img.evaluate((el) => el.style.transform)).not.toBe(zoomed);
   await viewer.getByText('1 note about this diagram').click();
   await expect(viewer.getByText('Not drawn: gradients')).toBeVisible();
-  await viewer.getByRole('button', { name: 'Open in Canvas' }).click();
+  await viewer.getByRole('button', { name: 'Open in OpenFlowKit' }).click();
   await expect.poll(async () => (await sent(page, 'ui/open-link')).map((m) => m.params)).toEqual([{ url: OPEN_URL }]);
   await expect(viewer.getByRole('button', { name: 'Expand' })).toBeHidden();
 });
 
-test('no link disables Open in Canvas and says why @gate', async ({ page }) => {
+test('no link disables Open in OpenFlowKit and says why @gate', async ({ page }) => {
   const viewer = await openHost(page, { ...base, openUrl: null });
-  const open = viewer.getByRole('button', { name: 'Open in Canvas' });
+  const open = viewer.getByRole('button', { name: 'Open in OpenFlowKit' });
   await expect(open).toBeDisabled();
   await expect(viewer.getByText(/no editor link was provided/)).toBeVisible();
   expect(await sent(page, 'ui/open-link')).toHaveLength(0);
@@ -88,12 +88,12 @@ test('a failed initialize shows an error instead of a blank view @gate', async (
 test('an error result without an SVG lists its diagnostics @gate', async ({ page }) => {
   const viewer = await openHost(page, { title: 'Broken', diagnostics: [{ severity: 'error', line: 3, message: 'Unknown shape "blob"' }], losses: [], openUrl: null });
   await expect(viewer.getByRole('status')).toContainText('error (line 3): Unknown shape "blob"');
-  await expect(viewer.getByRole('button', { name: 'Open in Canvas' })).toBeDisabled();
+  await expect(viewer.getByRole('button', { name: 'Open in OpenFlowKit' })).toBeDisabled();
 });
 
-test('a link that is not a Canvas DSL link keeps Open disabled @gate', async ({ page }) => {
+test('a link that is not an OpenFlowKit DSL link keeps Open disabled @gate', async ({ page }) => {
   const viewer = await openHost(page, { ...base, openUrl: 'javascript:alert(1)' });
-  await expect(viewer.getByRole('button', { name: 'Open in Canvas' })).toBeDisabled();
+  await expect(viewer.getByRole('button', { name: 'Open in OpenFlowKit' })).toBeDisabled();
 });
 
 test('Download SVG uses ui/download-file when the host offers it @gate', async ({ page }) => {
@@ -104,14 +104,14 @@ test('Download SVG uses ui/download-file when the host offers it @gate', async (
   ]);
 });
 
-test('a diagram too large to preview keeps Open in Canvas and says why @gate', async ({ page }) => {
+test('a diagram too large to preview keeps Open in OpenFlowKit and says why @gate', async ({ page }) => {
   const { svg: _svg, ...noSvg } = base;
   const viewer = await openHost(page, { ...noSvg, openUrl: OPEN_URL, noPreview: 'The picture is 1400 KB, too large to show here.' }, undefined, { caps: { downloadFile: {} } });
   await expect(viewer.getByRole('heading', { name: 'Checkout' })).toBeVisible();
   await expect(viewer.getByText('2 nodes · 1 connector')).toBeVisible();
-  await expect(viewer.getByRole('status')).toHaveText('The picture is 1400 KB, too large to show here. Open it in Canvas to see it.');
+  await expect(viewer.getByRole('status')).toHaveText('The picture is 1400 KB, too large to show here. Open it in OpenFlowKit to see it.');
   await expect(viewer.locator('#stage')).toBeHidden();
   await expect(viewer.getByRole('button', { name: 'Download SVG' })).toBeHidden();
-  await viewer.getByRole('button', { name: 'Open in Canvas' }).click();
+  await viewer.getByRole('button', { name: 'Open in OpenFlowKit' }).click();
   await expect.poll(async () => (await sent(page, 'ui/open-link')).map((m) => m.params)).toEqual([{ url: OPEN_URL }]);
 });

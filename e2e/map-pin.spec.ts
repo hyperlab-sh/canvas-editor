@@ -196,7 +196,7 @@ test('a page added to a repo document can hold a normal C4 map, with no repo ove
   await page.keyboard.press('Escape');
   await page.getByRole('toolbar', { name: 'Workspace', exact: true }).getByRole('button', { name: 'Diagram as code' }).click();
   const source = page.getByRole('textbox', { name: 'Diagram source' });
-  await source.fill('%% canvas 1\narchitecture\nmodel {\n person Customer\n system Shop\n Customer -> Shop : buys\n}\nviews { view landscape }\n');
+  await source.fill('%% ofk 1\narchitecture\nmodel {\n person Customer\n system Shop\n Customer -> Shop : buys\n}\nviews { view landscape }\n');
   await source.press('ControlOrMeta+Enter');
   const mapSwitch = page.getByRole('button', { name: 'Map', exact: true });
   await expect(mapSwitch).toBeVisible();

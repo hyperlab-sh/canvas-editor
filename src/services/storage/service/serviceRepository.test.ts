@@ -17,7 +17,7 @@ let root: string;
 let service: RunningService;
 
 beforeEach(async () => {
-  root = await mkdtemp(join(tmpdir(), 'canvas-repo-'));
+  root = await mkdtemp(join(tmpdir(), 'ofk-repo-'));
   await mkdir(join(root, 'alpha'));
   await mkdir(join(root, 'beta'));
   service = await startService({

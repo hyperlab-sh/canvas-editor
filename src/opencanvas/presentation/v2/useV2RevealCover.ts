@@ -8,7 +8,7 @@ import type { V2StartIntent } from './v2Document';
 
 /** The longest the loader covers an editor that is still getting ready; then it shows what it has. */
 const REVEAL_LIMIT_MS = 4000;
-/** The loader's fade into the finished editor (index.css, `.canvas-loader[data-leaving]`). */
+/** The loader's fade into the finished editor (index.css, `.ofk-loader[data-leaving]`). */
 const COVER_FADE_MS = 200;
 
 interface RevealCoverInput {

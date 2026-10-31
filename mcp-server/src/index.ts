@@ -14,20 +14,20 @@ async function main(): Promise<void> {
     const port = await bridge.start();
     // stderr only — stdout is the MCP protocol channel.
     if (bridge.status().state === 'shared') {
-      console.error(`canvas: another Canvas MCP server owns port ${port}; this one draws on its canvas through it.`);
+      console.error(`openflowkit: another OpenFlowKit MCP server owns port ${port}; this one draws on its canvas through it.`);
     } else {
-      console.error(`canvas: local bridge listening on http://127.0.0.1:${port}`);
-      console.error(`canvas: pair a tab at ${CONNECT_URL} (press Connect).`);
+      console.error(`openflowkit: local bridge listening on http://127.0.0.1:${port}`);
+      console.error(`openflowkit: pair a tab at ${CONNECT_URL} (press Connect).`);
     }
   } catch (error) {
-    console.error(`canvas: ${bridge.unpairedReason ?? `live bridge unavailable (${error instanceof Error ? error.message : String(error)}). File mode still works.`}`);
+    console.error(`openflowkit: ${bridge.unpairedReason ?? `live bridge unavailable (${error instanceof Error ? error.message : String(error)}). File mode still works.`}`);
   }
   const transport = new StdioServerTransport();
   await server.connect(transport);
   // The client closing stdin is the end of the session: answer what was asked, then free the bridge port
   // rather than linger as an orphan that keeps it (and refuses the next server's editor).
   const exit = () => { service.close(); void bridge.stop().finally(() => process.exit(0)); };
-  // Requests still being answered: a piped one-shot session (`printf … | canvas-mcp`) ends stdin first.
+  // Requests still being answered: a piped one-shot session (`printf … | openflowkit-mcp`) ends stdin first.
   let inFlight = 0;
   let closing = false;
   const receive = transport.onmessage!;
@@ -44,6 +44,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-  console.error('canvas-mcp failed to start:', error);
+  console.error('openflowkit-mcp failed to start:', error);
   process.exit(1);
 });

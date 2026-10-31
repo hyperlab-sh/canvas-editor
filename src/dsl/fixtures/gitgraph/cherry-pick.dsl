@@ -1,4 +1,4 @@
-%% canvas 1
+%% ofk 1
 gitgraph
 title: Cherry picks
 

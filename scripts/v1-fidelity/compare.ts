@@ -2,7 +2,7 @@
 // (documentFromFileText → projectLegacyDocument), side by side, plus a table.
 // Read-only on the fixtures; both apps run in throwaway headless profiles.
 //
-//   (cd ../canvas-main && npx vite --port 5179)   # git worktree of `main`
+//   (cd ../ofk-main && npx vite --port 5179)   # git worktree of `main`
 //   npx vite --port 5181                        # this checkout
 //   npx tsx scripts/v1-fidelity/compare.ts      # → test-results/v1-fidelity/
 import { chromium, type Page } from '@playwright/test';
@@ -35,8 +35,8 @@ function pagesOf(document: Json, label: string, source: string): Case[] {
   }));
 }
 
-const fallbackDocs = JSON.parse(read('localstorage-fallback.json').localStorage['canvas-documents-fallback']);
-const premarch = read('premarch-tabs.json').indexedDb.flowMetadata.find((r: Json) => r.id === 'canvas-storage');
+const fallbackDocs = JSON.parse(read('localstorage-fallback.json').localStorage['openflowkit-documents-fallback']);
+const premarch = read('premarch-tabs.json').indexedDb.flowMetadata.find((r: Json) => r.id === 'openflowkit-storage');
 const cases: Case[] = [
   ...indexedDb.documents.flatMap((d: Json) => pagesOf(d, manifest[d.id], 'IDB documents')),
   ...fallbackDocs.flatMap((d: Json) => pagesOf(d, 'fallback', 'LS documents-fallback')),
@@ -48,12 +48,12 @@ const cases: Case[] = [
 const deletedIds = Object.keys(manifest).filter((id) => manifest[id] === 'deleted');
 const deletedRows = deletedIds.filter((id) => indexedDb.documents.some((d: Json) => d.id === id));
 
-// The v1 asset row exactly as it sits in the shared `canvas-persistence` database.
+// The v1 asset row exactly as it sits in the shared `openflowkit-persistence` database.
 async function seedAsset(page: Page): Promise<void> {
   await page.evaluate(async (record) => {
     const bytes = await (await fetch(record.bytes.$blob)).blob();
     const db: IDBDatabase = await new Promise((resolve, reject) => {
-      const request = indexedDB.open('canvas-persistence');
+      const request = indexedDB.open('openflowkit-persistence');
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });

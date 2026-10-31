@@ -16,10 +16,10 @@ afterAll(async () => { await Promise.all(tempDirs.map((dir) => rm(dir, { recursi
 
 describe('discover --out when the model does not compile', () => {
   it('keeps the model, writes no SVG, and says an older SVG is stale', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'canvas-discover-svg-'));
+    const root = await mkdtemp(join(tmpdir(), 'openflowkit-discover-svg-'));
     tempDirs.push(root);
     await writeFile(join(root, 'docker-compose.yml'), 'services:\n  api:\n    image: fixture/api:1\n', 'utf8');
-    const out = join(root, 'architecture.canvas');
+    const out = join(root, 'architecture.ofk');
     const first: string[] = [];
     expect(await main(['discover', root, '--out', out], { out: () => undefined, err: (m) => first.push(m) })).toBe(0);
     expect(first.join('\n')).toContain('does not compile; no svg written');

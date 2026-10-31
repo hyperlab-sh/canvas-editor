@@ -11,7 +11,7 @@ describe('BrandLoader', () => {
 
   it('a fresh loader fades in; a labelled one is announced, an unlabelled one is hidden', () => {
     const fresh = renderToStaticMarkup(<BrandLoader screen label="Loading" />);
-    expect(fresh).toContain('class="canvas-loader canvas-loader-screen"');
+    expect(fresh).toContain('class="ofk-loader ofk-loader-screen"');
     expect(fresh).toContain('data-fade="true"');
     expect(fresh).toContain('role="status" aria-label="Loading"');
     expect(renderToStaticMarkup(<BrandLoader />)).toContain('aria-hidden="true"');

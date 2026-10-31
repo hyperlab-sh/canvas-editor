@@ -6,7 +6,7 @@ import { expect, test, type BrowserContext, type Page } from './test';
 // The share origin and Turnstile are served by the real Worker handler over an in-memory bucket.
 // npm run e2e:headed -- e2e/share.spec.ts
 
-const SHARE = 'https://share.canvas.hyperlab.sh';
+const SHARE = 'https://share.openflowkit.com';
 const TURNSTILE_SCRIPT = 'https://challenges.cloudflare.com/turnstile/v0/api.js*';
 const LABEL = 'Payments gateway';
 
@@ -74,9 +74,9 @@ async function shareLink(page: Page): Promise<string> {
 
 /** Regression guard: a share state renders inside the system root, with design-system buttons. */
 async function expectSystemState(page: Page, primary: string): Promise<void> {
-  await expect(page.locator('.canvas-system[data-canvas-appearance] [data-testid="v2-shared-state"]')).toBeVisible();
+  await expect(page.locator('.ofk-system[data-ofk-appearance] [data-testid="v2-shared-state"]')).toBeVisible();
   await expect(page.getByRole('button', { name: primary })).toHaveAttribute('data-variant', 'primary');
-  await expect(page.getByRole('button', { name: primary })).toHaveClass(/canvas-button/);
+  await expect(page.getByRole('button', { name: primary })).toHaveClass(/ofk-button/);
 }
 
 test.beforeEach(async ({ context }) => {
@@ -127,14 +127,14 @@ test('share → open in another tab → delete → deleted message @gate', async
   await expect(viewer.getByRole('toolbar', { name: 'Share and export', exact: true }).getByRole('button', { name: 'Share', exact: true })).toHaveCount(0);
   expect(turnstileRequests).toBe(0);
 
-  // Edit in Canvas is document-bar chrome, keyboard reachable. A copy that can't be saved says so and stays put.
-  await viewer.getByRole('button', { name: 'Edit in Canvas' }).focus();
+  // Edit in OpenFlowKit is document-bar chrome, keyboard reachable. A copy that can't be saved says so and stays put.
+  await viewer.getByRole('button', { name: 'Edit in OpenFlowKit' }).focus();
   await viewer.evaluate(() => { const open = indexedDB.open; indexedDB.open = () => { indexedDB.open = open; throw new Error('storage blocked'); }; });
   await viewer.keyboard.press('Enter');
   await expect(viewer.getByText(/storage blocked|Could not save|storage/i).first()).toBeVisible();
   expect(viewer.url()).toContain('#/s/');
-  // Edit in Canvas: a local copy that is editable and survives the link.
-  await viewer.getByRole('button', { name: 'Edit in Canvas' }).click();
+  // Edit in OpenFlowKit: a local copy that is editable and survives the link.
+  await viewer.getByRole('button', { name: 'Edit in OpenFlowKit' }).click();
   await expect.poll(() => viewer.url()).toContain('#/d/');
   await expect.poll(() => labels(viewer)).toContain(LABEL);
   await viewer.close();

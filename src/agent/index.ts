@@ -24,10 +24,10 @@ export { resolveAgentOpCommand, runAgentOp } from './runAction';
 export type { RunOpResult } from './runAction';
 export type { SceneDocumentV1 };
 
-// Headless consumers (the `canvas` CLI) compile whole workspaces and
+// Headless consumers (the `openflowkit` CLI) compile whole workspaces and
 // render canonical SVG without a browser. Re-exported, not re-implemented.
 export { compileWorkspace } from '../dsl/compile';
-// Checks that throw positions away (`canvas validate`) skip ELK and its size cap.
+// Checks that throw positions away (`openflowkit validate`) skip ELK and its size cap.
 export { deterministicLayout } from '../dsl/layout';
 export { architectureWorkspaceText } from '../dsl/families/architecture/text';
 export { archModelFromJson } from '../dsl/model/model';

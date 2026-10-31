@@ -61,7 +61,7 @@ function keyframes(name: string, stops: Stops): string {
 }
 
 function elementName(kind: 'node' | 'connector', id: string): string {
-  return `canvas-${kind}-${id.replace(/[^A-Za-z0-9_-]/g, '-')}`;
+  return `ofk-${kind}-${id.replace(/[^A-Za-z0-9_-]/g, '-')}`;
 }
 
 /** Clip settings every keyframe animation shares: whole-clip span, seek, loop. */
@@ -247,18 +247,18 @@ function planCamera(
     }
   });
   stop(stops, 100, transformAt(durationMs));
-  return { css: keyframes('canvas-camera', stops), animation: clipAnimation('canvas-camera', clip) };
+  return { css: keyframes('ofk-camera', stops), animation: clipAnimation('ofk-camera', clip) };
 }
 
 function planPulse(timeline: Timeline, clip: ClipSettings): Planned {
   const elements = new Map<string, ElementAnimations>();
-  const css = [keyframes('canvas-pulse', new Map([['0', 'stroke-dashoffset:0'], ['100', `stroke-dashoffset:-${PULSE_TRAVEL}`]]))];
+  const css = [keyframes('ofk-pulse', new Map([['0', 'stroke-dashoffset:0'], ['100', `stroke-dashoffset:-${PULSE_TRAVEL}`]]))];
   const order = new Set<string>();
   timeline.steps.forEach((step) => step.connectorIds.forEach((id) => order.add(id)));
   [...order].forEach((id, index) => {
     elements.set(`connector:${id}`, {
       path: {
-        name: 'canvas-pulse', durationMs: PULSE_MS, delayMs: -index * 0.25 * PULSE_MS - clip.seekMs,
+        name: 'ofk-pulse', durationMs: PULSE_MS, delayMs: -index * 0.25 * PULSE_MS - clip.seekMs,
         iterationCount: 'infinite', fill: 'none', timing: 'linear', dash: PULSE_DASH.join(' '),
       },
     });
@@ -297,7 +297,7 @@ export function exportAnimatedSvg(
     ...(plan.camera ? { cameraAnimation: plan.camera } : {}),
     styleSheet: [
       ...plan.css,
-      '@media (prefers-reduced-motion: reduce){.canvas-anim{animation:none!important}}',
+      '@media (prefers-reduced-motion: reduce){.ofk-anim{animation:none!important}}',
     ].join(''),
   };
   return exportCanonicalSvg(document, svgOptions);

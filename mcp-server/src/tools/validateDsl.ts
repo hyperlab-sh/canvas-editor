@@ -1,4 +1,4 @@
-// Real-DSL validation: the same parse-then-compile check `canvas validate`
+// Real-DSL validation: the same parse-then-compile check `openflowkit validate`
 // runs, so an agent sees every line the compiler drops. Mermaid converts first;
 // the report carries the DSL it became and what did not carry over.
 import { z } from 'zod';
@@ -13,7 +13,7 @@ export function registerValidateDsl(server: McpServer): void {
       title: 'Validate OpenFlow DSL',
       description:
         'Parse and compile OpenFlow DSL — or Mermaid, Structurizr DSL or D2, converted first — and return structured diagnostics ' +
-        '(code, severity, line, column, message, hint), the same check as `canvas validate`. `ok` is false on any error: ' +
+        '(code, severity, line, column, message, hint), the same check as `openflowkit validate`. `ok` is false on any error: ' +
         'text that cannot be drawn, or a line the parser could not read (create_diagram would draw without it). Warnings name ' +
         'guesses (an unknown word, a misspelled header) that still draw. For another language, `converted.dsl` is what it became and ' +
         '`converted.losses` name the lines of your text that did not carry over; diagnostics then refer to `converted.dsl`.',

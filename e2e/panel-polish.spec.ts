@@ -2,7 +2,7 @@ import { expect, test } from './test';
 import { clickNode, openCanvas, state } from './helpers';
 
 test('object actions, page menus and connection states stay usable', async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem('canvas-v2-preferences', JSON.stringify({ theme: 'dark' })));
+  await page.addInitScript(() => localStorage.setItem('openflowkit-v2-preferences', JSON.stringify({ theme: 'dark' })));
   await page.goto('/');
   await expect(page.getByTestId('v2-canvas')).toBeVisible();
   await page.getByRole('button', { name: 'Shapes options', exact: true }).click();
@@ -14,20 +14,20 @@ test('object actions, page menus and connection states stay usable', async ({ pa
   await page.getByRole('button', { name: 'Layers', exact: true }).click();
   const layers = page.getByRole('complementary', { name: 'Layers' });
   await expect(layers.getByText('Default', { exact: true })).toHaveCount(0);
-  await expect(layers.locator('.canvas-object-row')).toHaveCount(1);
+  await expect(layers.locator('.ofk-object-row')).toHaveCount(1);
   await layers.getByRole('button', { name: /^Hide / }).click();
-  await expect(layers.locator('.canvas-object-row')).toHaveAttribute('data-hidden', 'true');
+  await expect(layers.locator('.ofk-object-row')).toHaveAttribute('data-hidden', 'true');
   await layers.getByRole('button', { name: /^Show / }).click();
   await layers.getByRole('button', { name: /^Lock / }).click();
   await expect(layers.getByRole('button', { name: /^Unlock / })).toBeVisible();
   await layers.getByRole('button', { name: /^Unlock / }).click();
-  await layers.locator('.canvas-object-select').click({ button: 'right' });
+  await layers.locator('.ofk-object-select').click({ button: 'right' });
   await page.getByRole('menuitem', { name: 'Duplicate', exact: true }).click();
-  await expect(layers.locator('.canvas-object-row')).toHaveCount(2);
+  await expect(layers.locator('.ofk-object-row')).toHaveCount(2);
   await layers.getByRole('button', { name: /^Actions for/ }).first().click();
-  await page.screenshot({ animations: 'disabled', path: '/tmp/canvas-layers-polished.png' });
+  await page.screenshot({ animations: 'disabled', path: '/tmp/ofk-layers-polished.png' });
   await page.getByRole('menuitem', { name: 'Delete', exact: true }).click();
-  await expect(layers.locator('.canvas-object-row')).toHaveCount(1);
+  await expect(layers.locator('.ofk-object-row')).toHaveCount(1);
   await layers.getByRole('button', { name: 'Close panel' }).click();
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
   await page.getByRole('button', { name: /^Pages/ }).click();
@@ -49,7 +49,7 @@ test('object actions, page menus and connection states stay usable', async ({ pa
   await cancelledRename.press('Escape');
   await expect(pages).toBeVisible();
   await expect(pages.getByRole('button', { name: 'Architecture', exact: true })).toBeVisible();
-  await page.screenshot({ animations: 'disabled', path: '/tmp/canvas-pages-polished.png' });
+  await page.screenshot({ animations: 'disabled', path: '/tmp/ofk-pages-polished.png' });
   await page.getByRole('button', { name: 'Close pages' }).click();
   await page.getByRole('toolbar', { name: 'Workspace', exact: true }).getByRole('button', { name: 'Connect agent', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Copy prompt' })).toBeVisible();
@@ -58,19 +58,19 @@ test('object actions, page menus and connection states stay usable', async ({ pa
   await expect(page.getByRole('button', { name: 'Connect', exact: true })).toBeDisabled();
   await page.getByLabel('Port', { exact: true }).fill('43119');
   await page.getByText('Connection settings', { exact: true }).click();
-  await page.screenshot({ animations: 'disabled', path: '/tmp/canvas-mcp-polished.png' });
+  await page.screenshot({ animations: 'disabled', path: '/tmp/ofk-mcp-polished.png' });
   await page.getByRole('button', { name: 'Close agent connection' }).click();
   await page.getByRole('toolbar', { name: 'Workspace', exact: true }).getByRole('button', { name: 'Architecture model', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Open diagram as code' })).toBeVisible();
-  await page.screenshot({ animations: 'disabled', path: '/tmp/canvas-model-polished.png' });
+  await page.screenshot({ animations: 'disabled', path: '/tmp/ofk-model-polished.png' });
   await page.getByRole('button', { name: 'Open diagram as code' }).click();
   await expect(page.getByRole('textbox', { name: 'Diagram source' })).toBeVisible();
-  await page.screenshot({ animations: 'disabled', path: '/tmp/canvas-code-polished.png' });
+  await page.screenshot({ animations: 'disabled', path: '/tmp/ofk-code-polished.png' });
 });
 
 test('connected agent stays compact on a narrow screen', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.addInitScript(() => localStorage.setItem('canvas-v2-preferences', JSON.stringify({ theme: 'light', agentBridgeEnabled: true })));
+  await page.addInitScript(() => localStorage.setItem('openflowkit-v2-preferences', JSON.stringify({ theme: 'light', agentBridgeEnabled: true })));
   await page.route('http://127.0.0.1:43119/**', async (route) => {
     await route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*' } });
   });
@@ -83,7 +83,7 @@ test('connected agent stays compact on a narrow screen', async ({ page }) => {
   const bounds = await connection.boundingBox();
   expect(bounds!.x).toBeGreaterThanOrEqual(0);
   expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
-  await page.screenshot({ animations: 'disabled', path: '/tmp/canvas-mcp-connected.png' });
+  await page.screenshot({ animations: 'disabled', path: '/tmp/ofk-mcp-connected.png' });
   await connection.getByRole('button', { name: 'Disconnect' }).click();
   await expect(connection.getByRole('button', { name: 'Connect', exact: true })).toBeVisible();
 });
@@ -113,7 +113,7 @@ test('settings and export remain clear in dark, light and narrow layouts', async
     await settings.getByRole('radio', { name: theme, exact: true }).check();
     await expect(settings.getByRole('region', { name: 'Canvas', exact: true })).toBeVisible();
     await expect(settings.locator('details')).toHaveCount(0);
-    await settings.screenshot({ path: `/tmp/canvas-settings-${theme.toLowerCase()}.png` });
+    await settings.screenshot({ path: `/tmp/ofk-settings-${theme.toLowerCase()}.png` });
     await settings.getByRole('button', { name: 'Close panel' }).click();
   }
   await page.setViewportSize({ width: 390, height: 600 });
@@ -131,7 +131,7 @@ test('settings and export remain clear in dark, light and narrow layouts', async
     const settled = (await panel.boundingBox())!;
     return Math.round(settled.y + settled.height);
   }).toBeLessThanOrEqual(600);
-  await panel.screenshot({ path: '/tmp/canvas-export-narrow.png' });
+  await panel.screenshot({ path: '/tmp/ofk-export-narrow.png' });
 });
 
 test('on a phone the selection toolbar does not sit on an open panel @gate', async ({ page }) => {
@@ -170,5 +170,5 @@ test('a new page opens in rename: typing names it, Escape keeps "Page N", and a 
   await page.keyboard.press('Escape');
   await expect(pages.getByRole('button', { name: 'Page 3', exact: true })).toBeVisible();
   // The tab title carries the document name.
-  await expect(page).toHaveTitle(/ · Canvas$/);
+  await expect(page).toHaveTitle(/ · OpenFlowKit$/);
 });

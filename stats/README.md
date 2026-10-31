@@ -1,6 +1,6 @@
 # Stats page
 
-`stats.canvas.hyperlab.sh`: the owner's private dashboard over the share Worker's D1 (`canvas-data`) — people,
+`stats.openflowkit.com`: the owner's private dashboard over the share Worker's D1 (`openflowkit-data`) — people,
 retention, activation, feature adoption, sources, share loop, feedback (with "Mark all read"), PMF and pay votes,
 GitHub stars, npm downloads, Worker budget. One server-rendered page, no scripts. Range: `?range=7|30|90` (default 30).
 
@@ -15,20 +15,20 @@ The Worker only reads, except `feedback.read_at` ("Mark all read").
 
 ## Owner setup (one time)
 
-1. **Migration:** from `worker/`, `npx wrangler d1 migrations apply canvas-data --remote` (adds
+1. **Migration:** from `worker/`, `npx wrangler d1 migrations apply openflowkit-data --remote` (adds
    `feedback.read_at`; until then the page says unread feedback is unavailable, everything else works).
 2. **Access** (Cloudflare dashboard):
-   1. Zero Trust → on first visit, choose a team name (e.g. `canvas`; your team domain is
-      `canvas.cloudflareaccess.com`) and the Free plan.
+   1. Zero Trust → on first visit, choose a team name (e.g. `openflowkit`; your team domain is
+      `openflowkit.cloudflareaccess.com`) and the Free plan.
    2. Access → Applications → Add an application → Self-hosted.
-   3. Application domain: `stats.canvas.hyperlab.sh`.
-   4. Add a policy: name `Owner`, action **Allow**, Include → **Emails** → `varun@canvas.hyperlab.sh`.
+   3. Application domain: `stats.openflowkit.com`.
+   4. Add a policy: name `Owner`, action **Allow**, Include → **Emails** → `varun@openflowkit.com`.
    5. Save the application.
    6. Open the application again → Overview (or Basic information) → copy the **Application Audience (AUD) tag**.
 3. **Secrets:** from `stats/`, `npx wrangler secret put TEAM_DOMAIN` (`<team>.cloudflareaccess.com`, from Access
    settings) and `npx wrangler secret put POLICY_AUD` (the AUD tag). Neither is a password, but they stay out of the repo.
 4. **Deploy:** `cd stats && npx wrangler deploy`. The custom domain is created on first deploy.
-5. Open `https://stats.canvas.hyperlab.sh`: Access asks for the email code, then the page loads.
+5. Open `https://stats.openflowkit.com`: Access asks for the email code, then the page loads.
 
 ## Notes
 

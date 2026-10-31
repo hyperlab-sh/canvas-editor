@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 
-export const REPO_URL = 'https://github.com/hyperlab-sh/canvas-editor';
+export const REPO_URL = 'https://github.com/openflowkit/openflowkit';
 /** The docs site, as App.tsx forwards old `#/docs` links to it. */
-export const DOCS_URL = 'https://docs.canvas.hyperlab.sh/';
-const API_URL = 'https://api.github.com/repos/hyperlab-sh/canvas-editor';
-const KEY = 'canvas-v2-stars';
+export const DOCS_URL = 'https://docs.openflowkit.com/';
+const API_URL = 'https://api.github.com/repos/openflowkit/openflowkit';
+const KEY = 'openflowkit-v2-stars';
 const DAY = 86_400_000;
 
 /** 999 → "999", 1234 → "1.2k", 12_345 → "12k", 1_500_000 → "1.5M". */
