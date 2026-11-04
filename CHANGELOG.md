@@ -15,11 +15,15 @@ separately; its changes are listed under *For developers* in each release.
   unique across the document. Threads are not part of undo history, the diagram text or the diagram's content:
   undo and redo keep them, including on a page that is added, duplicated or deleted and brought back. JSON exports and
   share links leave them out; a bad thread in a file is dropped with a console warning and the rest of the diagram
-  loads. There is no way to write a comment yet.
+  loads.
 - **Comments on the canvas.** Press **C** (or pick **Comment** in the toolbar) and click to pin a thread; with the
   keyboard, press **Enter** instead, and the thread lands on the selected shape or the middle of the canvas. Type,
   press Enter to send; a pin opens its thread to reply, edit, resolve, delete or drag it elsewhere. Pins are not drawn
   into PNG, SVG or PDF exports, and JSON exports carry comments only when **Include comments** is ticked.
+- **Threads panel.** A **Threads** button on the rail, with the number of open threads, lists every thread in the
+  document. Search the comments, show resolved threads or only the unanswered ones, resolve, delete, copy a link or
+  mark a thread read or unread; unread threads are marked on the list and on their pin. Click a thread to open it and
+  bring its pin into view, switching page if needed. The filters and read marks are kept in this browser.
 - **Private repos in the browser.** On the "not found, or it is private" screen, **Private repo? Use a GitHub token**
   takes a fine-grained token with Contents read-only access; the files are then read through the GitHub API. The
   token stays in this tab.
